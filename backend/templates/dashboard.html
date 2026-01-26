@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Aura | Faculty Dashboard</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body class="bg-light">
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-dark bg-primary shadow-sm">
+      <div class="container-fluid">
+        <span class="navbar-brand mb-0 h1">🛡️ Aura ERP | Faculty</span>
+
+        <div class="d-flex align-items-center gap-3">
+          <!-- NEW BUTTON -->
+          <a href="{% url 'manage_students' %}" class="btn btn-sm btn-light">
+            Manage Students
+          </a>
+          <a
+            href="{% url 'manage_students' %}"
+            class="text-white text-decoration-none"
+            >Manage Students</a
+          >
+          <span class="text-white mx-2">|</span>
+          <a
+            href="{% url 'manage_timetable' %}"
+            class="text-white text-decoration-none"
+            >Timetable</a
+          >
+
+          <!-- EXISTING WELCOME TEXT -->
+          <span class="text-white"> Welcome, {{ username }} </span>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container mt-4">
+      <!-- LIVE SESSIONS -->
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white border-0">
+          <h5 class="mb-0 text-primary">📡 Live Sessions</h5>
+        </div>
+
+        <div class="card-body">
+          {% for lecture in active_lectures %}
+          <div
+            class="alert alert-success d-flex justify-content-between align-items-center mb-3"
+          >
+            <div>
+              <h4 class="mb-1">
+                {{ lecture.course.name }}
+                <span class="badge bg-secondary ms-2">
+                  {{ lecture.course.code }}
+                </span>
+              </h4>
+
+              <small class="text-muted">
+                Classroom:
+                <strong>{{ lecture.classroom.room_number }}</strong>
+              </small>
+            </div>
+
+            <div class="text-end">
+              <h2 class="mb-0">{{ lecture.attendance_records.count }}</h2>
+              <small>Students Present</small>
+            </div>
+          </div>
+          {% empty %}
+          <div class="text-center py-5 text-muted">
+            <h5>No Active Classes</h5>
+            <p>Classes start automatically based on the timetable.</p>
+
+            <a
+              href="/admin/core/lecture/add/"
+              class="btn btn-sm btn-outline-secondary"
+            >
+              Start Manual Session (Admin)
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -8,11 +8,14 @@ from .views import (
     bulk_upload_students,
     manage_timetable,
     add_schedule,
+    app_login,  # <--- ADD THIS HERE
 )
 
 urlpatterns = [
     # API Endpoints
     path('attendance/scan/', ESP32ScanView.as_view(), name='esp32_scan'),
+    path('auth/login/', app_login, name='app_login'),
+    
 
     # Web Views
     path('dashboard/', dashboard_redirect, name='dashboard'),

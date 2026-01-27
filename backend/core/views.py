@@ -12,6 +12,11 @@ from django.views.decorators.csrf import csrf_exempt
 import uuid
 import io
 import csv
+from django.contrib.auth import authenticate
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
 
 # ✅ IMPORT THE MODELS
 from .models import (
@@ -358,3 +363,36 @@ class ESP32ScanView(APIView):
             "marked_new": marked_count,
             "total_present": active_lecture.attendance_records.count()
         })
+        
+
+# =========================================
+# 7. AUTHENTICATION API (Mobile Login)
+# =========================================
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def app_login(request):
+    """
+    API for Android App to log in and get user Role.
+    """
+    username = request.data.get('username')
+    password = request.data.get('password')
+
+    if not username or not password:
+        return Response({"status": "error", "message": "Credentials missing"}, status=400)
+
+    user = authenticate(username=username, password=password)
+
+    if user is not None:
+        if user.is_active:
+            return Response({
+                "status": "success",
+                "username": user.username,
+                "role": user.role,  # This tells the App: STUDENT or TEACHER
+                "name": f"{user.first_name} {user.last_name}",
+                "user_id": user.id
+            })
+        else:
+            return Response({"status": "error", "message": "Account disabled"}, status=403)
+    else:
+        return Response({"status": "error", "message": "Invalid credentials"}, status=401)

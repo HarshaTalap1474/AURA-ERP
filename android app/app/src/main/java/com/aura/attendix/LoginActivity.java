@@ -20,7 +20,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class LoginActivity extends AppCompatActivity {
-    private static final String API_URL = "http://10.77.107.238:8000/api/auth/login/";
+        private static final String API_URL = "http://10.77.107.238:8000/api/auth/login/";
 
     EditText etUsername, etPassword;
     Button btnLogin;

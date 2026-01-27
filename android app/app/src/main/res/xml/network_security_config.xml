@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <base-config cleartextTrafficPermitted="true">
-        <trust-anchors>
-            <certificates src="system" />
-        </trust-anchors>
-    </base-config>
+    <!-- ⚙️ Allow local HTTP connections for testing -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">10.77.107.238</domain>
+    </domain-config>
+
+    <!-- Optional: allow localhost too -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">localhost</domain>
+    </domain-config>
+
+    <base-config cleartextTrafficPermitted="true" />
 </network-security-config>

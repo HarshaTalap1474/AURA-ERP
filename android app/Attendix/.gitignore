@@ -1,0 +1,69 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Built application files
+*.apk
+*.aab
+*.ap_
+
+# Gradle files
+.gradle/
+build/
+
+# Local configuration file (SDK path, etc.)
+local.properties
+
+# Log files
+*.log
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Keystore files (IMPORTANT: do not commit these)
+*.jks
+*.keystore
+
+# Google Services (optional – remove this line if you WANT to commit it)
+# app/google-services.json
+
+# CMake
+.externalNativeBuild/
+.cxx/
+
+# Generated files
+captures/
+output.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Kotlin
+.kotlin/
+
+# Lint
+lint/intermediates/
+lint/generated/
+lint/reports/
+
+# NDK
+obj/
+
+# Firebase Crashlytics
+crashlytics-build.properties

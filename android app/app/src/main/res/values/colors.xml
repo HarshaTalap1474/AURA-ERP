@@ -1,5 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- Primary Colors -->
+    <color name="primary">#667EEA</color>
+    <color name="primary_dark">#5A6FD8</color>
+    <color name="primary_light">#A3B5FF</color>
+
+    <!-- Background Colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="background_light">#F5F5F5</color>
+
+    <!-- Text Colors -->
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#666666</color>
+    <color name="text_hint">#999999</color>
+
+    <!-- Button Colors -->
+    <color name="button_gradient_start">#667EEA</color>
+    <color name="button_gradient_end">#764BA2</color>
 </resources>

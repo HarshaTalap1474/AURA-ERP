@@ -20,25 +20,31 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class LoginActivity extends AppCompatActivity {
-        private static final String API_URL = "http://10.77.107.238:8000/api/auth/login/";
 
-    EditText etUsername, etPassword;
-    Button btnLogin;
-    ProgressBar progressBar;
+    private static final String API_URL =
+            "http://10.77.107.238:8000/api/auth/login/";
+
+    private EditText etUsername, etPassword;
+    private Button btnLogin;
+    private ProgressBar progressBar;
+    private RequestQueue requestQueue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        // 1. Link UI Elements
+        initViews();
+        requestQueue = Volley.newRequestQueue(this);
+
+        btnLogin.setOnClickListener(v -> attemptLogin());
+    }
+
+    private void initViews() {
         etUsername = findViewById(R.id.etUsername);
         etPassword = findViewById(R.id.etPassword);
         btnLogin = findViewById(R.id.btnLogin);
         progressBar = findViewById(R.id.progressBar);
-
-        // 2. Button Click Listener
-        btnLogin.setOnClickListener(v -> attemptLogin());
     }
 
     private void attemptLogin() {
@@ -46,77 +52,107 @@ public class LoginActivity extends AppCompatActivity {
         String password = etPassword.getText().toString().trim();
 
         if (username.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Please enter all fields", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,
+                    "Please enter username and password",
+                    Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Show Loading
-        progressBar.setVisibility(View.VISIBLE);
-        btnLogin.setEnabled(false);
+        showLoading(true);
 
-        // 3. Create JSON Payload
-        JSONObject params = new JSONObject();
+        JSONObject payload = new JSONObject();
         try {
-            params.put("username", username);
-            params.put("password", password);
+            payload.put("username", username);
+            payload.put("password", password);
         } catch (JSONException e) {
-            e.printStackTrace();
+            showLoading(false);
+            Toast.makeText(this, "Invalid request data", Toast.LENGTH_SHORT).show();
+            return;
         }
 
-        // 4. Send Request via Volley
-        RequestQueue queue = Volley.newRequestQueue(this);
-
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, API_URL, params,
-                response -> {
-                    // ✅ SUCCESS
-                    progressBar.setVisibility(View.GONE);
-                    btnLogin.setEnabled(true);
-                    handleLoginSuccess(response);
-                },
-                error -> {
-                    // ❌ FAILURE
-                    progressBar.setVisibility(View.GONE);
-                    btnLogin.setEnabled(true);
-                    String errorMsg = "Login Failed";
-                    if (error.networkResponse != null && error.networkResponse.statusCode == 404) {
-                        errorMsg = "Server not found (Check IP)";
-                    } else if (error.networkResponse != null && error.networkResponse.statusCode == 401) {
-                        errorMsg = "Invalid Username/Password";
-                    }
-                    Toast.makeText(LoginActivity.this, errorMsg, Toast.LENGTH_LONG).show();
-                }
+        JsonObjectRequest request = new JsonObjectRequest(
+                Request.Method.POST,
+                API_URL,
+                payload,
+                this::handleLoginSuccess,
+                error -> handleLoginError(error)
         );
 
-        queue.add(request);
+        requestQueue.add(request);
     }
 
     private void handleLoginSuccess(JSONObject response) {
+        showLoading(false);
+
         try {
             String role = response.getString("role");
             String name = response.getString("name");
 
-            // 1. Save Session (Keep user logged in)
-            SharedPreferences prefs = getSharedPreferences("UserSession", MODE_PRIVATE);
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putString("username", etUsername.getText().toString());
-            editor.putString("role", role);
-            editor.putString("name", name);
-            editor.apply();
+            saveSession(role, name);
 
-            Toast.makeText(this, "Welcome " + name, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,
+                    "Welcome " + name,
+                    Toast.LENGTH_SHORT).show();
 
-            // 2. Navigate based on Role
-            Intent intent;
-            if (role.equals("STUDENT")) {
-                intent = new Intent(LoginActivity.this, StudentHomeActivity.class);
-            } else {
-                intent = new Intent(LoginActivity.this, TeacherHomeActivity.class);
-            }
-            startActivity(intent);
-            finish(); // Close Login Activity so they can't go back
+            navigateByRole(role);
 
         } catch (JSONException e) {
-            Toast.makeText(this, "Parsing Error", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,
+                    "Response parsing error",
+                    Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void handleLoginError(com.android.volley.VolleyError error) {
+        showLoading(false);
+
+        String message = "Login failed";
+
+        if (error.networkResponse != null) {
+            int statusCode = error.networkResponse.statusCode;
+
+            if (statusCode == 401) {
+                message = "Invalid username or password";
+            } else if (statusCode == 404) {
+                message = "Server not found";
+            } else if (statusCode >= 500) {
+                message = "Server error. Try again later";
+            }
+        } else {
+            message = "Network error. Check your connection";
+        }
+
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+    }
+
+    private void saveSession(String role, String name) {
+        SharedPreferences prefs =
+                getSharedPreferences("UserSession", MODE_PRIVATE);
+
+        prefs.edit()
+                .putString("username", etUsername.getText().toString().trim())
+                .putString("role", role)
+                .putString("name", name)
+                .apply();
+    }
+
+    private void navigateByRole(String role) {
+        Intent intent;
+
+        if ("STUDENT".equalsIgnoreCase(role)) {
+            intent = new Intent(this, StudentHomeActivity.class);
+        } else {
+            intent = new Intent(this, TeacherHomeActivity.class);
+        }
+
+        startActivity(intent);
+        finish();
+    }
+
+    private void showLoading(boolean isLoading) {
+        progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        btnLogin.setEnabled(!isLoading);
+        etUsername.setEnabled(!isLoading);
+        etPassword.setEnabled(!isLoading);
     }
 }

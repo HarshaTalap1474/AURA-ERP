@@ -1,3 +1,22 @@
 <resources>
     <string name="app_name">ATTENDIX</string>
+    <string name="app_tagline">Enterprise Resource Platform</string>
+
+    <!-- Login Screen -->
+    <string name="welcome_back">Welcome Back</string>
+    <string name="sign_in_continue">Sign in to continue to your account</string>
+
+    <string name="hint_username">Username / Roll No</string>
+    <string name="hint_password">Password</string>
+
+    <string name="secure_login">Secure Login</string>
+
+    <!-- Footer -->
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="create_account">Create Account</string>
+
+    <!-- Security -->
+    <string name="ssl_encrypted">256-bit SSL Encrypted</string>
+    <string name="security_icon">Security Icon</string>
+
 </resources>

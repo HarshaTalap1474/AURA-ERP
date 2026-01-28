@@ -1,8 +1,10 @@
 package com.aura.attendix;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.provider.Settings; // [1] Import Settings for Hardware ID
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -21,8 +23,8 @@ import org.json.JSONObject;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private static final String API_URL =
-            "http://10.77.107.238:8000/api/auth/login/";
+    // Ensure this IP matches your local Django server
+    private static final String API_URL = "http://10.77.107.238:8000/api/auth/login/";
 
     private EditText etUsername, etPassword;
     private Button btnLogin;
@@ -32,6 +34,14 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // [2] Auto-Login Check: If user is already bound/logged in, skip this screen
+        SharedPreferences prefs = getSharedPreferences("UserSession", MODE_PRIVATE);
+        if (prefs.contains("username")) {
+            navigateByRole(prefs.getString("role", "STUDENT"));
+            return;
+        }
+
         setContentView(R.layout.activity_login);
 
         initViews();
@@ -52,11 +62,12 @@ public class LoginActivity extends AppCompatActivity {
         String password = etPassword.getText().toString().trim();
 
         if (username.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this,
-                    "Please enter username and password",
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please enter username and password", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        // [3] SECURITY: Fetch the unique Android Hardware ID
+        ("HardwareIds") String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
         showLoading(true);
 
@@ -64,9 +75,11 @@ public class LoginActivity extends AppCompatActivity {
         try {
             payload.put("username", username);
             payload.put("password", password);
+            // [4] Send the Hardware ID to server
+            payload.put("device_id", deviceId);
         } catch (JSONException e) {
             showLoading(false);
-            Toast.makeText(this, "Invalid request data", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Error creating request", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -88,18 +101,18 @@ public class LoginActivity extends AppCompatActivity {
             String role = response.getString("role");
             String name = response.getString("name");
 
-            saveSession(role, name);
+            // Server might return the fingerprint it saved
+            String serverFingerprint = response.optString("device_fingerprint", "");
 
-            Toast.makeText(this,
-                    "Welcome " + name,
-                    Toast.LENGTH_SHORT).show();
+            // [5] Save session including the Hardware ID
+            saveSession(role, name, serverFingerprint);
+
+            Toast.makeText(this, "Device Verified. Welcome " + name, Toast.LENGTH_SHORT).show();
 
             navigateByRole(role);
 
         } catch (JSONException e) {
-            Toast.makeText(this,
-                    "Response parsing error",
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Response parsing error", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -111,28 +124,31 @@ public class LoginActivity extends AppCompatActivity {
         if (error.networkResponse != null) {
             int statusCode = error.networkResponse.statusCode;
 
+            // [6] Specific Error Messages for Security Blocking
             if (statusCode == 401) {
-                message = "Invalid username or password";
+                message = "Security Alert: This account is linked to another device.";
+            } else if (statusCode == 403) {
+                message = "Account Disabled. Contact Admin.";
             } else if (statusCode == 404) {
                 message = "Server not found";
-            } else if (statusCode >= 500) {
-                message = "Server error. Try again later";
+            } else {
+                message = "Server error (" + statusCode + ")";
             }
         } else {
-            message = "Network error. Check your connection";
+            message = "Network error. Check connection.";
         }
 
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
-    private void saveSession(String role, String name) {
-        SharedPreferences prefs =
-                getSharedPreferences("UserSession", MODE_PRIVATE);
+    private void saveSession(String role, String name, String deviceFingerprint) {
+        SharedPreferences prefs = getSharedPreferences("UserSession", MODE_PRIVATE);
 
         prefs.edit()
                 .putString("username", etUsername.getText().toString().trim())
                 .putString("role", role)
                 .putString("name", name)
+                .putString("device_fingerprint", deviceFingerprint) // Saved for local checks
                 .apply();
     }
 

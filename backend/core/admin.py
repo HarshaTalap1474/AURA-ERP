@@ -72,3 +72,28 @@ class LectureAdmin(admin.ModelAdmin):
 class AttendanceAdmin(admin.ModelAdmin):
     list_display = ('student', 'lecture', 'status', 'timestamp')
     list_filter = ('status', 'lecture__course')
+    
+
+@admin.action(description='🔓 Reset Device Lock')
+def reset_device_lock(modeladmin, request, queryset):
+    # Sets the fingerprint to None for all selected users
+    queryset.update(device_fingerprint=None)
+    modeladmin.message_user(request, "Selected accounts have been reset. They can now bind a new device.")
+
+# Register the updated User Admin
+class CustomUserAdmin(UserAdmin):
+    # Add the new action to the list
+    actions = [reset_device_lock]
+    
+    # Optional: Display the fingerprint in the admin list view
+    list_display = UserAdmin.list_display + ('role', 'device_fingerprint',)
+    
+    # Add the field to the edit page
+    fieldsets = UserAdmin.fieldsets + (
+        ('Hardware Security', {'fields': ('device_fingerprint',)}),
+    )
+
+# Unregister the default User model and register yours
+# (If you haven't already done this in your project)
+# admin.site.register(User, CustomUserAdmin)
+# Note: If you already registered User, just add `actions = [reset_device_lock]` to it.

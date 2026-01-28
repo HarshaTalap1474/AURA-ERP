@@ -19,7 +19,12 @@ class User(AbstractUser):
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     
     # Security: Locks the account to a specific phone (Anti-Proxy)
-    device_fingerprint = models.CharField(max_length=255, blank=True, null=True)
+    device_fingerprint = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="Unique Android ID of the student's registered device."
+    )
 
 # ==========================================
 # 2. ACADEMIC STRUCTURE (The Hierarchy)

@@ -16,31 +16,33 @@
     <!-- NAVBAR -->
     <nav class="navbar navbar-dark bg-primary shadow-sm">
       <div class="container-fluid">
+        <!-- Brand -->
         <span class="navbar-brand mb-0 h1">🛡️ Aura ERP | Faculty</span>
 
+        <!-- Right-side menu -->
         <div class="d-flex align-items-center gap-3">
-          <!-- NEW BUTTON -->
+          <!-- Manage Students -->
           <a href="{% url 'manage_students' %}" class="btn btn-sm btn-light">
             Manage Students
           </a>
-          <a
-            href="{% url 'manage_students' %}"
-            class="text-white text-decoration-none"
-            >Manage Students</a
-          >
-          <span class="text-white mx-2">|</span>
+
+          <!-- Timetable -->
           <a
             href="{% url 'manage_timetable' %}"
-            class="text-white text-decoration-none"
-            >Timetable</a
+            class="btn btn-sm btn-light"
           >
+            Timetable
+          </a>
 
-          <!-- EXISTING WELCOME TEXT -->
-          <span class="text-white"> Welcome, {{ username }} </span>
+          <span class="text-white mx-2">|</span>
+
+          <!-- Welcome -->
+          <span class="text-white">Welcome, {{ username }}</span>
         </div>
       </div>
     </nav>
 
+    <!-- MAIN CONTENT -->
     <div class="container mt-4">
       <!-- LIVE SESSIONS -->
       <div class="card shadow-sm border-0 mb-4">

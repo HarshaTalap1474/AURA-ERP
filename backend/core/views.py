@@ -368,31 +368,57 @@ class ESP32ScanView(APIView):
 # =========================================
 # 7. AUTHENTICATION API (Mobile Login)
 # =========================================
-
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def app_login(request):
     """
-    API for Android App to log in and get user Role.
+    Secure Login with Hardware Binding.
+    Enforces 'One User, One Device' policy.
     """
     username = request.data.get('username')
     password = request.data.get('password')
+    device_id = request.data.get('device_id') # <--- New Parameter from App
 
     if not username or not password:
         return Response({"status": "error", "message": "Credentials missing"}, status=400)
 
+    # 1. Standard Authentication
     user = authenticate(username=username, password=password)
 
     if user is not None:
-        if user.is_active:
-            return Response({
-                "status": "success",
-                "username": user.username,
-                "role": user.role,  # This tells the App: STUDENT or TEACHER
-                "name": f"{user.first_name} {user.last_name}",
-                "user_id": user.id
-            })
-        else:
+        if not user.is_active:
             return Response({"status": "error", "message": "Account disabled"}, status=403)
+
+        # 2. 🛡️ HARDWARE BINDING CHECK
+        if device_id:
+            # Case A: First time login (Bind the device)
+            if user.device_fingerprint is None:
+                user.device_fingerprint = device_id
+                user.save()
+                print(f"🔒 Device Bound: User {user.username} linked to {device_id}")
+
+            # Case B: Device mismatch (Block the login)
+            elif user.device_fingerprint != device_id:
+                print(f"🚨 Security Alert: User {user.username} tried login from unauthorized device {device_id}")
+                return Response({
+                    "status": "error", 
+                    "message": "Security Alert: This account is linked to another device. Contact Admin to reset."
+                }, status=403)
+            
+            # Case C: Device matches (Allow login) -> Proceed below
+        else:
+            # Optional: Decide if you want to block logins that don't send a device_id (e.g., Postman attacks)
+            # For now, we allow it but log a warning
+            print(f"⚠️ Warning: Login without Device ID for {user.username}")
+
+        # 3. Success Response
+        return Response({
+            "status": "success",
+            "username": user.username,
+            "role": user.role,
+            "name": f"{user.first_name} {user.last_name}",
+            "user_id": user.id,
+            "device_bound": True if user.device_fingerprint else False
+        })
     else:
         return Response({"status": "error", "message": "Invalid credentials"}, status=401)

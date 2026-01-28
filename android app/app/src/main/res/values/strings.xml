@@ -1,14 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <!-- App Info -->
     <string name="app_name">ATTENDIX</string>
     <string name="app_tagline">Enterprise Resource Platform</string>
 
     <!-- Login Screen -->
     <string name="welcome_back">Welcome Back</string>
     <string name="sign_in_continue">Sign in to continue to your account</string>
-
     <string name="hint_username">Username / Roll No</string>
     <string name="hint_password">Password</string>
-
     <string name="secure_login">Secure Login</string>
 
     <!-- Footer -->
@@ -18,5 +19,47 @@
     <!-- Security -->
     <string name="ssl_encrypted">256-bit SSL Encrypted</string>
     <string name="security_icon">Security Icon</string>
+
+    <!-- User Info -->
+    <string name="welcome_student">Welcome, Student</string>
+    <string name="roll_no_placeholder">Roll No: ---</string>
+
+    <!-- Attendance Beacon -->
+    <string name="attendance_beacon">Attendance Beacon</string>
+    <string name="status_offline">Status: Offline</string>
+    <string name="status_online">Status: Online</string>
+    <string name="activate_signal">Activate Signal</string>
+    <string name="deactivate_signal">Deactivate Signal</string>
+    <string name="keep_screen_on">Keep screen on while marking</string>
+
+    <!-- Academic ERP -->
+    <string name="academic_erp">Academic ERP</string>
+
+    <!-- Feature Cards -->
+    <string name="attendance_history">Attendance History</string>
+    <string name="view_your_records">View your attendance records</string>
+    <string name="my_timetable">My Timetable</string>
+    <string name="coming_soon">Coming soon</string>
+    <string name="exam_results">Exam Results</string>
+    <string name="check_scores">Check your scores</string>
+    <string name="my_profile">My Profile</string>
+    <string name="edit_details">Edit your details</string>
+
+    <!-- Buttons -->
+    <string name="view">View</string>
+    <string name="soon">Soon</string>
+
+    <!-- Content Descriptions -->
+    <string name="profile_icon">Profile icon</string>
+    <string name="beacon_icon">Beacon icon</string>
+    <string name="fingerprint_icon">Fingerprint icon</string>
+    <string name="calendar_icon">Calendar icon</string>
+    <string name="timetable_icon">Timetable icon</string>
+    <string name="results_icon">Results icon</string>
+
+    <!-- Status Messages -->
+    <string name="scanning">Scanning for beacons…</string>
+    <string name="connected">Connected to classroom</string>
+    <string name="disconnected">Disconnected</string>
 
 </resources>

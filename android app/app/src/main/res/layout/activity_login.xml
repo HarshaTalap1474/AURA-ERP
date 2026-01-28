@@ -21,7 +21,6 @@
             android:orientation="vertical"
             android:padding="32dp">
 
-            <!-- App Logo -->
             <ImageView
                 android:layout_width="120dp"
                 android:layout_height="120dp"
@@ -31,7 +30,6 @@
                 android:contentDescription="@string/app_name"
                 app:tint="@color/white" />
 
-            <!-- App Title -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -51,7 +49,6 @@
                 android:alpha="0.8"
                 android:layout_marginBottom="60dp" />
 
-            <!-- Login Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -81,7 +78,6 @@
                         android:textColor="@color/text_secondary"
                         android:layout_marginBottom="32dp" />
 
-                    <!-- Username -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -96,7 +92,6 @@
                             android:inputType="text" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Password -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -112,14 +107,12 @@
                             android:inputType="textPassword" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Login Button -->
                     <Button
                         android:id="@+id/btnLogin"
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
                         android:text="@string/secure_login" />
 
-                    <!-- Progress Bar (REQUIRED by Java code) -->
                     <ProgressBar
                         android:id="@+id/progressBar"
                         android:layout_width="wrap_content"
@@ -131,7 +124,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Footer -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

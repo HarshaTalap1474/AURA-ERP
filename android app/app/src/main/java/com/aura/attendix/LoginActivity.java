@@ -1,10 +1,9 @@
 package com.aura.attendix;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.provider.Settings; // [1] Import Settings for Hardware ID
+import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -25,7 +24,6 @@ public class LoginActivity extends AppCompatActivity {
 
     // Ensure this IP matches your local Django server
     private static final String API_URL = "http://10.77.107.238:8000/api/auth/login/";
-
     private EditText etUsername, etPassword;
     private Button btnLogin;
     private ProgressBar progressBar;
@@ -67,7 +65,7 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         // [3] SECURITY: Fetch the unique Android Hardware ID
-        ("HardwareIds") String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
         showLoading(true);
 

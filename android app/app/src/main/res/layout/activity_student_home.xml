@@ -1,109 +1,452 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F8F9FA"
-    android:padding="20dp">
+    android:background="@drawable/gradient_background"
+    android:padding="20dp"
+    android:fitsSystemWindows="true">
 
+    <!-- App Bar with User Info -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginBottom="30dp">
+        android:orientation="horizontal"
+        android:paddingVertical="16dp"
+        android:gravity="center_vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Student Dashboard"
-            android:textSize="14sp"
-            android:textColor="#757575"/>
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tvWelcomeName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Welcome, Student"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="#212121"/>
+            <TextView
+                android:id="@+id/tvWelcomeName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/welcome_student"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:fontFamily="font/poppins_bold"
+                android:letterSpacing="0.02"/>
 
-        <TextView
-            android:id="@+id/tvUsername"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Roll: ---"
-            android:textSize="16sp"
-            android:textColor="#3F51B5"
-            android:layout_marginTop="4dp"/>
+            <TextView
+                android:id="@+id/tvUsername"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/roll_no_placeholder"
+                android:textSize="14sp"
+                android:textColor="@color/white_alpha_80"
+                android:fontFamily="font/poppins_regular"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/ivProfile"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_person"
+            android:background="@drawable/circle_background_white"
+            android:padding="12dp"
+            android:contentDescription="@string/profile_icon"/>
     </LinearLayout>
 
-    <androidx.cardview.widget.CardView
+    <!-- Main Content -->
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="180dp"
-        android:layout_marginBottom="20dp"
-        android:elevation="4dp"
-        app:cardCornerRadius="12dp"
-        xmlns:app="http://schemas.android.com/apk/res-auto">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="none"
+        android:paddingTop="16dp">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:background="#E8EAF6">
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-            <ImageView
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:src="@android:drawable/ic_menu_myplaces"
-                app:tint="#3F51B5"/>
+            <!-- Attendance Beacon Section -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="8dp"
+                app:cardBackgroundColor="@color/white"
+                android:layout_marginBottom="24dp"
+                app:cardPreventCornerOverlap="true">
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="28dp">
+
+                    <!-- Section Header -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/attendance_beacon"
+                        android:textAllCaps="true"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/primary"
+                        android:fontFamily="font/poppins_bold"
+                        android:letterSpacing="0.1"
+                        android:layout_marginBottom="16dp"
+                        android:background="@drawable/pill_background_primary"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="4dp"/>
+
+                    <!-- Beacon Icon with Glow Effect -->
+                    <FrameLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginBottom="20dp">
+
+                        <ImageView
+                            android:layout_width="120dp"
+                            android:layout_height="120dp"
+                            android:src="@drawable/ic_app_logo"
+                            app:tint="@color/primary"
+                            android:alpha="0.8"
+                            android:contentDescription="@string/beacon_icon"/>
+
+                        <ImageView
+                            android:id="@+id/ivBeaconIcon"
+                            android:layout_width="80dp"
+                            android:layout_height="80dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_fingerprint"
+                            app:tint="@color/white"
+                            android:contentDescription="@string/fingerprint_icon"/>
+                    </FrameLayout>
+
+                    <!-- Status Indicator -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        android:layout_marginBottom="24dp">
+
+                        <View
+                            android:id="@+id/vStatusIndicator"
+                            android:layout_width="12dp"
+                            android:layout_height="12dp"
+                            android:background="@drawable/circle_background_offline"
+                            android:layout_marginEnd="8dp"/>
+
+                        <TextView
+                            android:id="@+id/tvStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/status_offline"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="16sp"
+                            android:fontFamily="font/poppins_medium"/>
+                    </LinearLayout>
+
+                    <!-- Activate Button -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnScanAttendance"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:text="@string/activate_signal"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.05"
+                        app:cornerRadius="16dp"
+                        app:icon="@drawable/ic_shield"
+                        app:iconGravity="textStart"
+                        app:iconPadding="8dp"
+                        app:iconSize="20dp"
+                        app:iconTint="@color/white"
+                        android:fontFamily="font/poppins_semibold"
+                        style="@style/Widget.MaterialComponents.Button"/>
+
+                    <!-- Info Text -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="@string/keep_screen_on"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_hint"
+                        android:fontFamily="font/poppins_regular"
+                        android:layout_marginTop="16dp"
+                        android:drawablePadding="4dp"
+                        android:drawableStart="@drawable/ic_info"
+                        android:drawableTint="@color/text_hint"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Academic ERP Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Mark Attendance"
-                android:textSize="20sp"
+                android:text="@string/academic_erp"
+                android:textAllCaps="true"
+                android:textSize="12sp"
                 android:textStyle="bold"
-                android:textColor="#3F51B5"
-                android:layout_marginTop="10dp"/>
+                android:textColor="@color/white"
+                android:fontFamily="font/poppins_bold"
+                android:letterSpacing="0.1"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/pill_background_white_alpha"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="6dp"/>
 
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- ERP Features Grid -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Scan for BLE Beacons"
-                android:textSize="14sp"
-                android:textColor="#7986CB"/>
+                android:orientation="vertical"
+                android:paddingBottom="32dp">
 
-            <Button
-                android:id="@+id/btnScanAttendance"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Start Scan"
-                android:layout_marginTop="10dp"
-                android:backgroundTint="#3F51B5"/>
+                <!-- Row 1 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="16dp">
+
+                    <!-- Attendance History Card -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="4dp"
+                        app:cardBackgroundColor="@color/white"
+                        android:layout_marginEnd="8dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="20dp"
+                            android:gravity="center">
+
+                            <ImageView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:src="@drawable/ic_calendar"
+                                app:tint="@color/primary"
+                                android:layout_marginBottom="12dp"
+                                android:contentDescription="@string/calendar_icon"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/attendance_history"
+                                android:textSize="14sp"
+                                android:textColor="@color/text_primary"
+                                android:fontFamily="font/poppins_semibold"
+                                android:layout_marginBottom="12dp"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/view_your_records"
+                                android:textSize="12sp"
+                                android:textColor="@color/text_secondary"
+                                android:fontFamily="font/poppins_regular"
+                                android:gravity="center"
+                                android:layout_marginBottom="16dp"/>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnViewHistory"
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                android:text="@string/view"
+                                android:textSize="13sp"
+                                app:cornerRadius="12dp"
+                                android:fontFamily="font/poppins_medium"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Timetable Card -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="4dp"
+                        app:cardBackgroundColor="@color/white"
+                        android:layout_marginStart="8dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="20dp"
+                            android:gravity="center">
+
+                            <ImageView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:src="@drawable/ic_timetable"
+                                app:tint="@color/primary"
+                                android:layout_marginBottom="12dp"
+                                android:contentDescription="@string/timetable_icon"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/my_timetable"
+                                android:textSize="14sp"
+                                android:textColor="@color/text_primary"
+                                android:fontFamily="font/poppins_semibold"
+                                android:layout_marginBottom="12dp"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/coming_soon"
+                                android:textSize="12sp"
+                                android:textColor="@color/text_secondary"
+                                android:fontFamily="font/poppins_regular"
+                                android:gravity="center"
+                                android:layout_marginBottom="16dp"/>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                android:text="@string/soon"
+                                android:textSize="13sp"
+                                app:cornerRadius="12dp"
+                                android:enabled="false"
+                                android:fontFamily="font/poppins_medium"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+
+                <!-- Row 2 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <!-- Results Card -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="4dp"
+                        app:cardBackgroundColor="@color/white"
+                        android:layout_marginEnd="8dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="20dp"
+                            android:gravity="center">
+
+                            <ImageView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:src="@drawable/ic_chart"
+                                app:tint="@color/primary"
+                                android:layout_marginBottom="12dp"
+                                android:contentDescription="@string/results_icon"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/exam_results"
+                                android:textSize="14sp"
+                                android:textColor="@color/text_primary"
+                                android:fontFamily="font/poppins_semibold"
+                                android:layout_marginBottom="12dp"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/check_scores"
+                                android:textSize="12sp"
+                                android:textColor="@color/text_secondary"
+                                android:fontFamily="font/poppins_regular"
+                                android:gravity="center"
+                                android:layout_marginBottom="16dp"/>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                android:text="@string/soon"
+                                android:textSize="13sp"
+                                app:cornerRadius="12dp"
+                                android:enabled="false"
+                                android:fontFamily="font/poppins_medium"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Profile Card -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="4dp"
+                        app:cardBackgroundColor="@color/white"
+                        android:layout_marginStart="8dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="20dp"
+                            android:gravity="center">
+
+                            <ImageView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:src="@drawable/ic_profile"
+                                app:tint="@color/primary"
+                                android:layout_marginBottom="12dp"
+                                android:contentDescription="@string/profile_icon"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/my_profile"
+                                android:textSize="14sp"
+                                android:textColor="@color/text_primary"
+                                android:fontFamily="font/poppins_semibold"
+                                android:layout_marginBottom="12dp"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/edit_details"
+                                android:textSize="12sp"
+                                android:textColor="@color/text_secondary"
+                                android:fontFamily="font/poppins_regular"
+                                android:gravity="center"
+                                android:layout_marginBottom="16dp"/>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnViewProfile"
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                android:text="@string/view"
+                                android:textSize="13sp"
+                                app:cornerRadius="12dp"
+                                android:fontFamily="font/poppins_medium"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+            </LinearLayout>
         </LinearLayout>
-    </androidx.cardview.widget.CardView>
-
-    <Button
-        android:id="@+id/btnViewHistory"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:text="View Attendance History"
-        android:textSize="16sp"
-        android:backgroundTint="#607D8B"/>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
-
-    <Button
-        android:id="@+id/btnLogout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Logout"
-        android:textColor="#D32F2F"
-        style="?android:attr/borderlessButtonStyle"/>
-
+    </ScrollView>
 </LinearLayout>

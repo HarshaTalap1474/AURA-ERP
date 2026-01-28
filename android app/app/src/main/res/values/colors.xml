@@ -1,20 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <!-- Primary Colors -->
     <color name="primary">#667EEA</color>
     <color name="primary_dark">#5A6FD8</color>
     <color name="primary_light">#A3B5FF</color>
 
-    <!-- Background Colors -->
-    <color name="white">#FFFFFF</color>
-    <color name="background_light">#F5F5F5</color>
+    <!-- Status Colors -->
+    <color name="success">#48BB78</color>
+    <color name="warning">#ED8936</color>
+    <color name="error">#F56565</color>
+    <color name="offline">#A0AEC0</color>
 
     <!-- Text Colors -->
-    <color name="text_primary">#212121</color>
-    <color name="text_secondary">#666666</color>
-    <color name="text_hint">#999999</color>
+    <color name="white">#FFFFFF</color>
+    <color name="white_alpha_80">#CCFFFFFF</color>
+    <color name="text_primary">#2D3748</color>
+    <color name="text_secondary">#718096</color>
+    <color name="text_hint">#A0AEC0</color>
+
+    <!-- Background Colors -->
+    <color name="background_light">#F7FAFC</color>
 
     <!-- Button Colors -->
     <color name="button_gradient_start">#667EEA</color>
     <color name="button_gradient_end">#764BA2</color>
+
 </resources>

@@ -62,4 +62,21 @@
     <string name="connected">Connected to classroom</string>
     <string name="disconnected">Disconnected</string>
 
+    <!-- Teacher Dashboard -->
+    <string name="professor_name">Prof. Name</string>
+    <string name="faculty_department">Faculty of Engineering</string>
+    <string name="current_session">CURRENT SESSION</string>
+    <string name="loading">Loading...</string>
+    <string name="room_placeholder">Room ---</string>
+    <string name="time_placeholder">--:-- AM/PM</string>
+    <string name="students_count_placeholder">Students: 0/0</string>
+    <string name="monitor_live_attendance">Monitor Live Attendance</string>
+    <string name="logout">Logout</string>
+
+    <!-- Content Descriptions -->
+    <string name="location_icon">Location icon</string>
+    <string name="time_icon">Time icon</string>
+    <string name="students_icon">Students icon</string>
+    <string name="logout_icon">Logout icon</string>
+
 </resources>

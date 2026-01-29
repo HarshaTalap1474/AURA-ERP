@@ -23,7 +23,7 @@ import org.json.JSONObject;
 public class LoginActivity extends AppCompatActivity {
 
     // Ensure this IP matches your local Django server
-    private static final String API_URL = "http://10.77.107.238:8000/api/auth/login/";
+    private static final String API_URL = "https://cleared-forums-commission-based.trycloudflare.com/api/auth/login/";
     private EditText etUsername, etPassword;
     private Button btnLogin;
     private ProgressBar progressBar;

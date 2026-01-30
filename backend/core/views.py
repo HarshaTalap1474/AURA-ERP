@@ -11,6 +11,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import update_session_auth_hash
 
 import io
 import csv
@@ -292,7 +293,7 @@ def mark_attendance(request):
 
 
 # =========================================
-# 9. AUTHENTICATION API (Login & Profile)
+# 9. AUTHENTICATION API (Login, Profile & Logout)
 # =========================================
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -393,4 +394,45 @@ def update_profile(request):
             "phone": user.phone_number,
             "username": user.username
         }
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    """
+    Allows a logged-in user to change their password.
+    Requires 'old_password' verification for security.
+    """
+    user = request.user
+    data = request.data
+    
+    old_password = data.get('old_password')
+    new_password = data.get('new_password')
+
+    # 1. Validate Input
+    if not old_password or not new_password:
+        return Response({
+            "status": "error",
+            "message": "Both old and new passwords are required."
+        }, status=400)
+
+    # 2. Verify Old Password
+    if not user.check_password(old_password):
+        return Response({
+            "status": "error",
+            "message": "Wrong old password."
+        }, status=400)
+
+    # 3. Set New Password (Handles hashing automatically)
+    user.set_password(new_password)
+    user.save()
+
+    # 4. Keep User Logged In (For Session Auth) / Optional for JWT
+    # This prevents the current session from being invalidated immediately
+    update_session_auth_hash(request, user)
+
+    return Response({
+        "status": "success",
+        "message": "Password changed successfully"
     })

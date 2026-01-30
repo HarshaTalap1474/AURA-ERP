@@ -10,12 +10,14 @@ from .views import (
     add_schedule,
     app_login,
     update_profile,
+    change_password,
 )
 
 urlpatterns = [
     # API Endpoints
     path('attendance/scan/', ESP32ScanView.as_view(), name='esp32_scan'),
     path('auth/login/', app_login, name='app_login'),
+    path('auth/change-password/', change_password, name='change_password'),
     
 
     # Web Views

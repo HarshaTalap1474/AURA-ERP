@@ -3,7 +3,7 @@ package com.aura.attendix;
 public class NetworkConfig {
 
     // 1. CHANGE THIS ONE LINE when your Tunnel changes
-    public static final String BASE_URL = "https://wives-basis-explain-urge.trycloudflare.com";
+    public static final String BASE_URL = "https://river-analog-hudson-violations.trycloudflare.com";
 
     // 2. The Endpoints are automatically built on top of the Base URL
     public static final String URL_LOGIN = BASE_URL + "/api/auth/login/";

@@ -20,6 +20,8 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.nio.charset.StandardCharsets;
+
 public class LoginActivity extends AppCompatActivity {
     private EditText etUsername, etPassword;
     private Button btnLogin;
@@ -136,16 +138,34 @@ public class LoginActivity extends AppCompatActivity {
 
         if (error.networkResponse != null) {
             int statusCode = error.networkResponse.statusCode;
+            String serverMsg = "";
 
-            // [6] Specific Error Messages for Security Blocking
+            // Try to parse the actual error message from the server (if available)
+            try {
+                String responseBody = new String(error.networkResponse.data, StandardCharsets.UTF_8);
+                JSONObject data = new JSONObject(responseBody);
+                serverMsg = data.optString("detail", data.optString("error", ""));
+            } catch (Exception e) {
+                // formatting error, ignore
+            }
+
+            // 1. Wrong Password / Username (Standard HTTP 401)
             if (statusCode == 401) {
-                message = "Security Alert: This account is linked to another device.";
-            } else if (statusCode == 403) {
-                message = "Account Disabled. Contact Admin.";
-            } else if (statusCode == 404) {
-                message = "Server not found";
-            } else {
-                message = "Server error (" + statusCode + ")";
+                message = "Invalid Username or Password";
+            }
+            // 2. Device Mismatch or Account Ban (Backend sends 403 for this)
+            else if (statusCode == 403) {
+                if (serverMsg.toLowerCase().contains("device")) {
+                    message = "Security Alert: This account is linked to another device.";
+                } else {
+                    message = "Access Denied: " + serverMsg;
+                }
+            }
+            // 3. Other Errors
+            else if (statusCode == 404) {
+                message = "Server endpoint not found";
+            } else if (statusCode >= 500) {
+                message = "Server Error (Try again later)";
             }
         } else {
             message = "Network error. Check connection.";

@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,10 +22,9 @@ public class TeacherHomeActivity extends AppCompatActivity {
 
     private TextView tvTeacherName, tvCurrentClass, tvRoom, tvTime;
     private Button btnViewAttendance, btnLogout;
-    private RequestQueue requestQueue;
+    private ImageView ivTeacherProfile;
 
-    // Use your Cloudflare URL here
-    private static final String API_URL = "https://cleared-forums-commission-based.trycloudflare.com/api/auth/login/";
+    private RequestQueue requestQueue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +33,7 @@ public class TeacherHomeActivity extends AppCompatActivity {
 
         initViews();
         loadTeacherProfile();
+
         fetchCurrentClass(); // Get live data
 
         btnLogout.setOnClickListener(v -> logout());
@@ -41,6 +42,11 @@ public class TeacherHomeActivity extends AppCompatActivity {
             Toast.makeText(this, "Opening Live Attendance...", Toast.LENGTH_SHORT).show();
             // Intent intent = new Intent(this, LiveAttendanceActivity.class);
             // startActivity(intent);
+        });
+
+        ivTeacherProfile.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ProfileActivity.class);
+            startActivity(intent);
         });
     }
 
@@ -52,6 +58,7 @@ public class TeacherHomeActivity extends AppCompatActivity {
         btnViewAttendance = findViewById(R.id.btnViewAttendance);
         btnLogout = findViewById(R.id.btnLogout);
         requestQueue = Volley.newRequestQueue(this);
+        ivTeacherProfile = findViewById(R.id.ivTeacherProfile);
     }
 
     private void loadTeacherProfile() {
@@ -60,7 +67,7 @@ public class TeacherHomeActivity extends AppCompatActivity {
     }
 
     private void fetchCurrentClass() {
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, API_URL, null,
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, NetworkConfig.URL_LOGIN, null,
                 response -> {
                     try {
                         String subject = response.getString("subject");

@@ -18,8 +18,6 @@
 
     <!-- Security -->
     <string name="ssl_encrypted">256-bit SSL Encrypted</string>
-    <string name="security_icon">Security Icon</string>
-
     <!-- User Info -->
     <string name="welcome_student">Welcome, Student</string>
     <string name="roll_no_placeholder">Roll No: ---</string>
@@ -36,7 +34,6 @@
     <string name="academic_erp">Academic ERP</string>
 
     <!-- Feature Cards -->
-    <string name="attendance_history">Attendance History</string>
     <string name="view_your_records">View your attendance records</string>
     <string name="my_timetable">My Timetable</string>
     <string name="coming_soon">Coming soon</string>
@@ -96,5 +93,45 @@
     <string name="id_card_icon">ID Card icon</string>
     <string name="change_pass">Change Password</string>
     <string name="save_icon">Save icon</string>
+    <!-- Change Password Screen -->
+    <string name="change_password">Change Password</string>
+    <string name="secure_password_update">Secure password update with encryption</string>
+    <string name="current_password_hint">Current Password</string>
+    <string name="new_password_hint">New Password</string>
+    <string name="confirm_password_hint">Confirm New Password</string>
+    <string name="update_password">Update Password</string>
 
+    <!-- Password Requirements -->
+    <string name="password_requirements">Password Requirements</string>
+    <string name="password_requirement1">• Minimum 8 characters</string>
+    <string name="password_requirement2">• At least one uppercase and lowercase letter</string>
+    <string name="password_requirement3">• At least one number and special character</string>
+
+    <!-- Content Descriptions -->
+    <string name="security_icon">Security icon</string>
+    <!-- Attendance History Screen -->
+    <string name="attendance_history">Attendance History</string>
+    <string name="back_button">Back button</string>
+    <string name="download_report">Download report</string>
+    <string name="course_term_placeholder">Course of Term (Semester) > SEM --</string>
+    <string name="change_term">Change term</string>
+    <string name="overall_attendance">Overall Attendance</string>
+    <string name="overall_stats_placeholder">0 / 0 = 0%</string>
+    <string name="low_attendance">Low</string>
+    <string name="good_attendance">Good</string>
+    <string name="excellent_attendance">Excellent</string>
+    <string name="subjects">Subjects</string>
+
+    <!-- Subject Item -->
+    <string name="subject_name_placeholder">Subject Name</string>
+    <string name="teacher_name_placeholder">Teacher Name</string>
+    <string name="stats_placeholder">0 / 0 = 0%</string>
+    <string name="attendance">Attendance</string>
+    <string name="view_details">View Details</string>
+    <string name="teacher_icon">Teacher icon</string>
+
+    <!-- Status Messages -->
+    <string name="attendance_poor">Attendance needs improvement</string>
+    <string name="attendance_good">Good attendance record</string>
+    <string name="attendance_excellent">Excellent attendance</string>
 </resources>

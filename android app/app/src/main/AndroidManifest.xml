@@ -73,6 +73,11 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
+        <activity
+            android:name=".AttendanceHistoryActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
         <!-- BLE Foreground Service -->
         <service
             android:name=".BleBroadcastService"

@@ -15,7 +15,6 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
@@ -57,7 +56,6 @@ public class StudentHomeActivity extends AppCompatActivity {
 
         // Button Logic: Check Permissions FIRST, then start service
         btnScanAttendance.setOnClickListener(v -> checkPermissionsAndToggle());
-        // Inside initViews() or onCreate()
     }
 
     private void checkPermissionsAndToggle() {
@@ -70,11 +68,6 @@ public class StudentHomeActivity extends AppCompatActivity {
             }
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                 permissionsNeeded.add(Manifest.permission.BLUETOOTH_CONNECT);
-            }
-            // Android 14+ FGS Permission (Usually auto-granted but good to check)
-            if (Build.VERSION.SDK_INT >= 34) {
-                // Note: FOREGROUND_SERVICE_CONNECTED_DEVICE is a normal permission, not runtime,
-                // but checking prevents crashes on some custom ROMs
             }
 
             if (!permissionsNeeded.isEmpty()) {
@@ -130,19 +123,22 @@ public class StudentHomeActivity extends AppCompatActivity {
 
         btnScanAttendance = findViewById(R.id.btnScanAttendance);
         btnViewHistory = findViewById(R.id.btnViewHistory);
-        btnProfile = findViewById(R.id.btnViewProfile);
+        btnProfile = findViewById(R.id.btnViewProfile); // Make sure XML ID is btnViewProfile
 
         ivBeaconIcon = findViewById(R.id.ivBeaconIcon);
         ivProfile = findViewById(R.id.ivProfile);
 
+        // 1. Navigation to Profile
         btnProfile.setOnClickListener(v ->
                 startActivity(new Intent(this, ProfileActivity.class))
         );
 
+        // 2. Navigation to Attendance History (UPDATED)
         btnViewHistory.setOnClickListener(v ->
-                Toast.makeText(this, "Fetching Records...", Toast.LENGTH_SHORT).show()
+                startActivity(new Intent(this, AttendanceHistoryActivity.class))
         );
 
+        // 3. Icon click also goes to profile
         ivProfile.setOnClickListener(v ->
                 startActivity(new Intent(this, ProfileActivity.class))
         );
@@ -159,10 +155,13 @@ public class StudentHomeActivity extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences("UserSession", MODE_PRIVATE);
         String savedId = prefs.getString("device_fingerprint", "");
 
+        // Only check if we actually have a saved ID to compare against
         if (!savedId.isEmpty() && !savedId.equals(currentId)) {
             Toast.makeText(this, "Security Violation: Device ID Mismatch", Toast.LENGTH_LONG).show();
-            finishAffinity();
-            System.exit(0);
+            // Optional: Logout user
+            prefs.edit().clear().apply();
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
         }
     }
 }

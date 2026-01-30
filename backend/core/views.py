@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.db.models import Q
 from django.utils import timezone
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, update_session_auth_hash
 
 # REST API Imports
 from rest_framework.views import APIView
@@ -11,7 +11,6 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import update_session_auth_hash
 
 import io
 import csv
@@ -24,7 +23,7 @@ from .models import (
 )
 
 # =========================================
-# 1. AUTHENTICATION & ROUTING
+# 1. AUTHENTICATION & ROUTING (Web Portal)
 # =========================================
 def custom_login(request):
     if request.user.is_authenticated:
@@ -43,7 +42,7 @@ def dashboard_redirect(request):
     return redirect('/admin/')
 
 # =========================================
-# 2. TEACHER DASHBOARD
+# 2. TEACHER DASHBOARD (Web Portal)
 # =========================================
 @login_required
 def teacher_dashboard(request):
@@ -53,17 +52,20 @@ def teacher_dashboard(request):
     return render(request, 'dashboard.html', {'active_lectures': active_lectures, 'username': request.user.username})
 
 # =========================================
-# 3. STUDENT DASHBOARD
+# 3. STUDENT DASHBOARD (Web Portal)
 # =========================================
 @login_required
 def student_dashboard(request):
     if request.user.role != User.Role.STUDENT:
         return redirect('teacher_dashboard')
-    attendance_history = Attendance.objects.filter(student=request.user).order_by('-timestamp')
-    return render(request, 'student_dashboard.html', {'history': attendance_history, 'username': request.user.username})
+    
+    # 🔄 RENAMED VARIABLE TO AVOID CONFUSION WITH API
+    recent_logs = Attendance.objects.filter(student=request.user).order_by('-timestamp')
+    
+    return render(request, 'student_dashboard.html', {'history': recent_logs, 'username': request.user.username})
 
 # =========================================
-# 4. REGISTRAR MODULE
+# 4. REGISTRAR MODULE (Web Portal)
 # =========================================
 @login_required
 def manage_students(request):
@@ -82,7 +84,7 @@ def manage_students(request):
     return render(request, 'manage_students.html', {'students': students, 'search_query': query, 'username': request.user.username})
 
 # =========================================
-# 5. BULK UPLOAD LOGIC
+# 5. BULK UPLOAD LOGIC (Web Portal)
 # =========================================
 @login_required
 def bulk_upload_students(request):
@@ -151,7 +153,7 @@ def bulk_upload_students(request):
     return render(request, 'upload_students.html')
 
 # =========================================
-# 6. TIMETABLE
+# 6. TIMETABLE (Web Portal)
 # =========================================
 @login_required
 def manage_timetable(request):
@@ -181,7 +183,6 @@ def add_schedule(request):
 # =========================================
 # 7. IOT HARDWARE API (Room Scans Phone)
 # =========================================
-# ⚠️ I ADDED THIS BACK - THIS WAS CAUSING THE ERROR ⚠️
 class ESP32ScanView(APIView):
     """
     Receives data from ESP32 hardware scanners installed in rooms.
@@ -256,7 +257,6 @@ class ESP32ScanView(APIView):
 def mark_attendance(request):
     """
     Called by Android App when it detects a Classroom Beacon.
-    Payload: {"student_id": "roll_B069", "device_id": "ESP_MAC_ADDRESS"}
     """
     student_username = request.data.get('student_id')
     esp_mac_address = request.data.get('device_id')
@@ -293,7 +293,7 @@ def mark_attendance(request):
 
 
 # =========================================
-# 9. AUTHENTICATION API (Login, Profile & Logout)
+# 9. AUTHENTICATION & PROFILE API
 # =========================================
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -304,10 +304,8 @@ def app_login(request):
     username = request.data.get('username')
     password = request.data.get('password')
     
-    # 1. ROBUST KEY FETCH (Check both potential keys)
     incoming_fingerprint = request.data.get('device_fingerprint') or request.data.get('device_id')
     
-    # Clean whitespace if it exists
     if incoming_fingerprint:
         incoming_fingerprint = incoming_fingerprint.strip()
 
@@ -320,22 +318,18 @@ def app_login(request):
         if not user.is_active:
             return Response({"status": "error", "message": "Account disabled"}, status=403)
 
-        # =========================================================
-        # 🔍 DEBUGGING LOGS (Requested by App Team)
-        # =========================================================
+        # 🔍 DEBUGGING LOGS
         print(f"\n--- DEBUG LOGIN FINGERPRINT ---")
         print(f"Username: {user.username}")
         print(f"Stored DB Fingerprint: '{user.device_fingerprint}'")
         print(f"Incoming App Fingerprint: '{incoming_fingerprint}'")
         
-        # Check matching status
         match_status = "MATCH" if user.device_fingerprint == incoming_fingerprint else "MISMATCH"
         if user.device_fingerprint is None: match_status = "NEW DEVICE (Will Bind)"
         print(f"Status: {match_status}")
         print(f"-------------------------------\n")
-        # =========================================================
 
-        # 2. 🛡️ HARDWARE BINDING LOGIC
+        # 🛡️ HARDWARE BINDING LOGIC
         if incoming_fingerprint:
             # Case A: First time login (Bind the device)
             if user.device_fingerprint is None:
@@ -344,7 +338,6 @@ def app_login(request):
                 print(f"✅ Device Bound Successfully: {incoming_fingerprint}")
             
             # Case B: Device mismatch (Block the login)
-            # We strictly check: If DB has a value, and it doesn't match Incoming -> BLOCK
             elif user.device_fingerprint != incoming_fingerprint:
                 print(f"❌ BLOCKED: Stored '{user.device_fingerprint}' != Incoming '{incoming_fingerprint}'")
                 return Response({
@@ -352,7 +345,6 @@ def app_login(request):
                     "message": "Security Alert: This device is linked with another device."
                 }, status=403)
 
-        # 3. GENERATE TOKENS
         refresh = RefreshToken.for_user(user)
 
         return Response({
@@ -360,7 +352,7 @@ def app_login(request):
             "username": user.username,
             "role": user.role,
             "name": f"{user.first_name} {user.last_name}",
-            "email": user.email if user.phone_number else "",
+            "email": user.email if user.email else "",
             "phone_number": user.phone_number,
             "user_id": user.id,
             "device_fingerprint": user.device_fingerprint,
@@ -396,13 +388,11 @@ def update_profile(request):
         }
     })
 
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def change_password(request):
     """
     Allows a logged-in user to change their password.
-    Requires 'old_password' verification for security.
     """
     user = request.user
     data = request.data
@@ -410,29 +400,105 @@ def change_password(request):
     old_password = data.get('old_password')
     new_password = data.get('new_password')
 
-    # 1. Validate Input
     if not old_password or not new_password:
-        return Response({
-            "status": "error",
-            "message": "Both old and new passwords are required."
-        }, status=400)
+        return Response({"status": "error", "message": "Both passwords required."}, status=400)
 
-    # 2. Verify Old Password
     if not user.check_password(old_password):
-        return Response({
-            "status": "error",
-            "message": "Wrong old password."
-        }, status=400)
+        return Response({"status": "error", "message": "Wrong old password."}, status=400)
 
-    # 3. Set New Password (Handles hashing automatically)
     user.set_password(new_password)
     user.save()
 
-    # 4. Keep User Logged In (For Session Auth) / Optional for JWT
-    # This prevents the current session from being invalidated immediately
+    # Prevent logout
     update_session_auth_hash(request, user)
 
+    return Response({"status": "success", "message": "Password changed successfully"})
+
+# =========================================
+# 10. NEW FEATURE: ATTENDANCE REPORT CARD
+# =========================================
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def attendance_history(request):
+    """
+    Returns comprehensive attendance stats for ALL subjects in the current semester.
+    Handles 'Zero-State' (courses with no lectures yet) to prevent App crashes.
+    """
+    
+    user = request.user
+    
+    # 1. Get Student Profile to find Batch/Semester
+    try:
+        profile = user.student_profile
+    except StudentProfile.DoesNotExist:
+        return Response({"status": "error", "message": "Student profile not found"}, status=404)
+
+    # 2. Fetch All Courses for Student's Current Semester
+    # We filter by Department AND Semester to get the exact subject list.
+    courses = Course.objects.filter(
+        department=profile.department, 
+        semester=profile.current_semester
+    )
+
+    history_data = []
+    overall_present = 0
+    overall_total_lectures = 0
+
+    # 3. Iterate & Calculate Stats per Course
+    for course in courses:
+        # A. Total COMPLETED Lectures (is_active=False)
+        total_lectures = Lecture.objects.filter(course=course, is_active=False).count()
+        
+        # B. Present Count for this Student
+        present_count = Attendance.objects.filter(
+            student=user, 
+            lecture__course=course, 
+            status='PRESENT'
+        ).count()
+
+        # C. Percentage Logic (Safe Division)
+        if total_lectures > 0:
+            percentage = (present_count / total_lectures) * 100
+        else:
+            percentage = 0.0
+
+        # D. Teacher Name Lookup
+        teacher_name = "Not Allocated"
+        timetable_entry = TimeTable.objects.filter(course=course).first()
+        
+        if timetable_entry:
+            teacher_name = timetable_entry.teacher.get_full_name()
+        else:
+            last_lecture = Lecture.objects.filter(course=course).first()
+            if last_lecture:
+                teacher_name = last_lecture.teacher.get_full_name()
+
+        # Add to list
+        history_data.append({
+            "subject_name": course.name,
+            "subject_code": course.code,
+            "teacher_name": teacher_name,
+            "present": present_count,
+            "total": total_lectures,
+            "percentage": round(percentage, 1)
+        })
+
+        # Update Overall Stats
+        overall_present += present_count
+        overall_total_lectures += total_lectures
+
+    # 4. Final Overall Calculation
+    if overall_total_lectures > 0:
+        overall_percentage = (overall_present / overall_total_lectures) * 100
+    else:
+        overall_percentage = 0.0
+
+    # 5. Build Final JSON Response
     return Response({
         "status": "success",
-        "message": "Password changed successfully"
+        "semester": str(profile.current_semester), # e.g. "Semester 5"
+        "overall_percentage": round(overall_percentage, 1),
+        "overall_present": overall_present,
+        "overall_total": overall_total_lectures,
+        "history": history_data
     })

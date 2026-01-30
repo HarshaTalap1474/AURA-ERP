@@ -8,7 +8,8 @@ from .views import (
     bulk_upload_students,
     manage_timetable,
     add_schedule,
-    app_login,  # <--- ADD THIS HERE
+    app_login,
+    update_profile,
 )
 
 urlpatterns = [
@@ -25,4 +26,5 @@ urlpatterns = [
     path('registrar/upload/', bulk_upload_students, name='upload_students'),
     path('schedule/', manage_timetable, name='manage_timetable'),
     path('schedule/add/', add_schedule, name='add_schedule'),
+    path('profile/update/', update_profile, name='update_profile'),
 ]

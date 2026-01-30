@@ -27,33 +27,32 @@ class User(AbstractUser):
     )
 
 # ==========================================
-# 2. ACADEMIC STRUCTURE (The Hierarchy)
+# 2. ACADEMIC STRUCTURE
 # ==========================================
 class Department(models.Model):
-    name = models.CharField(max_length=100)  # e.g., "Computer Science"
-    code = models.CharField(max_length=10, unique=True)  # e.g., "CSE"
+    name = models.CharField(max_length=100)
+    code = models.CharField(max_length=10, unique=True)
 
     def __str__(self):
         return self.name
 
 class Batch(models.Model):
-    year = models.IntegerField()  # e.g., 2025 (Graduation Year)
+    year = models.IntegerField()
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.department.code} - {self.year}"
 
 class Semester(models.Model):
-    number = models.IntegerField()  # e.g., 5
-    is_active = models.BooleanField(default=False)  # Only one sem is active per batch usually
+    number = models.IntegerField()
+    is_active = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Semester {self.number}"
 
 class Classroom(models.Model):
-    room_number = models.CharField(max_length=20, unique=True) # e.g., "101"
+    room_number = models.CharField(max_length=20, unique=True)
     capacity = models.IntegerField(default=60)
-    
     # IoT Link: The ESP32 Device ID installed in this room
     esp_device_id = models.CharField(max_length=50, unique=True, null=True, blank=True)
 
@@ -61,8 +60,8 @@ class Classroom(models.Model):
         return f"Room {self.room_number}"
 
 class Course(models.Model):
-    name = models.CharField(max_length=100) # e.g., "Data Structures"
-    code = models.CharField(max_length=20, unique=True) # e.g., "CS301"
+    name = models.CharField(max_length=100)
+    code = models.CharField(max_length=20, unique=True)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
 
@@ -70,15 +69,15 @@ class Course(models.Model):
         return f"{self.code} - {self.name}"
 
 # ==========================================
-# 3. PROFILES (The Humans)
+# 3. PROFILES
 # ==========================================
 class StudentProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='student_profile')
-    roll_no = models.CharField(max_length=20, unique=True) # e.g., "2526B069"
+    roll_no = models.CharField(max_length=20, unique=True)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
     batch = models.ForeignKey(Batch, on_delete=models.CASCADE)
     current_semester = models.ForeignKey(Semester, on_delete=models.SET_NULL, null=True)
-    division = models.CharField(max_length=5, default="A") # e.g., "A", "B"
+    division = models.CharField(max_length=5, default="A")
 
     def __str__(self):
         return f"{self.roll_no} ({self.user.username})"
@@ -92,7 +91,7 @@ class TeacherProfile(models.Model):
         return self.user.get_full_name()
 
 # ==========================================
-# 4. SCHEDULING (The Brain)
+# 4. SCHEDULING
 # ==========================================
 class TimeTable(models.Model):
     DAYS_OF_WEEK = [
@@ -106,24 +105,19 @@ class TimeTable(models.Model):
     
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE)
-    teacher = models.ForeignKey(User, on_delete=models.CASCADE) # The teacher taking this specific slot
-    
-    division = models.CharField(max_length=5, default="A") # Which div attends this?
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE)
+    division = models.CharField(max_length=5, default="A")
 
     class Meta:
-        unique_together = ('day_of_week', 'start_time', 'classroom') # Prevent double booking rooms
+        unique_together = ('day_of_week', 'start_time', 'classroom')
 
     def __str__(self):
         return f"{self.get_day_of_week_display()} {self.start_time} - {self.course.code}"
 
 # ==========================================
-# 5. OPERATIONS (The IoT Engine)
+# 5. OPERATIONS (IoT Engine)
 # ==========================================
 class Lecture(models.Model):
-    """
-    An actual instance of a class that happened.
-    Can be auto-generated from TimeTable or manually started.
-    """
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE)
     teacher = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -131,8 +125,6 @@ class Lecture(models.Model):
     start_time = models.DateTimeField(auto_now_add=True)
     end_time = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
-    
-    # Security Token for this specific session (Anti-Spoofing)
     session_token = models.CharField(max_length=100, default=uuid.uuid4, unique=True)
 
     def __str__(self):
@@ -140,23 +132,21 @@ class Lecture(models.Model):
 
 class Attendance(models.Model):
     STATUS_CHOICES = [
-        ('PRESENT', 'Present'),
-        ('ABSENT', 'Absent'),
-        ('LATE', 'Late'),
-        ('EXCUSED', 'On Duty/Medical')
+        ('PRESENT', 'Present'), ('ABSENT', 'Absent'),
+        ('LATE', 'Late'), ('EXCUSED', 'On Duty/Medical')
     ]
     
+    # ⚠️ LINKED TO USER, NOT PROFILE (Simplifies Login Logic)
     student = models.ForeignKey(User, on_delete=models.CASCADE)
     lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE, related_name='attendance_records')
     timestamp = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PRESENT')
     
-    # Audit: How was this marked?
-    device_id = models.CharField(max_length=50, null=True, blank=True) # ESP ID
-    is_manual_override = models.BooleanField(default=False) # Did teacher manually mark it?
+    device_id = models.CharField(max_length=50, null=True, blank=True)
+    is_manual_override = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ('student', 'lecture') # Student can't be present twice in one class
+        unique_together = ('student', 'lecture')
 
     def __str__(self):
         return f"{self.student.username} - {self.status}"

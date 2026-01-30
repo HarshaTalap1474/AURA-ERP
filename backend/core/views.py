@@ -1,55 +1,37 @@
-# core/views.py
-
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponse
+from django.http import HttpResponse
 from django.db.models import Q
+from django.utils import timezone
+from django.contrib.auth import authenticate
+
+# REST API Imports
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from django.views.decorators.csrf import csrf_exempt
-import uuid
+from rest_framework_simplejwt.tokens import RefreshToken
+
 import io
 import csv
-from django.contrib.auth import authenticate
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-
+import uuid
 
 # ✅ IMPORT THE MODELS
 from .models import (
-    User, 
-    StudentProfile, 
-    TeacherProfile, 
-    Department, 
-    Batch,
-    Semester,
-    Course,       
-    Classroom,    
-    Lecture, 
-    Attendance,
-    TimeTable
+    User, StudentProfile, TeacherProfile, Department, Batch, Semester,
+    Course, Classroom, Lecture, Attendance, TimeTable
 )
 
 # =========================================
 # 1. AUTHENTICATION & ROUTING
 # =========================================
 def custom_login(request):
-    """
-    Temporary Login Redirect. 
-    In the future, we will put a custom login page here.
-    """
     if request.user.is_authenticated:
         return dashboard_redirect(request)
     return redirect('/admin/')
 
 @login_required
 def dashboard_redirect(request):
-    """
-    Smart Router: Sends user to the right dashboard based on Role.
-    """
     user = request.user
     if user.role == User.Role.TEACHER:
         return redirect('teacher_dashboard')
@@ -57,8 +39,6 @@ def dashboard_redirect(request):
         return redirect('student_dashboard')
     elif user.role == User.Role.ADMIN:
         return redirect('/admin/')
-    
-    # Default fallback
     return redirect('/admin/')
 
 # =========================================
@@ -66,148 +46,92 @@ def dashboard_redirect(request):
 # =========================================
 @login_required
 def teacher_dashboard(request):
-    # Security: Only allow Teachers
     if request.user.role != User.Role.TEACHER:
         return redirect('student_dashboard')
-
-    # Get Active Lectures for this teacher
     active_lectures = Lecture.objects.filter(teacher=request.user, is_active=True)
-    
-    context = {
-        'active_lectures': active_lectures,
-        'username': request.user.username
-    }
-    return render(request, 'dashboard.html', context)
+    return render(request, 'dashboard.html', {'active_lectures': active_lectures, 'username': request.user.username})
 
 # =========================================
 # 3. STUDENT DASHBOARD
 # =========================================
 @login_required
 def student_dashboard(request):
-    # Security: Only allow Students
     if request.user.role != User.Role.STUDENT:
         return redirect('teacher_dashboard')
-
     attendance_history = Attendance.objects.filter(student=request.user).order_by('-timestamp')
-    
-    context = {
-        'history': attendance_history,
-        'username': request.user.username
-    }
-    return render(request, 'student_dashboard.html', context)
+    return render(request, 'student_dashboard.html', {'history': attendance_history, 'username': request.user.username})
 
 # =========================================
-# 4. REGISTRAR MODULE (Manage Students)
+# 4. REGISTRAR MODULE
 # =========================================
 @login_required
 def manage_students(request):
-    # Security: Only Teachers or Admins can access this
     if request.user.role == User.Role.STUDENT:
         return redirect('student_dashboard')
 
     query = request.GET.get('q')
-    
-    # Efficiently fetch students with related info
     students = StudentProfile.objects.select_related('user', 'department', 'batch', 'current_semester').all().order_by('roll_no')
-    
-    # Search Logic
+
     if query:
         students = students.filter(
             Q(roll_no__icontains=query) | 
             Q(user__first_name__icontains=query) | 
             Q(user__last_name__icontains=query)
         )
-
-    context = {
-        'students': students, 
-        'search_query': query,
-        'username': request.user.username
-    }
-    return render(request, 'manage_students.html', context)
+    return render(request, 'manage_students.html', {'students': students, 'search_query': query, 'username': request.user.username})
 
 # =========================================
-# 5. BULK UPLOAD LOGIC (The Fix)
+# 5. BULK UPLOAD LOGIC
 # =========================================
 @login_required
 def bulk_upload_students(request):
-    # Security Check
     if request.user.role == User.Role.STUDENT:
         return redirect('student_dashboard')
 
     if request.method == "POST":
         try:
             csv_file = request.FILES['file']
-            
-            # 1. Basic Validation
             if not csv_file.name.endswith('.csv'):
                 return HttpResponse("Error: Please upload a .csv file.")
 
-            # 2. Read File safely
             data_set = csv_file.read().decode('UTF-8')
             io_string = io.StringIO(data_set)
+            next(io_string, None) # Skip Header
             
-            # Skip Header Row
-            next(io_string, None) 
-            
-            created_count = 0
             errors = []
             
             for index, row in enumerate(csv.reader(io_string, delimiter=',', quotechar="|")):
                 try:
-                    # Skip empty rows
-                    if not row or len(row) < 6:
-                        continue
-
-                    # 3. CLEAN DATA (Strip spaces)
+                    if not row or len(row) < 6: continue
+                    
                     roll_no = row[0].strip()
                     first_name = row[1].strip()
                     last_name = row[2].strip()
                     dept_code = row[3].strip()
-                    batch_year_str = row[4].strip() # Keep as string first
+                    batch_year_str = row[4].strip()
                     division = row[5].strip()
 
-                    # 4. CONVERT YEAR TO INT (Critical Fix)
                     try:
                         batch_year = int(batch_year_str)
                     except ValueError:
                         errors.append(f"Row {index+2}: Year '{batch_year_str}' must be a number.")
                         continue
 
-                    # 5. GET LINKED MODELS (Department & Batch)
                     try:
                         dept = Department.objects.get(code=dept_code)
                     except Department.DoesNotExist:
-                        errors.append(f"Row {index+2}: Department '{dept_code}' does not exist.")
+                        errors.append(f"Row {index+2}: Dept '{dept_code}' not found.")
                         continue
 
                     try:
                         batch = Batch.objects.get(year=batch_year, department=dept)
                     except Batch.DoesNotExist:
-                        errors.append(f"Row {index+2}: Batch '{batch_year}' for '{dept_code}' not found. Create it in Admin first.")
+                        errors.append(f"Row {index+2}: Batch '{batch_year}' not found.")
                         continue
 
-                    # 6. CREATE USER & PROFILE
                     if not User.objects.filter(username=roll_no).exists():
-                        # Create User
-                        user = User.objects.create_user(
-                            username=roll_no, 
-                            password=roll_no, # Default password is Roll No
-                            first_name=first_name, 
-                            last_name=last_name,
-                            role=User.Role.STUDENT
-                        )
-                        
-                        # Create Profile
-                        StudentProfile.objects.create(
-                            user=user,
-                            roll_no=roll_no,
-                            department=dept,
-                            batch=batch,
-                            division=division,
-                            # Assign to first active semester found
-                            current_semester=Semester.objects.filter(is_active=True).first()
-                        )
-                        created_count += 1
+                        user = User.objects.create_user(username=roll_no, password=roll_no, first_name=first_name, last_name=last_name, role=User.Role.STUDENT)
+                        StudentProfile.objects.create(user=user, roll_no=roll_no, department=dept, batch=batch, division=division, current_semester=Semester.objects.filter(is_active=True).first())
                     else:
                         print(f"Skipping {roll_no}: Already exists.")
 
@@ -215,12 +139,8 @@ def bulk_upload_students(request):
                     errors.append(f"Row {index+2}: Error - {str(inner_e)}")
                     continue
             
-            # Debugging: Print errors to terminal
             if errors:
-                print("--- UPLOAD ERRORS ---")
-                for err in errors:
-                    print(err)
-                print("---------------------")
+                for err in errors: print(err)
 
             return redirect('manage_students')
 
@@ -230,70 +150,43 @@ def bulk_upload_students(request):
     return render(request, 'upload_students.html')
 
 # =========================================
-# 6. SCHEDULER MODULE (Timetable)
+# 6. TIMETABLE
 # =========================================
 @login_required
 def manage_timetable(request):
-    # Only Teachers/Admins
     if request.user.role == User.Role.STUDENT:
         return redirect('student_dashboard')
-
-    # Grouping logic: We want to see the schedule day by day
-    # 0=Monday, 1=Tuesday...
-    days = {
-        0: 'Monday', 1: 'Tuesday', 2: 'Wednesday', 
-        3: 'Thursday', 4: 'Friday', 5: 'Saturday'
-    }
-    
+    days = {0: 'Monday', 1: 'Tuesday', 2: 'Wednesday', 3: 'Thursday', 4: 'Friday', 5: 'Saturday'}
     timetable = TimeTable.objects.select_related('course', 'classroom', 'teacher').order_by('day_of_week', 'start_time')
-
     return render(request, 'manage_timetable.html', {'timetable': timetable, 'days': days})
 
 @login_required
 def add_schedule(request):
-    """
-    Simple form to add a new class slot.
-    In a real app, we would use Django Forms, but let's keep it raw HTML for clarity.
-    """
     if request.user.role == User.Role.STUDENT:
         return redirect('student_dashboard')
-
     if request.method == "POST":
-        day = request.POST.get('day')
-        start_time = request.POST.get('start_time')
-        end_time = request.POST.get('end_time')
-        course_id = request.POST.get('course_id')
-        room_id = request.POST.get('room_id')
-        
-        # Create the slot
         TimeTable.objects.create(
-            day_of_week=day,
-            start_time=start_time,
-            end_time=end_time,
-            course_id=course_id,
-            classroom_id=room_id,
-            teacher=request.user # Assigning the current logged-in teacher
+            day_of_week=request.POST.get('day'),
+            start_time=request.POST.get('start_time'),
+            end_time=request.POST.get('end_time'),
+            course_id=request.POST.get('course_id'),
+            classroom_id=request.POST.get('room_id'),
+            teacher=request.user
         )
         return redirect('manage_timetable')
-
-    # Pass data for dropdowns
-    courses = Course.objects.all()
-    rooms = Classroom.objects.all()
     
-    return render(request, 'add_schedule.html', {'courses': courses, 'rooms': rooms})
+    return render(request, 'add_schedule.html', {'courses': Course.objects.all(), 'rooms': Classroom.objects.all()})
 
 # =========================================
-# 7. API (The IoT Brain)
+# 7. IOT HARDWARE API (Room Scans Phone)
 # =========================================
-from django.utils import timezone
-import datetime
-
+# ⚠️ I ADDED THIS BACK - THIS WAS CAUSING THE ERROR ⚠️
 class ESP32ScanView(APIView):
     """
-    Receives data from ESP32 and marks attendance automatically.
+    Receives data from ESP32 hardware scanners installed in rooms.
     Payload: {"device_id": "ESP_ROOM_101", "scans": ["2526B069", "2526B070"]}
     """
-    permission_classes = [] # Allow ESP32 to hit this without login (API Key used instead)
+    permission_classes = [] # Allow hardware to hit this without login
 
     def post(self, request):
         data = request.data
@@ -303,122 +196,162 @@ class ESP32ScanView(APIView):
         if not esp_id or not scanned_ids:
             return Response({"error": "Missing device_id or scans"}, status=400)
 
-        # 1. IDENTIFY THE ROOM
+        # 1. Identify Room
         try:
             classroom = Classroom.objects.get(esp_device_id=esp_id)
         except Classroom.DoesNotExist:
-            return Response({"error": f"Device {esp_id} not registered to any room"}, status=404)
+            return Response({"error": f"Device {esp_id} not registered"}, status=404)
 
-        # 2. FIND ACTIVE LECTURE (Smart Check)
-        # Option A: Is there a manually started class?
+        # 2. Find Active Lecture (or Auto-Start)
         active_lecture = Lecture.objects.filter(classroom=classroom, is_active=True).first()
 
-        # Option B: If not, check the TIMETABLE and AUTO-START it (Automation!)
         if not active_lecture:
             now = timezone.localtime(timezone.now())
-            current_time = now.time()
-            current_day = now.weekday() # 0=Monday, 6=Sunday
-
             timetable_slot = TimeTable.objects.filter(
                 classroom=classroom,
-                day_of_week=current_day,
-                start_time__lte=current_time,
-                end_time__gte=current_time
+                day_of_week=now.weekday(),
+                start_time__lte=now.time(),
+                end_time__gte=now.time()
             ).first()
 
             if timetable_slot:
-                # Auto-create the lecture instance
                 active_lecture = Lecture.objects.create(
                     course=timetable_slot.course,
                     classroom=timetable_slot.classroom,
                     teacher=timetable_slot.teacher,
                     is_active=True
                 )
-                print(f"✅ AUTO-STARTED Class: {active_lecture}")
             else:
-                return Response({"message": "No class scheduled right now. Scans ignored."}, status=200)
+                return Response({"message": "No class scheduled. Scans ignored."}, status=200)
 
-        # 3. MARK ATTENDANCE
+        # 3. Mark Attendance
         marked_count = 0
         for roll_no in scanned_ids:
             try:
-                # Find the student user by Roll No (Username)
+                # Find User by Username (Roll No)
                 student_user = User.objects.get(username=roll_no)
                 
-                # Create Attendance Record (if not exists)
+                # Link to USER, not StudentProfile
                 obj, created = Attendance.objects.get_or_create(
                     student=student_user,
                     lecture=active_lecture,
                     defaults={'status': 'PRESENT', 'device_id': esp_id}
                 )
-                if created:
-                    marked_count += 1
+                if created: marked_count += 1
             except User.DoesNotExist:
-                print(f"⚠️ Unknown Student ID scanned: {roll_no}")
                 continue
 
         return Response({
             "status": "success",
             "class": active_lecture.course.name,
-            "marked_new": marked_count,
-            "total_present": active_lecture.attendance_records.count()
+            "marked_new": marked_count
         })
-        
 
 # =========================================
-# 7. AUTHENTICATION API (Mobile Login)
+# 8. ANDROID API (Phone Scans Room)
+# =========================================
+@api_view(['POST'])
+@permission_classes([AllowAny]) 
+def mark_attendance(request):
+    """
+    Called by Android App when it detects a Classroom Beacon.
+    Payload: {"student_id": "roll_B069", "device_id": "ESP_MAC_ADDRESS"}
+    """
+    student_username = request.data.get('student_id')
+    esp_mac_address = request.data.get('device_id')
+
+    if not student_username or not esp_mac_address:
+        return Response({"status": "error", "message": "Missing data"}, status=400)
+
+    try:
+        classroom = Classroom.objects.get(esp_device_id__iexact=esp_mac_address)
+    except Classroom.DoesNotExist:
+        return Response({"status": "error", "message": "Invalid Classroom Beacon"}, status=404)
+
+    try:
+        current_lecture = Lecture.objects.get(classroom=classroom, is_active=True)
+    except Lecture.DoesNotExist:
+        return Response({"status": "error", "message": "No active class here."}, status=404)
+
+    try:
+        user = User.objects.get(username=student_username)
+    except User.DoesNotExist:
+        return Response({"status": "error", "message": "Student not found"}, status=404)
+
+    if Attendance.objects.filter(student=user, lecture=current_lecture).exists():
+        return Response({"status": "warning", "message": "Attendance already marked!"})
+
+    Attendance.objects.create(
+        student=user,
+        lecture=current_lecture,
+        status='PRESENT',
+        device_id=esp_mac_address
+    )
+
+    return Response({"status": "success", "message": f"Present marked for {current_lecture.course.code}!"})
+
+
+# =========================================
+# 9. AUTHENTICATION API (Login & Profile)
 # =========================================
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def app_login(request):
-    """
-    Secure Login with Hardware Binding.
-    Enforces 'One User, One Device' policy.
-    """
     username = request.data.get('username')
     password = request.data.get('password')
-    device_id = request.data.get('device_id') # <--- New Parameter from App
+    device_id = request.data.get('device_id') 
 
     if not username or not password:
         return Response({"status": "error", "message": "Credentials missing"}, status=400)
 
-    # 1. Standard Authentication
     user = authenticate(username=username, password=password)
 
     if user is not None:
         if not user.is_active:
             return Response({"status": "error", "message": "Account disabled"}, status=403)
 
-        # 2. 🛡️ HARDWARE BINDING CHECK
         if device_id:
-            # Case A: First time login (Bind the device)
             if user.device_fingerprint is None:
                 user.device_fingerprint = device_id
                 user.save()
-                print(f"🔒 Device Bound: User {user.username} linked to {device_id}")
-
-            # Case B: Device mismatch (Block the login)
             elif user.device_fingerprint != device_id:
-                print(f"🚨 Security Alert: User {user.username} tried login from unauthorized device {device_id}")
-                return Response({
-                    "status": "error", 
-                    "message": "Security Alert: This account is linked to another device. Contact Admin to reset."
-                }, status=403)
-            
-            # Case C: Device matches (Allow login) -> Proceed below
-        else:
-            # Optional: Decide if you want to block logins that don't send a device_id (e.g., Postman attacks)
-            # For now, we allow it but log a warning
-            print(f"⚠️ Warning: Login without Device ID for {user.username}")
+                return Response({"status": "error", "message": "Security Alert: Linked to another device."}, status=403)
+        
+        refresh = RefreshToken.for_user(user)
 
-        # 3. Success Response
         return Response({
             "status": "success",
             "username": user.username,
             "role": user.role,
             "name": f"{user.first_name} {user.last_name}",
             "user_id": user.id,
-            "device_bound": True if user.device_fingerprint else False
+            "device_fingerprint": user.device_fingerprint,
+            "access_token": str(refresh.access_token),
+            "refresh_token": str(refresh)
         })
     else:
         return Response({"status": "error", "message": "Invalid credentials"}, status=401)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def update_profile(request):
+    user = request.user
+    data = request.data
+
+    if 'first_name' in data: user.first_name = data['first_name']
+    if 'last_name' in data: user.last_name = data['last_name']
+    if 'email' in data: user.email = data['email']
+    if 'phone_number' in data: user.phone_number = data['phone_number']
+
+    user.save()
+
+    return Response({
+        "status": "success",
+        "message": "Profile updated",
+        "user": {
+            "name": f"{user.first_name} {user.last_name}",
+            "email": user.email,
+            "phone": user.phone_number,
+            "username": user.username
+        }
+    })

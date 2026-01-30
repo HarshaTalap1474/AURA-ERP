@@ -297,9 +297,18 @@ def mark_attendance(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def app_login(request):
+    """
+    Secure Login with Debugging for Hardware Lock Issues.
+    """
     username = request.data.get('username')
     password = request.data.get('password')
-    device_id = request.data.get('device_id') 
+    
+    # 1. ROBUST KEY FETCH (Check both potential keys)
+    incoming_fingerprint = request.data.get('device_fingerprint') or request.data.get('device_id')
+    
+    # Clean whitespace if it exists
+    if incoming_fingerprint:
+        incoming_fingerprint = incoming_fingerprint.strip()
 
     if not username or not password:
         return Response({"status": "error", "message": "Credentials missing"}, status=400)
@@ -310,13 +319,39 @@ def app_login(request):
         if not user.is_active:
             return Response({"status": "error", "message": "Account disabled"}, status=403)
 
-        if device_id:
-            if user.device_fingerprint is None:
-                user.device_fingerprint = device_id
-                user.save()
-            elif user.device_fingerprint != device_id:
-                return Response({"status": "error", "message": "Security Alert: Linked to another device."}, status=403)
+        # =========================================================
+        # 🔍 DEBUGGING LOGS (Requested by App Team)
+        # =========================================================
+        print(f"\n--- DEBUG LOGIN FINGERPRINT ---")
+        print(f"Username: {user.username}")
+        print(f"Stored DB Fingerprint: '{user.device_fingerprint}'")
+        print(f"Incoming App Fingerprint: '{incoming_fingerprint}'")
         
+        # Check matching status
+        match_status = "MATCH" if user.device_fingerprint == incoming_fingerprint else "MISMATCH"
+        if user.device_fingerprint is None: match_status = "NEW DEVICE (Will Bind)"
+        print(f"Status: {match_status}")
+        print(f"-------------------------------\n")
+        # =========================================================
+
+        # 2. 🛡️ HARDWARE BINDING LOGIC
+        if incoming_fingerprint:
+            # Case A: First time login (Bind the device)
+            if user.device_fingerprint is None:
+                user.device_fingerprint = incoming_fingerprint
+                user.save()
+                print(f"✅ Device Bound Successfully: {incoming_fingerprint}")
+            
+            # Case B: Device mismatch (Block the login)
+            # We strictly check: If DB has a value, and it doesn't match Incoming -> BLOCK
+            elif user.device_fingerprint != incoming_fingerprint:
+                print(f"❌ BLOCKED: Stored '{user.device_fingerprint}' != Incoming '{incoming_fingerprint}'")
+                return Response({
+                    "status": "error", 
+                    "message": "Security Alert: This device is linked with another device."
+                }, status=403)
+
+        # 3. GENERATE TOKENS
         refresh = RefreshToken.for_user(user)
 
         return Response({
@@ -324,13 +359,17 @@ def app_login(request):
             "username": user.username,
             "role": user.role,
             "name": f"{user.first_name} {user.last_name}",
+            "email": user.email if user.phone_number else "",
+            "phone_number": user.phone_number,
             "user_id": user.id,
             "device_fingerprint": user.device_fingerprint,
             "access_token": str(refresh.access_token),
             "refresh_token": str(refresh)
         })
+
     else:
         return Response({"status": "error", "message": "Invalid credentials"}, status=401)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

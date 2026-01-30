@@ -52,7 +52,10 @@
             android:src="@drawable/ic_person"
             android:background="@drawable/circle_background_white"
             android:padding="12dp"
-            android:contentDescription="@string/profile_icon"/>
+            android:contentDescription="@string/profile_icon"
+            android:clickable="true"
+            android:focusable="true" />
+
     </LinearLayout>
 
     <!-- Main Content -->

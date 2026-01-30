@@ -21,9 +21,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class LoginActivity extends AppCompatActivity {
-
-    // Ensure this IP matches your local Django server
-    private static final String API_URL = "https://cleared-forums-commission-based.trycloudflare.com/api/auth/login/";
     private EditText etUsername, etPassword;
     private Button btnLogin;
     private ProgressBar progressBar;
@@ -83,7 +80,7 @@ public class LoginActivity extends AppCompatActivity {
 
         JsonObjectRequest request = new JsonObjectRequest(
                 Request.Method.POST,
-                API_URL,
+                NetworkConfig.URL_LOGIN,
                 payload,
                 this::handleLoginSuccess,
                 error -> handleLoginError(error)
@@ -93,25 +90,43 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void handleLoginSuccess(JSONObject response) {
-        showLoading(false);
-
         try {
             String role = response.getString("role");
             String name = response.getString("name");
+            String token = response.getString("access_token");
+            String email = response.optString("email", "");
+            String phone = response.optString("phone", "");
+            if (phone.isEmpty()) {
+                phone = response.optString("phone_number", "");
+            }
 
-            // Server might return the fingerprint it saved
-            String serverFingerprint = response.optString("device_fingerprint", "");
-
-            // [5] Save session including the Hardware ID
-            saveSession(role, name, serverFingerprint);
-
-            Toast.makeText(this, "Device Verified. Welcome " + name, Toast.LENGTH_SHORT).show();
+            SharedPreferences prefs = getSharedPreferences("UserSession", MODE_PRIVATE);
+            prefs.edit()
+                    .putString("username", etUsername.getText().toString().trim())
+                    .putString("role", role)
+                    .putString("name", name)
+                    .putString("access_token", token)
+                    .putString("email", email)
+                    .putString("phone", phone) // Now this should have data
+                    .apply();
 
             navigateByRole(role);
 
         } catch (JSONException e) {
-            Toast.makeText(this, "Response parsing error", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Login Parsing Error", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    // Update signature to accept token
+    private void saveSession(String role, String name, String deviceId, String token) {
+        SharedPreferences prefs = getSharedPreferences("UserSession", MODE_PRIVATE);
+        prefs.edit()
+                .putString("username", etUsername.getText().toString().trim())
+                .putString("role", role)
+                .putString("name", name)
+                .putString("device_fingerprint", deviceId)
+                .putString("access_token", token) // 💾 SAVE IT!
+                .apply();
     }
 
     private void handleLoginError(com.android.volley.VolleyError error) {

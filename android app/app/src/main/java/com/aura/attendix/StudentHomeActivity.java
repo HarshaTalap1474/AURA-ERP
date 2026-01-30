@@ -25,9 +25,8 @@ import java.util.Map;
 public class StudentHomeActivity extends AppCompatActivity {
 
     private TextView tvWelcomeName, tvUsername, tvStatus;
-    private Button btnScanAttendance, btnViewHistory;
-    private ImageView ivBeaconIcon;
-
+    private Button btnScanAttendance, btnViewHistory, btnProfile;
+    private ImageView ivBeaconIcon, ivProfile;
     private boolean isServiceRunning = false;
 
     // Permission Launcher
@@ -58,6 +57,7 @@ public class StudentHomeActivity extends AppCompatActivity {
 
         // Button Logic: Check Permissions FIRST, then start service
         btnScanAttendance.setOnClickListener(v -> checkPermissionsAndToggle());
+        // Inside initViews() or onCreate()
     }
 
     private void checkPermissionsAndToggle() {
@@ -127,13 +127,25 @@ public class StudentHomeActivity extends AppCompatActivity {
         tvWelcomeName = findViewById(R.id.tvWelcomeName);
         tvUsername = findViewById(R.id.tvUsername);
         tvStatus = findViewById(R.id.tvStatus);
+
         btnScanAttendance = findViewById(R.id.btnScanAttendance);
         btnViewHistory = findViewById(R.id.btnViewHistory);
-        ivBeaconIcon = findViewById(R.id.ivBeaconIcon);
+        btnProfile = findViewById(R.id.btnViewProfile);
 
-        btnViewHistory.setOnClickListener(v -> {
-            Toast.makeText(this, "Fetching Records...", Toast.LENGTH_SHORT).show();
-        });
+        ivBeaconIcon = findViewById(R.id.ivBeaconIcon);
+        ivProfile = findViewById(R.id.ivProfile);
+
+        btnProfile.setOnClickListener(v ->
+                startActivity(new Intent(this, ProfileActivity.class))
+        );
+
+        btnViewHistory.setOnClickListener(v ->
+                Toast.makeText(this, "Fetching Records...", Toast.LENGTH_SHORT).show()
+        );
+
+        ivProfile.setOnClickListener(v ->
+                startActivity(new Intent(this, ProfileActivity.class))
+        );
     }
 
     private void loadERPProfile() {

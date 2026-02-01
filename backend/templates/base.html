@@ -6,16 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Aura ERP{% endblock %}</title>
 
-    <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon' %}">
+    <link rel="icon" type="image/png" href="https://i.ibb.co/M5V9nb1g/Attendix.jpg">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     
     <style>
-        body { background-color: #f8f9fa; }
+        body { background-color: #f8f9fa; display: flex; flex-direction: column; min-height: 100vh; }
         .navbar-brand { font-weight: bold; letter-spacing: 1px; }
-        .main-content { min-height: 80vh; padding: 20px 0; }
+        .main-content { flex: 1; padding: 20px 0; }
+        footer { margin-top: auto; }
     </style>
 </head>
 <body>
@@ -47,13 +48,17 @@
                             <a class="nav-link dropdown-toggle text-white fw-bold" href="#" role="button" data-bs-toggle="dropdown">
                                 {{ user.username }}
                             </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="/admin/logout/">Logout</a></li>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                {% if user.is_staff %}
+                                    <li><a class="dropdown-item text-secondary" href="/admin/">System Database</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                {% endif %}
+                                <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">Logout</a></li>
                             </ul>
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link text-white" href="/admin/login/">Login</a>
+                            <a class="btn btn-outline-light ms-lg-3" href="{% url 'login' %}">Login</a>
                         </li>
                     {% endif %}
                 </ul>
@@ -64,18 +69,17 @@
     <div class="container main-content">
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
                     {{ message }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             {% endfor %}
         {% endif %}
 
-        {% block content %}
-        {% endblock %}
+        {% block content %}{% endblock %}
     </div>
 
-    <footer class="bg-dark text-white text-center py-3 mt-auto">
+    <footer class="bg-dark text-white text-center py-3">
         <div class="container">
             <small>&copy; 2026 Aura ERP System. All rights reserved.</small>
         </div>

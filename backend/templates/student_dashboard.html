@@ -1,31 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>My Aura</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
+{% extends 'base.html' %}
 
-<body class="bg-light">
+{% block title %}My Aura{% endblock %}
 
-<nav class="navbar navbar-light bg-white shadow-sm mb-4">
-    <div class="container d-flex justify-content-between">
-        <span class="navbar-brand mb-0 h1">🛡️ Aura Student</span>
-        <form action="{% url 'logout' %}" method="post">
-            {% csrf_token %}
-            <button class="btn btn-sm btn-outline-danger">Logout</button>
-        </form>
-    </div>
-</nav>
-
+{% block content %}
 <div class="container">
 
     <!-- Student Info -->
     <div class="card mb-4 border-0 shadow-sm">
         <div class="card-body">
             <h4>👋 Hi, {{ username }}</h4>
-            <p class="text-muted mb-0">Your secure attendance profile is active.</p>
+            <p class="text-muted mb-0">
+                Your secure attendance profile is active.
+            </p>
         </div>
     </div>
 
@@ -45,10 +31,12 @@
                         {{ record.lecture.start_time|date:"M d, Y - h:i A" }}
                     </small>
                 </div>
+
                 <span class="badge bg-success rounded-pill">
                     {{ record.status }}
                 </span>
             </li>
+
             {% empty %}
             <li class="list-group-item text-center text-muted py-4">
                 No attendance records found yet.
@@ -58,6 +46,4 @@
     </div>
 
 </div>
-
-</body>
-</html>
+{% endblock %}

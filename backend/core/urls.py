@@ -14,8 +14,8 @@ from .views import (
     update_profile,
     change_password,
     attendance_history,
-    mark_attendance,  # ⚠️ Added back (Required for Phone->Room Scan)
-    ESP32ScanView,
+    mark_attendance,
+    hardware_sync,
 )
 
 urlpatterns = [
@@ -37,8 +37,7 @@ urlpatterns = [
     # ============================================
     # 📡 IOT HARDWARE APIs (ESP32)
     # ============================================
-    path('hardware/scan/', ESP32ScanView.as_view(), name='esp32_scan'),
-
+    path('attendance/hardware-sync/', hardware_sync, name='hardware_sync'),
     # ============================================
     # 💻 WEB PORTAL VIEWS (Browser)
     # ============================================

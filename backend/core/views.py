@@ -183,71 +183,73 @@ def add_schedule(request):
 # =========================================
 # 7. IOT HARDWARE API (Room Scans Phone)
 # =========================================
-class ESP32ScanView(APIView):
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def hardware_sync(request):
     """
-    Receives data from ESP32 hardware scanners installed in rooms.
-    Payload: {"device_id": "ESP_ROOM_101", "scans": ["2526B069", "2526B070"]}
+    Receives batch attendance data from ESP32 Gateway.
+    Payload: {"gateway_id": "AA:BB:CC...", "detected_students": ["roll_B069", "roll_B070"]}
     """
-    permission_classes = [] # Allow hardware to hit this without login
+    data = request.data
+    gateway_id = data.get('gateway_id')
+    detected_students = data.get('detected_students', [])
 
-    def post(self, request):
-        data = request.data
-        esp_id = data.get('device_id')
-        scanned_ids = data.get('scans', [])
+    if not gateway_id or not detected_students:
+        return Response({"status": "error", "message": "Missing gateway_id or detected_students"}, status=400)
 
-        if not esp_id or not scanned_ids:
-            return Response({"error": "Missing device_id or scans"}, status=400)
+    # 1. Identify Room by Gateway MAC
+    try:
+        classroom = Classroom.objects.get(esp_device_id__iexact=gateway_id)
+    except Classroom.DoesNotExist:
+        return Response({"status": "error", "message": f"Gateway {gateway_id} not registered"}, status=404)
 
-        # 1. Identify Room
+    # 2. Find Active Lecture (or Smart Auto-Start)
+    active_lecture = Lecture.objects.filter(classroom=classroom, is_active=True).first()
+
+    if not active_lecture:
+        now = timezone.localtime(timezone.now())
+        timetable_slot = TimeTable.objects.filter(
+            classroom=classroom,
+            day_of_week=now.weekday(),
+            start_time__lte=now.time(),
+            end_time__gte=now.time()
+        ).first()
+
+        if timetable_slot:
+            active_lecture = Lecture.objects.create(
+                course=timetable_slot.course,
+                classroom=timetable_slot.classroom,
+                teacher=timetable_slot.teacher,
+                is_active=True
+            )
+        else:
+            return Response({"status": "ignored", "message": "No class scheduled."}, status=200)
+
+    # 3. Mark Attendance
+    marked_count = 0
+    for identifier in detected_students:
         try:
-            classroom = Classroom.objects.get(esp_device_id=esp_id)
-        except Classroom.DoesNotExist:
-            return Response({"error": f"Device {esp_id} not registered"}, status=404)
-
-        # 2. Find Active Lecture (or Auto-Start)
-        active_lecture = Lecture.objects.filter(classroom=classroom, is_active=True).first()
-
-        if not active_lecture:
-            now = timezone.localtime(timezone.now())
-            timetable_slot = TimeTable.objects.filter(
-                classroom=classroom,
-                day_of_week=now.weekday(),
-                start_time__lte=now.time(),
-                end_time__gte=now.time()
+            # Match by Username (Roll No) OR Device ID
+            student_user = User.objects.filter(
+                Q(username=identifier) | Q(device_fingerprint=identifier)
             ).first()
 
-            if timetable_slot:
-                active_lecture = Lecture.objects.create(
-                    course=timetable_slot.course,
-                    classroom=timetable_slot.classroom,
-                    teacher=timetable_slot.teacher,
-                    is_active=True
-                )
-            else:
-                return Response({"message": "No class scheduled. Scans ignored."}, status=200)
-
-        # 3. Mark Attendance
-        marked_count = 0
-        for roll_no in scanned_ids:
-            try:
-                # Find User by Username (Roll No)
-                student_user = User.objects.get(username=roll_no)
-                
-                # Link to USER, not StudentProfile
+            if student_user:
                 obj, created = Attendance.objects.get_or_create(
                     student=student_user,
                     lecture=active_lecture,
-                    defaults={'status': 'PRESENT', 'device_id': esp_id}
+                    defaults={'status': 'PRESENT', 'device_id': gateway_id}
                 )
                 if created: marked_count += 1
-            except User.DoesNotExist:
-                continue
+        except Exception:
+            continue
 
-        return Response({
-            "status": "success",
-            "class": active_lecture.course.name,
-            "marked_new": marked_count
-        })
+    return Response({
+        "status": "success",
+        "room": classroom.room_number,
+        "class": active_lecture.course.code,
+        "marked_new": marked_count
+    })
 
 # =========================================
 # 8. ANDROID API (Phone Scans Room)

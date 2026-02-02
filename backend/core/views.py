@@ -512,8 +512,6 @@ def attendance_history(request):
 # =========================================
 # 11. Web Portal Hanfling
 # =========================================
-# backend/core/views.py
-
 @login_required
 def profile(request):
     """
@@ -540,6 +538,6 @@ def profile(request):
     }
     return render(request, 'profile.html', context)
 
-@login_required
-def coming_soon(request, module_name):
-    return render(request, 'coming_soon.html')
+def coming_soon(request, module_name="Feature"):
+    formatted_name = module_name.replace('-', ' ').title()
+    return render(request, 'coming_soon.html', {'feature_name': formatted_name})

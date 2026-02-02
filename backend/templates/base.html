@@ -10,9 +10,8 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    
+
     <style>
         :root { 
             --aura-primary: #0d6efd; 
@@ -29,7 +28,7 @@
             overflow-x: hidden;
         }
 
-        /* 🛰️ Top Identity Bar */
+        /* 🛰️ Topbar */
         .aura-topbar { 
             background: var(--aura-primary); 
             height: var(--topbar-height); 
@@ -42,7 +41,17 @@
             padding: 0 20px;
         }
 
-        /* 🧭 Professional Sidebar */
+        /* 🍔 Hamburger */
+        .menu-toggle {
+            display: none;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+
+        /* 🧭 Sidebar */
         .aura-sidebar {
             width: var(--sidebar-width);
             background: #fff;
@@ -53,22 +62,33 @@
             border-right: 1px solid #e3e6f0;
             overflow-y: auto;
             z-index: 1000;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
         }
 
-        /* 🧬 Main Content Area */
+        /* 🧬 Main */
         .aura-main { 
             margin-top: var(--topbar-height); 
             transition: all 0.3s;
             flex: 1;
             padding: 25px;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* Layout State Adjustments */
-        .has-sidebar { margin-left: var(--sidebar-width); }
-        .no-sidebar { margin-left: 0; display: flex; align-items: center; justify-content: center; }
+        /* desktop alignment */
+        @media (min-width: 992px) {
+            .has-sidebar { margin-left: var(--sidebar-width); }
+        }
 
-        /* Sidebar Navigation Links */
+        /* Center login content if no user is authenticated */
+        .no-sidebar { 
+            margin-left: 0 !important; 
+            justify-content: center; 
+            align-items: center; 
+            background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        /* Sidebar Links */
         .nav-link-erp {
             padding: 12px 20px;
             color: #4e73df;
@@ -81,13 +101,19 @@
             transition: all 0.2s ease;
         }
         .nav-link-erp i { width: 25px; margin-right: 10px; text-align: center; }
-        .nav-link-erp:hover, .nav-link-erp.active { 
+        .nav-link-erp:hover,
+        .nav-link-erp.active { 
             background: #f8f9fc; 
             color: #224abe; 
             border-left: 4px solid var(--aura-primary); 
         }
 
-        .badge-soon { font-size: 0.6rem; background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .badge-soon {
+            font-size: 0.6rem;
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
 
         .nav-identity-pill {
             background: rgba(255,255,255,0.2);
@@ -97,87 +123,123 @@
             padding: 5px 15px;
             font-size: 0.85rem;
         }
+
+        /* 📱 Mobile Responsive Logic */
+        @media (max-width: 991.98px) {
+            .menu-toggle { display: block; }
+            .aura-sidebar { left: -100%; width: 100%; z-index: 1100; }
+            .aura-sidebar.active { left: 0; }
+            .has-sidebar { margin-left: 0 !important; }
+            .aura-topbar { padding: 0 10px; }
+        }
     </style>
 </head>
 <body>
 
-    <header class="aura-topbar shadow-sm justify-content-between text-white">
-        <div class="fw-bold fs-4">⚡ AURA ERP</div>
-        
-        {% if user.is_authenticated %}
-        <div class="dropdown">
-            <button class="btn nav-identity-pill dropdown-toggle fw-bold" data-bs-toggle="dropdown">
-                {% if user.role == "STUDENT" %}🆔 {{ user.student_profile.roll_no }}{% else %}👤 {{ user.username }}{% endif %}
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
-                <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user-edit me-2"></i>Profile</a></li>
-                <li><a class="dropdown-item" href="{% url 'coming_soon' 'Security Logs' %}"><i class="fas fa-key me-2"></i>Security</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-power-off me-2"></i>Logout</a></li>
-            </ul>
-        </div>
-        {% endif %}
-    </header>
-
+<header class="aura-topbar shadow-sm text-white justify-content-between">
     {% if user.is_authenticated %}
-        <aside class="aura-sidebar shadow-sm">
-            <div class="py-2">
-                <a href="{% url 'dashboard' %}" class="nav-link-erp {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-                    <i class="fas fa-desktop"></i> DASHBOARD
-                </a>
-                <a href="{% url 'profile' %}" class="nav-link-erp {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
-                    <i class="fas fa-user-circle"></i> PROFILE
-                </a>
-                <a href="{% url 'coming_soon' 'Syllabus' %}" class="nav-link-erp"><i class="fas fa-book"></i> SYLLABUS</a>
-                <a href="{% url 'manage_timetable' %}" class="nav-link-erp {% if request.resolver_match.url_name == 'manage_timetable' %}active{% endif %}">
-                    <i class="fas fa-calendar-alt"></i> TIME TABLE
-                </a>
-                <a href="{% url 'coming_soon' 'Leave Details' %}" class="nav-link-erp"><i class="fas fa-paper-plane"></i> LEAVE DETAILS</a>
-                
-                <div class="px-3 py-2 small text-uppercase text-muted fw-bold" style="font-size: 0.65rem;">Campus Services</div>
-                
-                <a href="{% url 'coming_soon' 'Transport V2' %}" class="nav-link-erp text-muted">
-                    <i class="fas fa-bus"></i> TRANSPORT <span class="badge badge-soon ms-auto">SOON</span>
-                </a>
-                <a href="{% url 'coming_soon' 'Fees Details' %}" class="nav-link-erp text-muted">
-                    <i class="fas fa-money-check-alt"></i> FEES <span class="badge badge-soon ms-auto">SOON</span>
-                </a>
-                <a href="{% url 'coming_soon' 'Hostel Management' %}" class="nav-link-erp text-muted">
-                    <i class="fas fa-hotel"></i> HOSTEL <span class="badge badge-soon ms-auto">SOON</span>
-                </a>
-                <a href="{% url 'coming_soon' 'Library' %}" class="nav-link-erp text-muted">
-                    <i class="fas fa-university"></i> LIBRARY <span class="badge badge-soon ms-auto">SOON</span>
-                </a>
-
-                <div class="px-3 py-2 small text-uppercase text-muted fw-bold" style="font-size: 0.65rem;">Extras</div>
-                <a href="{% url 'coming_soon' 'Mentorship' %}" class="nav-link-erp text-muted"><i class="fas fa-user-tie"></i> CONTACT MENTOR</a>
-                <a href="{% url 'coming_soon' 'Blogs' %}" class="nav-link-erp text-muted"><i class="fas fa-blog"></i> BLOGS <span class="badge badge-soon ms-auto">SOON</span></a>
-                <a href="{% url 'coming_soon' 'Quiz Portal' %}" class="nav-link-erp text-muted"><i class="fas fa-vial"></i> QUIZ <span class="badge badge-soon ms-auto">SOON</span></a>
-            </div>
-        </aside>
+    <button class="menu-toggle" id="sidebarCollapse">
+        <i class="fas fa-bars"></i>
+    </button>
     {% endif %}
 
-    <main class="aura-main {% if user.is_authenticated %}has-sidebar{% else %}no-sidebar{% endif %}">
-        <div class="container-fluid">
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
+    <div class="fw-bold fs-4 me-auto">⚡ AURA ERP</div>
+
+    {% if user.is_authenticated %}
+    <div class="dropdown">
+        <button class="btn nav-identity-pill dropdown-toggle fw-bold" data-bs-toggle="dropdown">
+            {% if user.role == "STUDENT" %}
+                🆔 {{ user.student_profile.roll_no }}
+            {% else %}
+                👤 {{ user.username }}
             {% endif %}
-
-            {% block content %}{% endblock %}
-        </div>
-    </main>
-
-    {% if user.is_authenticated %}
-    <footer class="bg-white border-top py-3 text-center has-sidebar">
-        <small class="text-muted">Aura Academic ERP &bull; Institutional Portal 2026</small>
-    </footer>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+            <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user-edit me-2"></i>Profile</a></li>
+            <li><a class="dropdown-item" href="{% url 'coming_soon' 'Security Center' %}"><i class="fas fa-key me-2"></i>Security</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-power-off me-2"></i>Logout</a></li>
+        </ul>
+    </div>
     {% endif %}
+</header>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% if user.is_authenticated %}
+<aside class="aura-sidebar shadow-sm" id="sidebar">
+    <div class="d-lg-none p-3 text-end">
+        <button class="btn-close" id="sidebarClose"></button>
+    </div>
+
+    <div class="py-2">
+        <a href="{% url 'dashboard' %}" class="nav-link-erp {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+            <i class="fas fa-desktop"></i> DASHBOARD
+        </a>
+        <a href="{% url 'profile' %}" class="nav-link-erp {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+            <i class="fas fa-user-circle"></i> PROFILE
+        </a>
+        <a href="{% url 'coming_soon' 'Syllabus' %}" class="nav-link-erp">
+            <i class="fas fa-book"></i> SYLLABUS
+        </a>
+        <a href="{% url 'manage_timetable' %}" class="nav-link-erp {% if request.resolver_match.url_name == 'manage_timetable' %}active{% endif %}">
+            <i class="fas fa-calendar-alt"></i> TIME TABLE
+        </a>
+
+        <div class="px-3 py-2 small text-uppercase text-muted fw-bold" style="font-size: 0.65rem;">Campus Services</div>
+
+        <a href="{% url 'coming_soon' 'Transport V2' %}" class="nav-link-erp text-muted"><i class="fas fa-bus"></i> TRANSPORT <span class="badge badge-soon ms-auto">SOON</span></a>
+        <a href="{% url 'coming_soon' 'Fees' %}" class="nav-link-erp text-muted"><i class="fas fa-money-check-alt"></i> FEES <span class="badge badge-soon ms-auto">SOON</span></a>
+        <a href="{% url 'coming_soon' 'Hostel' %}" class="nav-link-erp text-muted"><i class="fas fa-hotel"></i> HOSTEL <span class="badge badge-soon ms-auto">SOON</span></a>
+    </div>
+</aside>
+{% endif %}
+
+<main class="aura-main {% if user.is_authenticated %}has-sidebar{% else %}no-sidebar{% endif %}">
+    <div class="container-fluid">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+    </div>
+</main>
+
+{% if user.is_authenticated %}
+<footer class="bg-white border-top py-3 text-center has-sidebar">
+    <small class="text-muted">Aura Academic ERP • Institutional Portal 2026</small>
+</footer>
+{% endif %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const sidebar = document.getElementById("sidebar");
+    const openBtn = document.getElementById("sidebarCollapse");
+    const closeBtn = document.getElementById("sidebarClose");
+
+    if (openBtn) {
+        openBtn.addEventListener("click", () => {
+            sidebar.classList.add("active");
+        });
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener("click", () => {
+            sidebar.classList.remove("active");
+        });
+    }
+
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth < 992 && sidebar && sidebar.classList.contains('active') && !sidebar.contains(e.target) && !openBtn.contains(e.target)) {
+            sidebar.classList.remove("active");
+        }
+    });
+});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

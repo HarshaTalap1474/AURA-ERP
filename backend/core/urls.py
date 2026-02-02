@@ -19,6 +19,7 @@ from .views import (
     attendance_history,
     mark_attendance,
     hardware_sync,
+    student_analytics,
 )
 
 urlpatterns = [
@@ -54,6 +55,7 @@ urlpatterns = [
     path('', dashboard_redirect, name='home'),
     path('dashboard/', dashboard_redirect, name='dashboard'),
     path('profile/', profile, name='profile'),
+    path('student/analytics/', student_analytics, name='student_analytics'),
     
     # ✅ DYNAMIC COMING SOON PAGE
     # Matches URLs like: /coming-soon/reports/ or /coming-soon/settings/

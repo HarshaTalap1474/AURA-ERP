@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Detailed Attendance | Aura ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-6">
+            <h2 class="fw-bold text-dark mb-0">Attendance Analytics</h2>
+            <p class="text-muted">Academic Cycle 2025-26 • Semester VI</p>
+        </div>
+        <div class="col-md-6 text-md-end">
+            <button class="btn btn-white border shadow-sm me-2"><i class="fas fa-download me-2"></i>Report</button>
+            <div class="btn-group">
+                <button class="btn btn-primary active">Current Month</button>
+                <button class="btn btn-outline-primary">Semester</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white fw-bold py-3">Subject-wise Performance (75% Rule)</div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead class="bg-light">
+                                <tr class="text-muted small text-uppercase">
+                                    <th>Subject</th>
+                                    <th class="text-center">Attended / Total</th>
+                                    <th>Progress</th>
+                                    <th class="text-end">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sub in subject_analysis %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold">{{ sub.name }}</div>
+                                        <div class="small text-muted">{{ sub.code }}</div>
+                                    </td>
+                                    <td class="text-center fw-bold text-dark">
+                                        {{ sub.attended }} <span class="text-muted fw-normal">/ {{ sub.total }}</span>
+                                    </td>
+                                    <td style="width: 35%;">
+                                        <div class="progress" style="height: 6px;">
+                                            <div class="progress-bar {% if sub.percentage < 75 %}bg-danger{% else %}bg-success{% endif %}" 
+                                                 style="width: {{ sub.percentage }}%"></div>
+                                        </div>
+                                        <small class="text-muted">{{ sub.percentage }}%</small>
+                                    </td>
+                                    <td class="text-end">
+                                        {% if sub.percentage < 75 %}
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Critical</span>
+                                        {% else %}
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle">Safe</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="4" class="text-center py-4">No academic data found.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100 text-center p-4">
+                <h6 class="text-muted text-uppercase small fw-bold mb-4">Overall Aggregate</h6>
+                
+                <div class="position-relative d-inline-block mb-3">
+                    <svg width="160" height="160" viewBox="0 0 160 160">
+                        <circle cx="80" cy="80" r="70" fill="none" stroke="#e9ecef" stroke-width="12" />
+                        <circle cx="80" cy="80" r="70" fill="none" stroke="var(--aura-primary)" stroke-width="12" 
+                                stroke-dasharray="440" stroke-dashoffset="{{ 440|add:'-330' }}" transform="rotate(-90 80 80)" style="transition: stroke-dashoffset 1s ease;" />
+                    </svg>
+                    <div class="position-absolute top-50 start-50 translate-middle">
+                        <h2 class="display-4 fw-bold mb-0 text-dark">{{ overall_percentage|default:"75" }}<span class="fs-6">%</span></h2>
+                    </div>
+                </div>
+
+                <p class="mb-2">You have attended <strong>{{ total_days_present }}</strong> out of {{ total_days_working }} days.</p>
+                {% if overall_percentage < 75 %}
+                    <div class="alert alert-danger border-0 small py-2 mt-2">
+                        <i class="fas fa-exclamation-circle me-1"></i> You are in the defaulter list.
+                    </div>
+                {% else %}
+                    <div class="alert alert-success border-0 small py-2 mt-2">
+                        <i class="fas fa-check-circle me-1"></i> You are eligible for exams.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white fw-bold py-3 d-flex justify-content-between align-items-center">
+            <span>📅 Monthly Attendance Log</span>
+            <div class="d-flex gap-3 small">
+                <span class="d-flex align-items-center"><span class="badge bg-success rounded-circle p-1 me-2"> </span> Present</span>
+                <span class="d-flex align-items-center"><span class="badge bg-danger rounded-circle p-1 me-2"> </span> Absent</span>
+                <span class="d-flex align-items-center"><span class="badge bg-warning rounded-circle p-1 me-2"> </span> Holiday</span>
+            </div>
+        </div>
+        <div class="card-body p-4">
+            <div class="d-flex flex-wrap gap-2 justify-content-start">
+                {% for day in calendar_events %}
+                <div class="text-center" style="width: 45px;">
+                    <div class="mb-1 rounded-3 d-flex align-items-center justify-content-center text-white fw-bold shadow-sm
+                        {% if day.status == 'P' %}bg-success
+                        {% elif day.status == 'A' %}bg-danger
+                        {% elif day.status == 'H' %}bg-warning
+                        {% else %}bg-light text-muted{% endif %}" 
+                        style="height: 45px; width: 45px; cursor: pointer;" 
+                        title="{{ day.status_text }}">
+                        {{ day.date }}
+                    </div>
+                    <small class="text-muted" style="font-size: 0.7rem;">{{ day.day_name }}</small>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

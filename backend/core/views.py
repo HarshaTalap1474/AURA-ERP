@@ -11,7 +11,9 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-
+import calendar
+from datetime import datetime
+from django.db.models import Count, Q
 import io
 import csv
 import uuid
@@ -541,3 +543,119 @@ def profile(request):
 def coming_soon(request, module_name="Feature"):
     formatted_name = module_name.replace('-', ' ').title()
     return render(request, 'coming_soon.html', {'feature_name': formatted_name})
+
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+
+
+@login_required
+def student_analytics(request):
+    """
+    Generates detailed data for the Student Analytics Dashboard.
+    Includes Subject-Wise breakdown and Monthly Heatmap data.
+    """
+    if request.user.role != User.Role.STUDENT:
+        return redirect('dashboard')
+
+    user = request.user
+    try:
+        profile = user.student_profile
+    except StudentProfile.DoesNotExist:
+        return redirect('dashboard')
+
+    # ==========================================
+    # 1. SUBJECT ANALYSIS (The Report Card)
+    # ==========================================
+    courses = Course.objects.filter(department=profile.department, semester=profile.current_semester)
+    subject_data = []
+    
+    total_lectures_overall = 0
+    total_present_overall = 0
+
+    for course in courses:
+        # Count total COMPLETED lectures for this subject
+        total_lec = Lecture.objects.filter(course=course, is_active=False).count()
+        
+        # Count how many this student attended
+        attended = Attendance.objects.filter(student=user, lecture__course=course, status='PRESENT').count()
+        
+        # Calculate Percentage
+        pct = (attended / total_lec * 100) if total_lec > 0 else 0.0
+        
+        # Status Logic
+        status = "Safe" if pct >= 75 else "Critical"
+        
+        subject_data.append({
+            'name': course.name,
+            'code': course.code,
+            'attended': attended,
+            'total': total_lec,
+            'percentage': round(pct, 1),
+            'status': status
+        })
+
+        total_lectures_overall += total_lec
+        total_present_overall += attended
+
+    # Overall Aggregate
+    overall_percentage = (total_present_overall / total_lectures_overall * 100) if total_lectures_overall > 0 else 0.0
+
+    # ==========================================
+    # 2. CALENDAR HEATMAP ENGINE
+    # ==========================================
+    now = datetime.now()
+    year, month = now.year, now.month
+    num_days = calendar.monthrange(year, month)[1] # e.g., 28, 30, or 31
+    
+    # Fetch all attendance records for THIS month
+    month_attendance = Attendance.objects.filter(
+        student=user,
+        timestamp__year=year,
+        timestamp__month=month
+    ).values_list('timestamp__day', flat=True).distinct()
+
+    # Convert to a Set for fast O(1) lookup
+    present_days = set(month_attendance)
+
+    calendar_events = []
+    
+    for day in range(1, num_days + 1):
+        # Create a date object to check for Weekends
+        current_date = datetime(year, month, day)
+        is_sunday = current_date.weekday() == 6
+        
+        day_status = 'N' # Default: No Class / Neutral
+        color = 'secondary'
+
+        if day in present_days:
+            day_status = 'P'
+            color = 'success' # Green
+        elif is_sunday:
+            day_status = 'H'
+            color = 'warning' # Orange (Holiday)
+        elif current_date < now: 
+            # If date is in the past and NOT present and NOT Sunday -> Absent
+            # (Simplified logic: assumes every past weekday had a class)
+            day_status = 'A' 
+            color = 'danger' # Red
+
+        calendar_events.append({
+            'date': str(day),
+            'status': day_status,
+            'color': color
+        })
+
+    # ==========================================
+    # 3. RETURN CONTEXT
+    # ==========================================
+    context = {
+        'overall_percentage': round(overall_percentage, 1),
+        'total_days_present': total_present_overall, 
+        'total_days_working': total_lectures_overall,
+        'subject_analysis': subject_data,
+        'calendar_events': calendar_events,
+        'current_month_name': now.strftime("%B %Y")
+    }
+
+    return render(request, 'attendance_detailed.html', context)

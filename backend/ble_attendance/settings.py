@@ -133,3 +133,4 @@ SIMPLE_JWT = {
 LOGIN_URL = 'login'              # The name of the URL pattern for login
 LOGIN_REDIRECT_URL = 'dashboard' # Redirect to the main dashboard logic after login
 LOGOUT_REDIRECT_URL = 'login'    # Redirect to login page after logout
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Deletes the session cookie when browser shuts down

@@ -236,13 +236,23 @@
         <button class="btn-close" id="sidebarClose"></button>
     </div>
 
-    <a href="{% url 'dashboard' %}" class="nav-link-erp {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-        <i class="fas fa-desktop"></i> DASHBOARD
-    </a>
+    <a href="{% url 'dashboard' %}"
+   class="nav-link-erp {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+    <i class="fas fa-desktop"></i>
+    DASHBOARD
+</a>
 
-    <a href="{% url 'profile' %}" class="nav-link-erp {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
-        <i class="fas fa-user-circle"></i> PROFILE
-    </a>
+<a href="{% url 'attendance_detailed' %}"
+   class="nav-link-erp {% if request.resolver_match.url_name == 'attendance_detailed' %}active{% endif %}">
+    <i class="fas fa-chart-pie"></i>
+    ATTENDANCE
+</a>
+
+<a href="{% url 'profile' %}"
+   class="nav-link-erp {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+    <i class="fas fa-user-circle"></i>
+    PROFILE
+</a>
 
     <a href="{% url 'coming_soon' 'Syllabus' %}" class="nav-link-erp">
         <i class="fas fa-book"></i> SYLLABUS

@@ -1,52 +1,138 @@
 {% extends 'base.html' %}
 {% block content %}
+
 <div class="container-fluid">
+
+    <!-- ================= GREETING + ATTENDANCE ================= -->
     <div class="row g-4 mb-4">
+
+        <!-- Greeting / Notification -->
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm p-4 bg-white h-100">
-                <h2 class="fw-bold mb-1">Hi, {{ user.get_full_name|default:username }}</h2>
-                <p class="text-muted">Welcome to your Aura Academic Portal.</p>
-                
-                <div class="mt-4 p-3 bg-light rounded border-start border-4 border-primary">
-                    <h6 class="fw-bold"><i class="fas fa-bullhorn me-2 text-primary"></i>Latest Notification</h6>
-                    <p class="small mb-0">Mid-term evaluation for IoT Systems is scheduled for next Monday. Ensure your Device ID is synced.</p>
+                <h2 class="fw-bold mb-1">
+                    Hi, {{ user.get_full_name|default:username }}
+                </h2>
+                <p class="text-muted mb-4">
+                    Welcome to your Aura Academic Portal.
+                </p>
+
+                <div class="p-3 bg-light rounded border-start border-4 border-primary">
+                    <h6 class="fw-bold mb-1">
+                        <i class="fas fa-bullhorn me-2 text-primary"></i>
+                        Latest Notification
+                    </h6>
+                    <p class="small mb-0 text-muted">
+                        Mid-term evaluation for IoT Systems is scheduled for next Monday.
+                        Ensure your Device ID is synced.
+                    </p>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-4">
-            <div class="card border-0 shadow-sm bg-primary text-white p-4 h-100 text-center">
-                <h6 class="text-uppercase small opacity-75">Overall Attendance</h6>
-                <h1 class="display-3 fw-bold mb-0">{{ attendance_percentage|default:"--" }}%</h1>
-                <div class="progress mt-3" style="height: 5px; background: rgba(255,255,255,0.2);">
-                    <div class="progress-bar bg-white" style="width: {{ attendance_percentage|default:0 }}%"></div>
+        <!-- Attendance Card -->
+        <div class="col-lg-4 col-md-6">
+            <a href="{% url 'attendance_detailed' %}" class="text-decoration-none">
+                <div class="card attendance-card h-100 border-0 shadow-sm">
+                    <div class="card-body d-flex flex-column justify-content-between p-4 text-white text-center">
+
+                        <div>
+                            <h6 class="text-uppercase fw-bold small opacity-75 mb-2">
+                                Overall Attendance
+                            </h6>
+
+                            <div class="attendance-value fw-bold">
+                                {{ attendance_percentage|default:"--" }}%
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <div class="progress attendance-progress mb-3">
+                                <div
+                                    class="progress-bar"
+                                    style="width: {{ attendance_percentage|default:0 }}%">
+                                </div>
+                            </div>
+
+                            <div class="small fw-semibold d-flex justify-content-center align-items-center gap-2 opacity-90">
+                                <span>View detailed analysis</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
+
     </div>
 
+    <!-- ================= QUICK ACTIONS ================= -->
     <div class="row g-3">
+
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100 text-center p-3">
-                <i class="fas fa-id-card fa-2x text-primary mb-2"></i>
-                <h6 class="fw-bold">Virtual ID Card</h6>
-                <button class="btn btn-sm btn-outline-primary rounded-pill">View QR</button>
+            <div class="card border-0 shadow-sm h-100 text-center p-4">
+                <i class="fas fa-id-card fa-2x text-primary mb-3"></i>
+                <h6 class="fw-bold mb-2">Virtual ID Card</h6>
+                <button class="btn btn-sm btn-outline-primary rounded-pill">
+                    View QR
+                </button>
             </div>
         </div>
+
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100 text-center p-3">
-                <i class="fas fa-shield-alt fa-2x text-success mb-2"></i>
-                <h6 class="fw-bold">Device Integrity</h6>
-                <span class="badge bg-success-subtle text-success rounded-pill px-3">Device Bound</span>
+            <div class="card border-0 shadow-sm h-100 text-center p-4">
+                <i class="fas fa-shield-alt fa-2x text-success mb-3"></i>
+                <h6 class="fw-bold mb-2">Device Integrity</h6>
+                <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2">
+                    Device Bound
+                </span>
             </div>
         </div>
+
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100 text-center p-3">
-                <i class="fas fa-hands-helping fa-2x text-info mb-2"></i>
-                <h6 class="fw-bold">Contact Mentor</h6>
-                <button class="btn btn-sm btn-outline-info rounded-pill">Send Message</button>
+            <div class="card border-0 shadow-sm h-100 text-center p-4">
+                <i class="fas fa-hands-helping fa-2x text-info mb-3"></i>
+                <h6 class="fw-bold mb-2">Contact Mentor</h6>
+                <button class="btn btn-sm btn-outline-info rounded-pill">
+                    Send Message
+                </button>
             </div>
         </div>
+
     </div>
+
 </div>
+
+<!-- ================= DASHBOARD STYLES ================= -->
+<style>
+    .attendance-card {
+        background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+        border-radius: 16px;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .attendance-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 14px 32px rgba(13, 110, 253, 0.35);
+    }
+
+    .attendance-value {
+        font-size: 3.2rem;
+        line-height: 1;
+    }
+
+    .attendance-progress {
+        height: 6px;
+        background: rgba(255, 255, 255, 0.25);
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .attendance-progress .progress-bar {
+        background: #ffffff;
+        border-radius: 999px;
+        transition: width 0.6s ease;
+    }
+</style>
+
 {% endblock %}

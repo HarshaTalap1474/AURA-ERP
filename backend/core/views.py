@@ -4,7 +4,10 @@ from django.http import HttpResponse
 from django.db.models import Q
 from django.utils import timezone
 from django.contrib.auth import authenticate, update_session_auth_hash
-
+from django.contrib.auth.views import PasswordChangeView #
+from django.contrib import messages
+from django.urls import reverse_lazy
+from django.shortcuts import render, redirect
 # REST API Imports
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
@@ -659,3 +662,12 @@ def student_analytics(request):
     }
 
     return render(request, 'attendance_detailed.html', context)
+
+class CustomPasswordChangeView(PasswordChangeView):
+    template_name = 'password_change.html'
+    success_url = reverse_lazy('dashboard')  # ✅ Auto-redirect to Dashboard
+
+    def form_valid(self, form):
+        # ✅ Inject the success message to be displayed on the dashboard
+        messages.success(self.request, "Security Update: Your password has been changed successfully.")
+        return super().form_valid(form)

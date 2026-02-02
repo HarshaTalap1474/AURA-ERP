@@ -20,6 +20,7 @@ from .views import (
     mark_attendance,
     hardware_sync,
     student_analytics,
+    CustomPasswordChangeView,
 )
 
 urlpatterns = [
@@ -55,7 +56,7 @@ urlpatterns = [
     path('', dashboard_redirect, name='home'),
     path('dashboard/', dashboard_redirect, name='dashboard'),
     path('profile/', profile, name='profile'),
-    path('student/analytics/', student_analytics, name='student_analytics'),
+    path('student/analytics/', student_analytics, name='attendance_detailed'),
     
     # ✅ DYNAMIC COMING SOON PAGE
     # Matches URLs like: /coming-soon/reports/ or /coming-soon/settings/
@@ -69,4 +70,5 @@ urlpatterns = [
 
     path('schedule/', manage_timetable, name='manage_timetable'),
     path('schedule/add/', add_schedule, name='add_schedule'),
+    path('password-change/', CustomPasswordChangeView.as_view(), name='change_password'),
 ]

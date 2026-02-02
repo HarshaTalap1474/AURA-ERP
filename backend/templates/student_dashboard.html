@@ -1,49 +1,52 @@
 {% extends 'base.html' %}
-
-{% block title %}My Aura{% endblock %}
-
 {% block content %}
-<div class="container">
-
-    <!-- Student Info -->
-    <div class="card mb-4 border-0 shadow-sm">
-        <div class="card-body">
-            <h4>👋 Hi, {{ username }}</h4>
-            <p class="text-muted mb-0">
-                Your secure attendance profile is active.
-            </p>
-        </div>
-    </div>
-
-    <!-- Recent Activity -->
-    <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white">
-            <strong>Recent Activity</strong>
-        </div>
-
-        <ul class="list-group list-group-flush">
-            {% for record in history %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>{{ record.lecture.course.name }}</strong>
-                    <br>
-                    <small class="text-muted">
-                        {{ record.lecture.start_time|date:"M d, Y - h:i A" }}
-                    </small>
+<div class="container-fluid">
+    <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm p-4 bg-white h-100">
+                <h2 class="fw-bold mb-1">Hi, {{ user.get_full_name|default:username }}</h2>
+                <p class="text-muted">Welcome to your Aura Academic Portal.</p>
+                
+                <div class="mt-4 p-3 bg-light rounded border-start border-4 border-primary">
+                    <h6 class="fw-bold"><i class="fas fa-bullhorn me-2 text-primary"></i>Latest Notification</h6>
+                    <p class="small mb-0">Mid-term evaluation for IoT Systems is scheduled for next Monday. Ensure your Device ID is synced.</p>
                 </div>
+            </div>
+        </div>
 
-                <span class="badge bg-success rounded-pill">
-                    {{ record.status }}
-                </span>
-            </li>
-
-            {% empty %}
-            <li class="list-group-item text-center text-muted py-4">
-                No attendance records found yet.
-            </li>
-            {% endfor %}
-        </ul>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm bg-primary text-white p-4 h-100 text-center">
+                <h6 class="text-uppercase small opacity-75">Overall Attendance</h6>
+                <h1 class="display-3 fw-bold mb-0">{{ attendance_percentage|default:"--" }}%</h1>
+                <div class="progress mt-3" style="height: 5px; background: rgba(255,255,255,0.2);">
+                    <div class="progress-bar bg-white" style="width: {{ attendance_percentage|default:0 }}%"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 text-center p-3">
+                <i class="fas fa-id-card fa-2x text-primary mb-2"></i>
+                <h6 class="fw-bold">Virtual ID Card</h6>
+                <button class="btn btn-sm btn-outline-primary rounded-pill">View QR</button>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 text-center p-3">
+                <i class="fas fa-shield-alt fa-2x text-success mb-2"></i>
+                <h6 class="fw-bold">Device Integrity</h6>
+                <span class="badge bg-success-subtle text-success rounded-pill px-3">Device Bound</span>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 text-center p-3">
+                <i class="fas fa-hands-helping fa-2x text-info mb-2"></i>
+                <h6 class="fw-bold">Contact Mentor</h6>
+                <button class="btn btn-sm btn-outline-info rounded-pill">Send Message</button>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

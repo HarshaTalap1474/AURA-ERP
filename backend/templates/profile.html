@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile | Aura ERP{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm text-center p-4 bg-white">
+            <div class="bg-primary rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center text-white fw-bold" style="width: 80px; height: 80px; font-size: 2rem;">
+                {{ user.username|first|upper }}
+            </div>
+            <h4 class="fw-bold mb-1">{{ user.get_full_name|default:user.username }}</h4>
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 mb-3">{{ user.role }}</span>
+            <hr>
+            <div class="text-start small">
+                {% if user.role == "STUDENT" %}
+                    <p class="mb-1 text-muted uppercase fw-bold" style="font-size: 0.65rem;">Roll Number</p>
+                    <p class="fw-bold">{{ user.student_profile.roll_no }}</p>
+                    <p class="mb-1 text-muted uppercase fw-bold" style="font-size: 0.65rem;">Department</p>
+                    <p class="fw-bold">{{ user.student_profile.department.name }}</p>
+                {% else %}
+                    <p class="mb-1 text-muted uppercase fw-bold" style="font-size: 0.65rem;">Staff ID</p>
+                    <p class="fw-bold text-uppercase">{{ user.username }}</p>
+                    <p class="mb-1 text-muted uppercase fw-bold" style="font-size: 0.65rem;">Designation</p>
+                    <p class="fw-bold">{{ user.teacher_profile.designation|default:"Faculty Member" }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div id="personal-info" class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 fw-bold"><i class="fas fa-edit me-2"></i>Edit Personal Details</div>
+            <div class="card-body">
+                <form action="{% url 'update_profile' %}" method="POST" class="row g-3">
+                    {% csrf_token %}
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">First Name</label>
+                        <input type="text" class="form-control bg-light" value="{{ user.first_name }}" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">Last Name</label>
+                        <input type="text" class="form-control bg-light" value="{{ user.last_name }}" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">Phone Number</label>
+                        <input type="text" name="phone" class="form-control" value="{{ user.phone_number|default:'' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small text-muted">Personal Email</label>
+                        <input type="email" name="email" class="form-control" value="{{ user.email }}">
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary px-4 shadow-sm">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="security" class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 fw-bold"><i class="fas fa-lock me-2"></i>Security Settings</div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-7">
+                        <h6>Change Password</h6>
+                        <p class="text-muted small mb-0">Ensure your account uses a long, random password to stay secure.</p>
+                    </div>
+                    <div class="col-md-5 text-md-end">
+                        <a href="{% url 'change_password' %}" class="btn btn-outline-dark btn-sm rounded-pill px-4">Update Password</a>
+                    </div>
+                </div>
+                {% if user.role == "STUDENT" %}
+                <hr>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6>Device Binding</h6>
+                        <p class="text-muted small mb-0">Fingerprint: <code>{{ user.device_fingerprint|default:"Not Bound" }}</code></p>
+                    </div>
+                    <span class="badge {% if user.device_fingerprint %}bg-success{% else %}bg-warning{% endif %}">
+                        {% if user.device_fingerprint %}SECURE{% else %}ACTION REQUIRED{% endif %}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

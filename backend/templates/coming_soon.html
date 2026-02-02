@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Module Under Maintenance | Aura ERP{% endblock %}
+
+{% block content %}
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 70vh;">
+    <div class="text-center p-5 bg-white shadow-sm rounded-4" style="max-width: 600px;">
+        <div class="mb-4">
+            <i class="fas fa-tools fa-4x text-primary opacity-25 animate-bounce"></i>
+        </div>
+        
+        <h2 class="fw-bold text-dark mb-3">Module Under Construction</h2>
+        <p class="text-muted mb-4">
+            We are currently upgrading the <strong>{{ module_name|default:"Campus Service" }}</strong> module to provide a better experience. This feature is scheduled to be active in the next academic cycle.
+        </p>
+
+        <div class="progress mb-4" style="height: 8px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 75%"></div>
+        </div>
+
+        <div class="row g-2">
+            <div class="col-sm-6">
+                <a href="{% url 'dashboard' %}" class="btn btn-primary w-100 rounded-pill py-2">
+                    <i class="fas fa-home me-2"></i>Back to Dashboard
+                </a>
+            </div>
+            <div class="col-sm-6">
+                <button class="btn btn-outline-secondary w-100 rounded-pill py-2" onclick="history.back()">
+                    <i class="fas fa-arrow-left me-2"></i>Go Back
+                </button>
+            </div>
+        </div>
+
+        <div class="mt-5 pt-3 border-top">
+            <small class="text-muted uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">
+                Aura Smart Campus Ecosystem &bull; Phase 2 Update
+            </small>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-15px); }
+    }
+    .animate-bounce {
+        animation: bounce 2s infinite ease-in-out;
+    }
+</style>
+{% endblock %}

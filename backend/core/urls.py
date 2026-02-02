@@ -1,5 +1,5 @@
 from django.urls import path
-from django.contrib.auth import views as auth_views  # 👈 Import Django Auth Views
+from django.contrib.auth import views as auth_views
 from .views import (
     # Web Views
     dashboard_redirect,
@@ -17,6 +17,8 @@ from .views import (
     attendance_history,
     mark_attendance,
     hardware_sync,
+    profile,
+    coming_soon,
 )
 
 urlpatterns = [
@@ -38,6 +40,7 @@ urlpatterns = [
     
     # Profile
     path('api/profile/update/', update_profile, name='update_profile'),
+    path('coming-soon/<str:module_name>/', coming_soon, name='coming_soon'),
 
     # Attendance Features
     path('api/attendance/history/', attendance_history, name='attendance_history'),
@@ -57,6 +60,7 @@ urlpatterns = [
     
     # Dashboard Router
     path('dashboard/', dashboard_redirect, name='dashboard'),
+    path('profile/', profile, name='profile'),
 
     # Role-Specific Dashboards
     path('teacher/', teacher_dashboard, name='teacher_dashboard'),

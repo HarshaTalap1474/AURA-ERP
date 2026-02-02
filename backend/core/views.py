@@ -508,3 +508,38 @@ def attendance_history(request):
         "overall_total": overall_total_lectures,
         "history": history_data
     })
+
+# =========================================
+# 11. Web Portal Hanfling
+# =========================================
+# backend/core/views.py
+
+@login_required
+def profile(request):
+    """
+    Renders the User Profile page (Web Portal).
+    """
+    user = request.user
+    
+    # Try to get the specific profile (Student or Teacher)
+    student_profile = None
+    teacher_profile = None
+
+    try:
+        if user.role == User.Role.STUDENT:
+            student_profile = user.student_profile
+        elif user.role == User.Role.TEACHER:
+            teacher_profile = user.teacher_profile
+    except Exception:
+        pass # Handle cases where profile might be missing
+
+    context = {
+        'user': user,
+        'student_profile': student_profile,
+        'teacher_profile': teacher_profile,
+    }
+    return render(request, 'profile.html', context)
+
+@login_required
+def coming_soon(request, module_name):
+    return render(request, 'coming_soon.html')

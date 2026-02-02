@@ -38,8 +38,12 @@ def dashboard_redirect(request):
     elif user.role == User.Role.STUDENT:
         return redirect('student_dashboard')
     elif user.role == User.Role.ADMIN:
-        return redirect('/admin/')
-    return redirect('/admin/')
+        # ⚠️ FIX: Send Admin to the Registrar View instead of raw Django Admin
+        # This keeps them inside the "Aura UI"
+        return redirect('manage_students')
+    
+    # Fallback
+    return redirect('login')
 
 # =========================================
 # 2. TEACHER DASHBOARD (Web Portal)

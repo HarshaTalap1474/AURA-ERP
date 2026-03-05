@@ -22,8 +22,11 @@ class CustomUserAdmin(UserAdmin):
         ('Hardware Security', {'fields': ('device_fingerprint',)}),
     )
 
+    # ✅ CORRECT (Passes the text as an argument to satisfy format_html)
     def device_status_icon(self, obj):
-        return format_html('<span style="color:green;">🔒 Linked</span>') if obj.device_fingerprint else format_html('<span style="color:orange;">⚠️ No Device</span>')
+        if obj.device_fingerprint:
+            return format_html('<span style="color:green;">{}</span>', '🔒 Linked')
+        return format_html('<span style="color:orange;">{}</span>', '⚠️ No Device')
     
     def get_full_name(self, obj): return f"{obj.first_name} {obj.last_name}"
 

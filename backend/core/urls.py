@@ -41,7 +41,7 @@ urlpatterns = [
     # ============================================
     path('api/auth/login/', app_login, name='app_login'),
     path('api/auth/change-password/', change_password, name='change_password'),
-    path('api/profile/update/', update_profile, name='update_profile'),
+    path('profile/update/', update_profile, name='update_profile'),
     path('api/attendance/history/', attendance_history, name='attendance_history'),
     path('api/attendance/mark/', mark_attendance, name='mark_attendance'),
 
@@ -57,9 +57,7 @@ urlpatterns = [
     path('dashboard/', dashboard_redirect, name='dashboard'),
     path('profile/', profile, name='profile'),
     path('student/analytics/', student_analytics, name='attendance_detailed'),
-    
-    # ✅ DYNAMIC COMING SOON PAGE
-    # Matches URLs like: /coming-soon/reports/ or /coming-soon/settings/
+
     path('coming-soon/<str:module_name>/', coming_soon, name='coming_soon'),
 
     path('teacher/', teacher_dashboard, name='teacher_dashboard'),

@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Faculty Dashboard | Aura ERP{% endblock %}
+
+{% block main_class %}has-sidebar{% endblock %}
+
+{% block sidebar %}
+<aside class="aura-sidebar shadow-sm" id="sidebar">
+    <div class="d-lg-none p-3 text-end">
+        <button class="btn-close" id="sidebarClose" onclick="document.getElementById('sidebar').classList.remove('active')"></button>
+    </div>
+    <div class="py-2">
+        <a href="{% url 'teacher_dashboard' %}" class="nav-link-erp active">
+            <i class="fas fa-chalkboard-teacher"></i> DASHBOARD
+        </a>
+        <a href="{% url 'live_monitor' %}" class="nav-link-erp">
+            <i class="fas fa-broadcast-tower"></i> LIVE CLASS <span class="badge bg-danger ms-auto pulse-badge">● LIVE</span>
+        </a>
+        <a href="{% url 'my_subjects' %}" class="nav-link-erp">
+            <i class="fas fa-book-open"></i> MY SUBJECTS
+        </a>
+        <a href="{% url 'leave_approvals' %}" class="nav-link-erp">
+            <i class="fas fa-check-double"></i> LEAVE APPROVALS
+        </a>
+        <a href="{% url 'attendance_reports' %}" class="nav-link-erp">
+            <i class="fas fa-file-export"></i> REPORTS
+        </a>
+        <hr class="mx-3 opacity-10">
+        <a href="{% url 'profile' %}" class="nav-link-erp">
+            <i class="fas fa-user-circle"></i> PROFILE
+        </a>
+    </div>
+</aside>
+
+<style>
+    /* Pulse animations */
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.4; }
+        100% { opacity: 1; }
+    }
+    .pulse-badge, .pulse-icon { animation: pulse 2s infinite; }
+    .pulse-badge { font-size: 0.65rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-8">
+            <h2 class="fw-bold text-dark mb-0">Welcome, Prof. {{ user.last_name|default:user.username }}</h2>
+            <p class="text-muted">Faculty of Computer Engineering • IoT Node Status: <span class="text-success fw-bold"><i class="fas fa-check-circle me-1"></i> Online</span></p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <p class="text-muted mb-0 fw-bold"><i class="fas fa-calendar-day me-2"></i>{% now "l, F j, Y" %}</p>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-4 col-md-6">
+            <div class="card border-0 shadow-sm p-4 h-100 border-start border-4 border-primary">
+                <h6 class="text-uppercase text-muted small fw-bold mb-1">Today's Lectures</h6>
+                <h2 class="fw-bold text-dark mb-0">{{ stats.today_lectures|default:"3" }}</h2>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+            <div class="card border-0 shadow-sm p-4 h-100 border-start border-4 border-success">
+                <h6 class="text-uppercase text-muted small fw-bold mb-1">Total Students Taught</h6>
+                <h2 class="fw-bold text-dark mb-0">{{ stats.students_present|default:"142" }}</h2>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-12">
+            <a href="{% url 'leave_approvals' %}" class="text-decoration-none">
+                <div class="card border-0 shadow-sm p-4 h-100 border-start border-4 border-warning bg-white">
+                    <h6 class="text-uppercase text-muted small fw-bold mb-1">Pending Leave Approvals</h6>
+                    <h2 class="fw-bold text-dark mb-0">{{ stats.pending_leaves|default:"4" }}</h2>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3 border-bottom-0 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold text-dark"><i class="fas fa-satellite-dish text-primary me-2 pulse-icon"></i> Active Live Sessions</h5>
+            <span class="badge bg-light text-muted border px-3 py-2 rounded-pill">
+                <i class="fas fa-sync-alt me-1"></i> Refreshing in <span id="timer" class="fw-bold text-dark">10</span>s
+            </span>
+        </div>
+        <div class="card-body bg-light p-4">
+            {% for lecture in active_lectures %}
+            <div class="card border-0 shadow-sm mb-3 border-start border-4 border-success">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-1 fw-bold text-dark">
+                            {{ lecture.course.name }}
+                            <span class="badge bg-secondary ms-2 align-middle" style="font-size: 0.5em;">{{ lecture.course.code }}</span>
+                        </h4>
+                        <div class="text-muted small">
+                            <span class="me-3"><i class="fas fa-map-marker-alt text-danger me-1"></i> Room <strong>{{ lecture.classroom.room_number }}</strong></span>
+                            <span><i class="fas fa-clock text-warning me-1"></i> Started: {{ lecture.start_time|time:"H:i" }}</span>
+                        </div>
+                    </div>
+                    <div class="text-center bg-success bg-opacity-10 rounded p-3" style="min-width: 100px;">
+                        <h2 class="mb-0 fw-bold text-success">{{ lecture.attendance_set.count }}</h2>
+                        <small class="text-uppercase fw-bold text-success" style="font-size: 0.7rem;">Present</small>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-4">
+                <p class="text-muted mb-0">No classes are currently live. Active sessions will appear here.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white fw-bold py-3 border-bottom-0">
+                    <i class="fas fa-clock text-primary me-2"></i> Today's Full Schedule
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light text-muted small text-uppercase">
+                                <tr>
+                                    <th class="ps-4">Time</th>
+                                    <th>Subject</th>
+                                    <th>Room</th>
+                                    <th class="pe-4 text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lecture in todays_lectures %}
+                                <tr>
+                                    <td class="ps-4 fw-bold">{{ lecture.time }}</td>
+                                    <td>
+                                        <div class="fw-bold text-dark">{{ lecture.subject.name }}</div>
+                                        <small class="text-muted">{{ lecture.batch }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border"><i class="fas fa-microchip me-1 text-primary"></i> {{ lecture.room }}</span>
+                                    </td>
+                                    <td class="pe-4 text-end">
+                                        {% if lecture.is_active %}
+                                            <a href="{% url 'live_monitor' lecture.id %}" class="btn btn-sm btn-danger pulse-badge rounded-pill px-3">View Live</a>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" disabled>Upcoming</button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">No lectures scheduled for today.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm h-100 bg-primary text-white text-center p-5">
+                <h5 class="fw-bold mb-3"><i class="fas fa-wifi me-2"></i> IoT System Status</h5>
+                <p class="small opacity-75 mb-4">All hardware nodes are operational and waiting for RFID/BLE pings.</p>
+                <div class="d-flex justify-content-center align-items-center mb-4">
+                    <div class="spinner-grow text-light" role="status" style="width: 3rem; height: 3rem; opacity: 0.5;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                <h3 class="fw-bold mb-0">System Ready</h3>
+                <p class="small mt-2">Attendance is automated via hardware nodes.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Page Auto-Refresh Logic
+    let timeLeft = 10;
+    const timerElement = document.getElementById('timer');
+    if (timerElement) {
+        setInterval(function() {
+            timeLeft--;
+            timerElement.innerText = timeLeft;
+            if (timeLeft <= 0) {
+                window.location.reload();
+            }
+        }, 1000);
+    }
+</script>
+{% endblock %}

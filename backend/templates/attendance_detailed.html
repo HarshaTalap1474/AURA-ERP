@@ -4,15 +4,17 @@
 {% block title %}Detailed Attendance | Aura ERP{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    
+<div class="container-fluid py-4">
+
     <div class="row mb-4 align-items-center">
         <div class="col-md-6">
             <h2 class="fw-bold text-dark mb-0">Attendance Analytics</h2>
             <p class="text-muted">Academic Cycle 2025-26 • Semester VI</p>
         </div>
         <div class="col-md-6 text-md-end">
-            <button class="btn btn-white border shadow-sm me-2"><i class="fas fa-download me-2"></i>Report</button>
+            <button class="btn btn-white border shadow-sm me-2">
+                <i class="fas fa-download me-2"></i>Report
+            </button>
             <div class="btn-group">
                 <button class="btn btn-primary active">Current Month</button>
                 <button class="btn btn-outline-primary">Semester</button>
@@ -21,9 +23,12 @@
     </div>
 
     <div class="row g-4 mb-4">
+
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white fw-bold py-3">Subject-wise Performance (75% Rule)</div>
+                <div class="card-header bg-white fw-bold py-3">
+                    Subject-wise Performance (75% Rule)
+                </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table align-middle">
@@ -42,26 +47,30 @@
                                         <div class="fw-bold">{{ sub.name }}</div>
                                         <div class="small text-muted">{{ sub.code }}</div>
                                     </td>
-                                    <td class="text-center fw-bold text-dark">
-                                        {{ sub.attended }} <span class="text-muted fw-normal">/ {{ sub.total }}</span>
+                                    <td class="text-center fw-bold">
+                                        {{ sub.attended }} 
+                                        <span class="text-muted fw-normal">/ {{ sub.total }}</span>
                                     </td>
                                     <td style="width: 35%;">
                                         <div class="progress" style="height: 6px;">
-                                            <div class="progress-bar {% if sub.percentage < 75 %}bg-danger{% else %}bg-success{% endif %}" 
-                                                 style="width: {{ sub.percentage }}%"></div>
+                                            <div class="progress-bar {% if sub.percentage < 75 %}bg-danger{% else %}bg-success{% endif %}"
+                                                 style="width: {{ sub.percentage }}%">
+                                            </div>
                                         </div>
                                         <small class="text-muted">{{ sub.percentage }}%</small>
                                     </td>
                                     <td class="text-end">
                                         {% if sub.percentage < 75 %}
-                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Critical</span>
+                                            <span class="badge bg-danger-subtle text-danger border">Critical</span>
                                         {% else %}
-                                            <span class="badge bg-success-subtle text-success border border-success-subtle">Safe</span>
+                                            <span class="badge bg-success-subtle text-success border">Safe</span>
                                         {% endif %}
                                     </td>
                                 </tr>
                                 {% empty %}
-                                <tr><td colspan="4" class="text-center py-4">No academic data found.</td></tr>
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">No academic data found.</td>
+                                </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -73,27 +82,31 @@
         <div class="col-lg-4">
             <div class="card border-0 shadow-sm h-100 text-center p-4">
                 <h6 class="text-muted text-uppercase small fw-bold mb-4">Overall Aggregate</h6>
-                
+
                 <div class="position-relative d-inline-block mb-3">
-                    <svg width="160" height="160" viewBox="0 0 160 160">
-                        <circle cx="80" cy="80" r="70" fill="none" stroke="#e9ecef" stroke-width="12" />
-                        <circle cx="80" cy="80" r="70" fill="none" stroke="var(--aura-primary)" stroke-width="12" 
-                                stroke-dasharray="440" stroke-dashoffset="{{ 440|add:'-330' }}" transform="rotate(-90 80 80)" style="transition: stroke-dashoffset 1s ease;" />
+                    <svg width="160" height="160">
+                        <circle cx="80" cy="80" r="70" fill="none" stroke="#e9ecef" stroke-width="12"/>
+                        <circle cx="80" cy="80" r="70" fill="none"
+                                stroke="#0d6efd" stroke-width="12"
+                                stroke-dasharray="440"
+                                stroke-dashoffset="{{ svg_offset|default_if_none:440 }}"
+                                transform="rotate(-90 80 80)" style="transition: stroke-dashoffset 1s ease;"/>
                     </svg>
                     <div class="position-absolute top-50 start-50 translate-middle">
-                        <h2 class="display-4 fw-bold mb-0 text-dark">{{ overall_percentage|default:"75" }}<span class="fs-6">%</span></h2>
+                        <h2 class="fw-bold mb-0">
+                            {{ overall_percentage }}%
+                        </h2>
                     </div>
                 </div>
 
-                <p class="mb-2">You have attended <strong>{{ total_days_present }}</strong> out of {{ total_days_working }} days.</p>
+                <p class="mb-2">
+                    You attended <strong>{{ total_days_present }}</strong> / {{ total_days_working }} days
+                </p>
+
                 {% if overall_percentage < 75 %}
-                    <div class="alert alert-danger border-0 small py-2 mt-2">
-                        <i class="fas fa-exclamation-circle me-1"></i> You are in the defaulter list.
-                    </div>
+                    <div class="alert alert-danger small py-2 mb-0 border-0"><i class="fas fa-exclamation-triangle me-1"></i> Defaulter</div>
                 {% else %}
-                    <div class="alert alert-success border-0 small py-2 mt-2">
-                        <i class="fas fa-check-circle me-1"></i> You are eligible for exams.
-                    </div>
+                    <div class="alert alert-success small py-2 mb-0 border-0"><i class="fas fa-check-circle me-1"></i> Eligible for Exams</div>
                 {% endif %}
             </div>
         </div>
@@ -102,23 +115,31 @@
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-white fw-bold py-3 d-flex justify-content-between align-items-center">
             <span>📅 Monthly Attendance Log</span>
-            <div class="d-flex gap-3 small">
-                <span class="d-flex align-items-center"><span class="badge bg-success rounded-circle p-1 me-2"> </span> Present</span>
-                <span class="d-flex align-items-center"><span class="badge bg-danger rounded-circle p-1 me-2"> </span> Absent</span>
-                <span class="d-flex align-items-center"><span class="badge bg-warning rounded-circle p-1 me-2"> </span> Holiday</span>
+
+            <div class="d-flex flex-wrap gap-3 small">
+                <span class="d-flex align-items-center">
+                    <span class="legend-dot bg-success me-2"></span> Present
+                </span>
+                <span class="d-flex align-items-center">
+                    <span class="legend-dot bg-danger me-2"></span> Absent
+                </span>
+                <span class="d-flex align-items-center">
+                    <span class="legend-dot bg-warning me-2"></span> Holiday
+                </span>
             </div>
         </div>
+
         <div class="card-body p-4">
-            <div class="d-flex flex-wrap gap-2 justify-content-start">
+            <div class="d-flex flex-wrap gap-2">
                 {% for day in calendar_events %}
-                <div class="text-center" style="width: 45px;">
-                    <div class="mb-1 rounded-3 d-flex align-items-center justify-content-center text-white fw-bold shadow-sm
-                        {% if day.status == 'P' %}bg-success
-                        {% elif day.status == 'A' %}bg-danger
-                        {% elif day.status == 'H' %}bg-warning
-                        {% else %}bg-light text-muted{% endif %}" 
-                        style="height: 45px; width: 45px; cursor: pointer;" 
-                        title="{{ day.status_text }}">
+                <div class="text-center" style="width:45px;">
+                    <div class="day-box calendar-day-btn rounded-3 fw-bold shadow-sm
+                        {% if day.status == 'P' %}bg-success text-white
+                        {% elif day.status == 'A' %}bg-danger text-white
+                        {% elif day.status == 'H' %}bg-warning text-dark
+                        {% elif day.status == 'U' %}bg-primary-subtle text-primary border
+                        {% else %}bg-secondary-subtle text-secondary border{% endif %}"
+                        data-full-date="{{ day.full_date }}" title="Click for details">
                         {{ day.date }}
                     </div>
                     <small class="text-muted" style="font-size: 0.7rem;">{{ day.day_name }}</small>
@@ -127,6 +148,131 @@
             </div>
         </div>
     </div>
-
 </div>
+
+<div class="modal fade" id="dailyAttendanceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light border-bottom-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-calendar-day text-primary me-2"></i> 
+                    Details for <span id="modalDateHeader"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                
+                <div id="modalLoading" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="text-muted mt-2 small">Fetching lecture records...</p>
+                </div>
+
+                <div id="modalTableContainer" class="d-none">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light small text-uppercase text-muted">
+                            <tr>
+                                <th class="ps-4">Time</th>
+                                <th>Subject</th>
+                                <th class="pe-4 text-end">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalTableBody">
+                            </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.day-box {
+    height: 45px;
+    width: 45px;
+    cursor: pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition: all 0.2s ease;
+}
+.day-box:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2) !important;
+}
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const dayButtons = document.querySelectorAll('.calendar-day-btn');
+    const attendanceModal = new bootstrap.Modal(document.getElementById('dailyAttendanceModal'));
+    
+    const modalHeader = document.getElementById('modalDateHeader');
+    const modalLoading = document.getElementById('modalLoading');
+    const modalTableContainer = document.getElementById('modalTableContainer');
+    const modalTableBody = document.getElementById('modalTableBody');
+
+    dayButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const selectedDate = this.getAttribute('data-full-date');
+            
+            // Ignore clicks if the date is empty or invalid
+            if (!selectedDate || selectedDate === 'None' || selectedDate === '') return;
+
+            // 1. Reset and Show the Modal
+            modalHeader.innerText = selectedDate;
+            modalTableBody.innerHTML = '';
+            modalTableContainer.classList.add('d-none');
+            modalLoading.classList.remove('d-none');
+            attendanceModal.show();
+
+            // 2. Fetch data from the Backend API
+            fetch(`/api/student/attendance/day/${selectedDate}/`)
+                .then(response => {
+                    if (!response.ok) throw new Error('API Error');
+                    return response.json();
+                })
+                .then(data => {
+                    // Hide spinner, show table
+                    modalLoading.classList.add('d-none');
+                    modalTableContainer.classList.remove('d-none');
+
+                    // 3. Populate the table rows
+                    if (data.lectures && data.lectures.length > 0) {
+                        data.lectures.forEach(lec => {
+                            // Map status to badge colors
+                            let badgeClass = "bg-secondary-subtle text-secondary";
+                            if (lec.status === 'Present') badgeClass = "bg-success-subtle text-success border border-success-subtle";
+                            if (lec.status === 'Absent') badgeClass = "bg-danger-subtle text-danger border border-danger-subtle";
+                            if (lec.status === 'Holiday' || lec.status === 'Excused') badgeClass = "bg-warning-subtle text-warning border border-warning-subtle";
+                            
+                            let row = `
+                                <tr>
+                                    <td class="ps-4 small fw-bold text-muted">${lec.time}</td>
+                                    <td class="fw-bold text-dark">${lec.subject}</td>
+                                    <td class="pe-4 text-end">
+                                        <span class="badge rounded-pill ${badgeClass}">${lec.status}</span>
+                                    </td>
+                                </tr>`;
+                            modalTableBody.insertAdjacentHTML('beforeend', row);
+                        });
+                    } else {
+                        modalTableBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-muted">No lectures scheduled for this day.</td></tr>`;
+                    }
+                })
+                .catch(error => {
+                    console.error("Fetch error:", error);
+                    modalLoading.innerHTML = `<div class="text-danger py-4"><i class="fas fa-exclamation-triangle me-2"></i>Failed to load data. Please try again.</div>`;
+                });
+        });
+    });
+});
+</script>
+
 {% endblock %}

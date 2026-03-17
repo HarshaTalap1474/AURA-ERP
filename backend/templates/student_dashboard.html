@@ -1,138 +1,143 @@
-{% extends 'base.html' %}
-{% block content %}
+    {% extends 'base.html' %}
+    {% load static %}
 
-<div class="container-fluid">
+    {% block title %}Student Dashboard | Aura ERP{% endblock %}
 
-    <!-- ================= GREETING + ATTENDANCE ================= -->
-    <div class="row g-4 mb-4">
+    {% block main_class %}has-sidebar{% endblock %}
 
-        <!-- Greeting / Notification -->
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-sm p-4 bg-white h-100">
-                <h2 class="fw-bold mb-1">
-                    Hi, {{ user.get_full_name|default:username }}
-                </h2>
-                <p class="text-muted mb-4">
-                    Welcome to your Aura Academic Portal.
-                </p>
-
-                <div class="p-3 bg-light rounded border-start border-4 border-primary">
-                    <h6 class="fw-bold mb-1">
-                        <i class="fas fa-bullhorn me-2 text-primary"></i>
-                        Latest Notification
-                    </h6>
-                    <p class="small mb-0 text-muted">
-                        Mid-term evaluation for IoT Systems is scheduled for next Monday.
-                        Ensure your Device ID is synced.
-                    </p>
-                </div>
-            </div>
+    {% block sidebar %}
+    <aside class="aura-sidebar shadow-sm" id="sidebar">
+        <div class="d-lg-none p-3 text-end">
+            <button class="btn-close" id="sidebarClose"
+                onclick="document.getElementById('sidebar').classList.remove('active')">
+            </button>
         </div>
 
-        <!-- Attendance Card -->
-        <div class="col-lg-4 col-md-6">
-            <a href="{% url 'attendance_detailed' %}" class="text-decoration-none">
-                <div class="card attendance-card h-100 border-0 shadow-sm">
-                    <div class="card-body d-flex flex-column justify-content-between p-4 text-white text-center">
+        <div class="py-2">
+            <a href="{% url 'dashboard' %}" class="nav-link-erp active">
+                <i class="fas fa-desktop"></i> DASHBOARD
+            </a>
 
-                        <div>
-                            <h6 class="text-uppercase fw-bold small opacity-75 mb-2">
-                                Overall Attendance
-                            </h6>
+            <a href="{% url 'profile' %}" class="nav-link-erp">
+                <i class="fas fa-user-circle"></i> PROFILE
+            </a>
 
-                            <div class="attendance-value fw-bold">
-                                {{ attendance_percentage|default:"--" }}%
-                            </div>
-                        </div>
+            <a href="{% url 'attendance_detailed' %}" class="nav-link-erp">
+                <i class="fas fa-chart-pie"></i> ATTENDANCE
+            </a>
 
-                        <div class="mt-4">
-                            <div class="progress attendance-progress mb-3">
-                                <div
-                                    class="progress-bar"
-                                    style="width: {{ attendance_percentage|default:0 }}%">
-                                </div>
-                            </div>
+            <a href="{% url 'leave_application' %}" class="nav-link-erp">
+                <i class="fas fa-paper-plane"></i> LEAVE REQUEST
+            </a>
 
-                            <div class="small fw-semibold d-flex justify-content-center align-items-center gap-2 opacity-90">
-                                <span>View detailed analysis</span>
-                                <i class="fas fa-arrow-right"></i>
-                            </div>
-                        </div>
+            <a href="{% url 'manage_timetable' %}" class="nav-link-erp">
+                <i class="fas fa-calendar-alt"></i> TIME TABLE
+            </a>
 
-                    </div>
-                </div>
+            <div class="px-3 py-2 small text-uppercase text-muted fw-bold mt-2" style="font-size:0.65rem;">
+                Campus Services
+            </div>
+
+            <a href="{% url 'coming_soon' 'Syllabus' %}" class="nav-link-erp text-muted">
+                <i class="fas fa-book"></i> SYLLABUS
+            </a>
+
+            <a href="{% url 'coming_soon' 'Transport V2' %}" class="nav-link-erp text-muted">
+                <i class="fas fa-bus"></i> TRANSPORT
+                <span class="badge bg-warning text-dark ms-auto" style="font-size:0.6rem;">SOON</span>
+            </a>
+
+            <a href="{% url 'coming_soon' 'Fees' %}" class="nav-link-erp text-muted">
+                <i class="fas fa-money-check-alt"></i> FEES
+                <span class="badge bg-warning text-dark ms-auto" style="font-size:0.6rem;">SOON</span>
+            </a>
+
+            <a href="{% url 'coming_soon' 'Hostel' %}" class="nav-link-erp text-muted">
+                <i class="fas fa-hotel"></i> HOSTEL
+                <span class="badge bg-warning text-dark ms-auto" style="font-size:0.6rem;">SOON</span>
             </a>
         </div>
+    </aside>
+    {% endblock %}
 
+    {% block content %}
+    <div class="container-fluid">
+
+        <div class="row g-4 mb-4">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm p-4 bg-white h-100">
+                    <h2 class="fw-bold mb-1">Hi, {{ user.get_full_name|default:user.username }}</h2>
+                    <p class="text-muted mb-4">Welcome to your Aura Academic Portal.</p>
+
+                    <div class="p-3 bg-light rounded border-start border-4 border-primary">
+                        <h6 class="fw-bold mb-1"><i class="fas fa-bullhorn me-2 text-primary"></i>Latest Notification</h6>
+                        <p class="small mb-0 text-muted">Mid-term evaluation for IoT Systems is scheduled for next Monday. Ensure your Device ID is synced.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <a href="{% url 'attendance_detailed' %}" class="text-decoration-none">
+                    <div class="card attendance-card h-100 border-0 shadow-sm">
+                        <div class="card-body d-flex flex-column justify-content-between p-4 text-white text-center">
+                            <div>
+                                <h6 class="text-uppercase fw-bold small opacity-75 mb-2">Overall Attendance</h6>
+                                <div class="attendance-value fw-bold">{{ attendance_percentage|default:"--" }}%</div>
+                            </div>
+                            <div class="mt-4">
+                                <div class="progress attendance-progress mb-3">
+                                    <div class="progress-bar" style="width: {{ attendance_percentage|default:0 }}%"></div>
+                                </div>
+                                <div class="small fw-semibold d-flex justify-content-center align-items-center gap-2 opacity-90">
+                                    <span>View detailed analysis</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 text-center p-4">
+                    <i class="fas fa-id-card fa-2x text-primary mb-3"></i>
+                    <h6 class="fw-bold mb-2">Virtual ID Card</h6>
+                    <p class="small text-muted mb-3">Access your digital campus identification.</p>
+                    <a href="{% url 'virtual_id' %}" class="btn btn-sm btn-outline-primary rounded-pill">View QR</a>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 text-center p-4">
+                    <i class="fas fa-shield-alt fa-2x text-success mb-3"></i>
+                    <h6 class="fw-bold mb-2">Device Integrity</h6>
+                    <p class="small text-muted mb-3">Manage your bound IoT device status.</p>
+                    <a href="{% url 'device_integrity' %}" class="btn btn-sm btn-outline-success rounded-pill">Security Settings</a>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 text-center p-4">
+                    <i class="fas fa-user-tie fa-2x text-info mb-3"></i>
+                    <h6 class="fw-bold mb-2">Contact Mentor</h6>
+                    <p class="small text-muted mb-3">Direct channel to your academic advisor.</p>
+                    <a href="{% url 'contact_mentor' %}" class="btn btn-sm btn-outline-info rounded-pill">Send Message</a>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- ================= QUICK ACTIONS ================= -->
-    <div class="row g-3">
+    <style>
+    .attendance-card { background: linear-gradient(135deg,#0d6efd,#0b5ed7); border-radius:16px; transition:transform .25s ease, box-shadow .25s ease; }
+    .attendance-card:hover { transform:translateY(-6px); box-shadow:0 14px 32px rgba(13,110,253,.35); }
+    .attendance-value { font-size:3.2rem; line-height:1; }
+    .attendance-progress { height:6px; background:rgba(255,255,255,.25); border-radius:999px; overflow:hidden; }
+    .attendance-progress .progress-bar { background:#ffffff; border-radius:999px; transition:width .6s ease; }
 
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100 text-center p-4">
-                <i class="fas fa-id-card fa-2x text-primary mb-3"></i>
-                <h6 class="fw-bold mb-2">Virtual ID Card</h6>
-                <button class="btn btn-sm btn-outline-primary rounded-pill">
-                    View QR
-                </button>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100 text-center p-4">
-                <i class="fas fa-shield-alt fa-2x text-success mb-3"></i>
-                <h6 class="fw-bold mb-2">Device Integrity</h6>
-                <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2">
-                    Device Bound
-                </span>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100 text-center p-4">
-                <i class="fas fa-hands-helping fa-2x text-info mb-3"></i>
-                <h6 class="fw-bold mb-2">Contact Mentor</h6>
-                <button class="btn btn-sm btn-outline-info rounded-pill">
-                    Send Message
-                </button>
-            </div>
-        </div>
-
-    </div>
-
-</div>
-
-<!-- ================= DASHBOARD STYLES ================= -->
-<style>
-    .attendance-card {
-        background: linear-gradient(135deg, #0d6efd, #0b5ed7);
-        border-radius: 16px;
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
-    }
-
-    .attendance-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 14px 32px rgba(13, 110, 253, 0.35);
-    }
-
-    .attendance-value {
-        font-size: 3.2rem;
-        line-height: 1;
-    }
-
-    .attendance-progress {
-        height: 6px;
-        background: rgba(255, 255, 255, 0.25);
-        border-radius: 999px;
-        overflow: hidden;
-    }
-
-    .attendance-progress .progress-bar {
-        background: #ffffff;
-        border-radius: 999px;
-        transition: width 0.6s ease;
-    }
-</style>
-
-{% endblock %}
+    /* Subtle Hover Effects for Action Cards */
+    .card.text-center { transition: transform 0.2s ease; }
+    .card.text-center:hover { transform: scale(1.02); }
+    </style> 
+    {% endblock %}

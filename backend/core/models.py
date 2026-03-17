@@ -26,6 +26,20 @@ class User(AbstractUser):
         help_text="Unique Android ID of the student's registered device."
     )
 
+    # ==========================
+    # ERP PROFILE DETAILS
+    # ==========================
+    BLOOD_GROUPS = (
+        ('A+', 'A+'), ('A-', 'A-'), ('B+', 'B+'), ('B-', 'B-'),
+        ('O+', 'O+'), ('O-', 'O-'), ('AB+', 'AB+'), ('AB-', 'AB-'),
+    )
+    
+    dob = models.DateField(null=True, blank=True, verbose_name="Date of Birth")
+    blood_group = models.CharField(max_length=5, choices=BLOOD_GROUPS, null=True, blank=True)
+    address = models.TextField(null=True, blank=True)
+    emergency_contact = models.CharField(max_length=15, null=True, blank=True, help_text="Emergency contact number")
+
+
 # ==========================================
 # 2. ACADEMIC STRUCTURE
 # ==========================================
@@ -150,3 +164,31 @@ class Attendance(models.Model):
 
     def __str__(self):
         return f"{self.student.username} - {self.status}"
+
+
+# ==========================================
+# 6. LEAVE MANAGEMENT
+# ==========================================
+class LeaveRequest(models.Model):
+    LEAVE_TYPES = (
+        ('MEDICAL', 'Medical Leave'),
+        ('EVENT', 'College Event'),
+        ('PERSONAL', 'Personal Reason'),
+    )
+    STATUS_CHOICES = (
+        ('PENDING', 'Pending'),
+        ('APPROVED', 'Approved'),
+        ('REJECTED', 'Rejected'),
+    )
+    
+    student = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': 'STUDENT'}, related_name='leave_requests')
+    leave_type = models.CharField(max_length=20, choices=LEAVE_TYPES)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    reason = models.TextField()
+    document = models.FileField(upload_to='leave_docs/', null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+    applied_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.student.username} | {self.leave_type} | {self.status}"

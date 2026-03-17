@@ -7,9 +7,13 @@
     <title>{% block title %}Aura ERP{% endblock %}</title>
 
     <link rel="icon" type="image/png" href="https://i.ibb.co/M5V9nb1g/Attendix.jpg">
+
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+
     <style>
         :root { 
             --aura-primary: #0d6efd; 
@@ -27,67 +31,190 @@
         }
 
         /* 🛰️ Topbar */
-        .aura-topbar { background: var(--aura-primary); height: var(--topbar-height); position: fixed; top: 0; width: 100%; z-index: 1050; display: flex; align-items: center; padding: 0 20px; }
-        .menu-toggle { display: none; background: transparent; border: none; color: white; font-size: 1.5rem; margin-right: 15px; }
+        .aura-topbar { 
+            background: var(--aura-primary); 
+            height: var(--topbar-height); 
+            position: fixed; 
+            top: 0; 
+            width: 100%; 
+            z-index: 1050; 
+            display: flex; 
+            align-items: center; 
+            padding: 0 20px; 
+        }
 
-        /* 🧭 Sidebar (CSS stays here so child templates can use it) */
-        .aura-sidebar { width: var(--sidebar-width); background: #fff; height: calc(100vh - var(--topbar-height)); position: fixed; top: var(--topbar-height); left: 0; border-right: 1px solid #e3e6f0; overflow-y: auto; z-index: 1000; transition: all 0.3s ease; }
-        .nav-link-erp { padding: 12px 20px; color: #4e73df; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; text-decoration: none; border-bottom: 1px solid #f8f9fc; }
-        .nav-link-erp:hover, .nav-link-erp.active { background: #f8f9fc; color: #224abe; border-left: 4px solid var(--aura-primary); }
-        .nav-link-erp i { width: 25px; margin-right: 10px; text-align: center; }
+        .menu-toggle { 
+            display: none; 
+            background: transparent; 
+            border: none; 
+            color: white; 
+            font-size: 1.5rem; 
+            margin-right: 15px; 
+        }
 
-        /* 🧬 Main Layout States */
-        .aura-main { margin-top: var(--topbar-height); transition: all 0.3s; flex: 1; padding: 25px; display: flex; flex-direction: column; }
-        
+        /* 🧭 Sidebar */
+        .aura-sidebar { 
+            width: var(--sidebar-width); 
+            background: #fff; 
+            height: calc(100vh - var(--topbar-height)); 
+            position: fixed; 
+            top: var(--topbar-height); 
+            left: 0; 
+            border-right: 1px solid #e3e6f0; 
+            overflow-y: auto; 
+            z-index: 1000; 
+            transition: all 0.3s ease; 
+        }
+
+        .nav-link-erp { 
+            padding: 12px 20px; 
+            color: #4e73df; 
+            font-size: 0.85rem; 
+            font-weight: 600; 
+            display: flex; 
+            align-items: center; 
+            text-decoration: none; 
+            border-bottom: 1px solid #f8f9fc; 
+        }
+
+        .nav-link-erp:hover, 
+        .nav-link-erp.active { 
+            background: #f8f9fc; 
+            color: #224abe; 
+            border-left: 4px solid var(--aura-primary); 
+        }
+
+        .nav-link-erp i { 
+            width: 25px; 
+            margin-right: 10px; 
+            text-align: center; 
+        }
+
+        /* 🧬 Main Layout */
+        .aura-main { 
+            margin-top: var(--topbar-height); 
+            transition: all 0.3s; 
+            flex: 1; 
+            padding: 25px; 
+            display: flex; 
+            flex-direction: column; 
+        }
+
         @media (min-width: 992px) {
             .has-sidebar { margin-left: var(--sidebar-width); }
         }
-        
+
         .no-sidebar-centered { 
-            margin-left: 0 !important; justify-content: center !important; align-items: center !important; 
-            min-height: calc(100vh - var(--topbar-height)); background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); 
+            margin-left: 0 !important; 
+            justify-content: center !important; 
+            align-items: center !important; 
+            min-height: calc(100vh - var(--topbar-height)); 
+            background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); 
         }
 
-        .nav-identity-pill { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 50px; padding: 5px 15px; font-size: 0.85rem; }
+        .nav-identity-pill { 
+            background: rgba(255,255,255,0.2); 
+            border: 1px solid rgba(255,255,255,0.3); 
+            color: white; 
+            border-radius: 50px; 
+            padding: 5px 15px; 
+            font-size: 0.85rem; 
+        }
 
         @media (max-width: 991.98px) {
+
             .menu-toggle { display: block; }
-            .aura-sidebar { left: -100%; width: 100%; z-index: 1100; }
+
+            .aura-sidebar { 
+                left: -100%; 
+                width: 100%; 
+                z-index: 1100; 
+            }
+
             .aura-sidebar.active { left: 0; }
+
             .has-sidebar { margin-left: 0 !important; }
         }
     </style>
 </head>
+
 <body>
 
+<!-- 🚀 Topbar -->
 <header class="aura-topbar shadow-sm text-white justify-content-between">
+
     {% if user.is_authenticated %}
-        <button class="menu-toggle" id="sidebarCollapse"><i class="fas fa-bars"></i></button>
-        <div class="fw-bold fs-4 me-auto">⚡ AURA ERP</div>
+
+        <button class="menu-toggle" id="sidebarCollapse">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Clickable Logo -->
+        <a href="{% url 'dashboard' %}" class="fw-bold fs-4 me-auto text-white text-decoration-none">
+            ⚡ AURA ERP
+        </a>
+
+        <!-- User Dropdown -->
         <div class="dropdown">
             <button class="btn nav-identity-pill dropdown-toggle fw-bold" data-bs-toggle="dropdown">
-                {% if user.role == "STUDENT" %}🆔 {{ user.student_profile.roll_no }}{% else %}👤 {{ user.username }}{% endif %}
+
+                {% if user.role == "STUDENT" %}
+                    🆔 {{ user.student_profile.roll_no }}
+                {% else %}
+                    👤 {{ user.username }}
+                {% endif %}
+
             </button>
+
             <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
-                <li><a class="dropdown-item" href="{% url 'profile' %}">Profile</a></li>
-                <li><hr class="dropdown-divider"></li>
+
                 <li>
-                    <form action="{% url 'logout' %}" method="post" class="m-0 p-0">
-                    {% csrf_token %}
-        <button type="submit" class="dropdown-item text-danger">Logout</button>
-    </form>
-</li>
+                    <a class="dropdown-item" href="{% url 'dashboard' %}">
+                        <i class="fas fa-desktop me-2 text-muted"></i>Dashboard
+                    </a>
+                </li>
+
+                <li>
+                    <a class="dropdown-item" href="{% url 'profile' %}">
+                        <i class="fas fa-user-circle me-2 text-muted"></i>Profile
+                    </a>
+                </li>
+
+                <li>
+                    <a class="dropdown-item" href="{% url 'change_password' %}">
+                        <i class="fas fa-shield-alt me-2 text-muted"></i>Security
+                    </a>
+                </li>
+
+                <li><hr class="dropdown-divider"></li>
+
+                <li>
+                    <a class="dropdown-item text-danger" href="{% url 'logout' %}">
+                        <i class="fas fa-power-off me-2"></i>Logout
+                    </a>
+                </li>
+
             </ul>
         </div>
+
     {% else %}
-        <div class="fw-bold fs-4 mx-auto text-center">⚡ AURA ERP</div>
+
+        <div class="fw-bold fs-4 mx-auto text-center">
+            ⚡ AURA ERP
+        </div>
+
     {% endif %}
+
 </header>
 
+<!-- Sidebar Block -->
 {% block sidebar %}{% endblock %}
 
+<!-- Main Content -->
 <main class="aura-main {% block main_class %}no-sidebar-centered{% endblock %}">
+
     <div class="container-fluid">
+
         {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0">
@@ -96,28 +223,44 @@
                 </div>
             {% endfor %}
         {% endif %}
-        
+
         {% block content %}{% endblock %}
+
     </div>
+
 </main>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const sidebar = document.getElementById("sidebar");
-        const openBtn = document.getElementById("sidebarCollapse");
-        
-        if (openBtn && sidebar) {
-            openBtn.addEventListener("click", () => sidebar.classList.add("active"));
-            
-            // Close sidebar when clicking outside on mobile
-            document.addEventListener('click', (e) => {
-                if (window.innerWidth < 992 && sidebar.classList.contains('active') && !sidebar.contains(e.target) && !openBtn.contains(e.target)) {
-                    sidebar.classList.remove("active");
-                }
-            });
-        }
-    });
+document.addEventListener("DOMContentLoaded", function () {
+
+    const sidebar = document.getElementById("sidebar");
+    const openBtn = document.getElementById("sidebarCollapse");
+
+    if (openBtn && sidebar) {
+
+        openBtn.addEventListener("click", () => {
+            sidebar.classList.add("active");
+        });
+
+        document.addEventListener('click', (e) => {
+
+            if (
+                window.innerWidth < 992 &&
+                sidebar.classList.contains('active') &&
+                !sidebar.contains(e.target) &&
+                !openBtn.contains(e.target)
+            ) {
+                sidebar.classList.remove("active");
+            }
+
+        });
+
+    }
+
+});
 </script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>

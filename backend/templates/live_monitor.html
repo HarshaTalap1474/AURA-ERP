@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Live Session: {{ lecture.subject.name }} | Aura ERP{% endblock %}
+
+{% block main_class %}has-sidebar{% endblock %}
+
+{% block sidebar %}
+<aside class="aura-sidebar shadow-sm" id="sidebar">
+    <div class="d-lg-none p-3 text-end">
+        <button class="btn-close" id="sidebarClose" onclick="document.getElementById('sidebar').classList.remove('active')"></button>
+    </div>
+    <div class="py-2">
+        <a href="{% url 'teacher_dashboard' %}" class="nav-link-erp">
+            <i class="fas fa-chalkboard-teacher"></i> DASHBOARD
+        </a>
+        <a href="{% url 'live_monitor' %}" class="nav-link-erp active">
+            <i class="fas fa-broadcast-tower"></i> LIVE CLASS <span class="badge bg-danger ms-auto pulse-badge">● LIVE</span>
+        </a>
+        </div>
+</aside>
+<style>
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+    .pulse-badge { animation: pulse 2s infinite; font-size: 0.65rem; }
+    
+    /* Smooth transition for student cards when they turn green */
+    .student-card { transition: all 0.4s ease-in-out; }
+    .status-present { background-color: #d1e7dd !important; border-color: #badbcc !important; }
+    .status-absent { background-color: #f8f9fa !important; border-color: #e2e3e5 !important; opacity: 0.7; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    
+    <div class="row mb-4 align-items-center bg-white p-3 shadow-sm rounded border-start border-danger border-5">
+        <div class="col-md-8">
+            <div class="d-flex align-items-center">
+                <div class="spinner-grow text-danger me-3" role="status" style="width: 1.5rem; height: 1.5rem;">
+                    <span class="visually-hidden">Live...</span>
+                </div>
+                <div>
+                    <h3 class="fw-bold text-dark mb-0">Data Structures (SE - Div A)</h3>
+                    <p class="text-muted mb-0"><i class="fas fa-map-marker-alt text-primary me-1"></i> Room 204 | ESP32 Node: <span class="badge bg-success">Active</span></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <button class="btn btn-outline-danger fw-bold shadow-sm" id="endSessionBtn">
+                <i class="fas fa-stop-circle me-2"></i>End Session
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4 text-center">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm py-3 bg-light">
+                <h6 class="text-uppercase small fw-bold text-muted mb-1">Total Strength</h6>
+                <h3 class="fw-bold mb-0" id="stat-total">{{ total_students|default:"60" }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm py-3 bg-success text-white">
+                <h6 class="text-uppercase small fw-bold opacity-75 mb-1">Present</h6>
+                <h3 class="fw-bold mb-0" id="stat-present">0</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm py-3 bg-secondary text-white">
+                <h6 class="text-uppercase small fw-bold opacity-75 mb-1">Absent</h6>
+                <h3 class="fw-bold mb-0" id="stat-absent">{{ total_students|default:"60" }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm py-3 bg-primary text-white">
+                <h6 class="text-uppercase small fw-bold opacity-75 mb-1">Attendance %</h6>
+                <h3 class="fw-bold mb-0" id="stat-percent">0%</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3 fw-bold border-bottom-0 d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-users text-primary me-2"></i> Live Roster</span>
+            <small class="text-muted">Auto-updating every 3 seconds...</small>
+        </div>
+        <div class="card-body p-4 bg-light">
+            <div class="row g-3" id="student-grid">
+                
+                {% for student in students %}
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                    <div class="card student-card text-center border p-3 h-100 shadow-sm {% if student.is_present %}status-present{% else %}status-absent{% endif %}" id="student-{{ student.roll_no }}">
+                        
+                        <div class="mx-auto bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm mb-2" style="width: 50px; height: 50px; border: 2px solid #fff;">
+                            <i class="fas fa-user text-secondary"></i>
+                        </div>
+                        
+                        <h6 class="fw-bold mb-0 small text-truncate" title="{{ student.name }}">{{ student.name }}</h6>
+                        <p class="text-muted small mb-2">{{ student.roll_no }}</p>
+                        
+                        <div class="status-badge">
+                            {% if student.is_present %}
+                                <span class="badge bg-success rounded-pill w-100"><i class="fas fa-check me-1"></i>Present</span>
+                            {% else %}
+                                <span class="badge bg-secondary rounded-pill w-100"><i class="fas fa-clock me-1"></i>Waiting</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Replace this URL with your actual backend API endpoint for this specific lecture
+    const liveApiUrl = "/api/lecture/{{ lecture.id }}/live-status/"; 
+    
+    // Function to fetch and update UI
+    function fetchLiveAttendance() {
+        fetch(liveApiUrl)
+            .then(response => response.json())
+            .then(data => {
+                // 1. Update Top Stats
+                document.getElementById('stat-present').innerText = data.present_count;
+                document.getElementById('stat-absent').innerText = data.absent_count;
+                document.getElementById('stat-percent').innerText = data.attendance_percentage + "%";
+
+                // 2. Update Student Cards
+                data.students.forEach(student => {
+                    const card = document.getElementById(`student-${student.roll_no}`);
+                    if (card) {
+                        const badgeContainer = card.querySelector('.status-badge');
+                        
+                        if (student.is_present && !card.classList.contains('status-present')) {
+                            // Turn Green! (They just scanned their card)
+                            card.classList.remove('status-absent');
+                            card.classList.add('status-present');
+                            badgeContainer.innerHTML = '<span class="badge bg-success rounded-pill w-100"><i class="fas fa-check me-1"></i>Present</span>';
+                        } else if (!student.is_present && card.classList.contains('status-present')) {
+                            // Turn Grey (Teacher manually undid attendance, or error)
+                            card.classList.remove('status-present');
+                            card.classList.add('status-absent');
+                            badgeContainer.innerHTML = '<span class="badge bg-secondary rounded-pill w-100"><i class="fas fa-clock me-1"></i>Waiting</span>';
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error("Live sync error:", error));
+    }
+
+    // Ping the server every 3 seconds (3000 milliseconds)
+    setInterval(fetchLiveAttendance, 3000);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Leave Management | Aura ERP{% endblock %}
+
+{% block main_class %}has-sidebar{% endblock %}
+
+{% block sidebar %}
+<aside class="aura-sidebar shadow-sm" id="sidebar">
+    <div class="d-lg-none p-3 text-end">
+        <button class="btn-close" id="sidebarClose" onclick="document.getElementById('sidebar').classList.remove('active')"></button>
+    </div>
+    <div class="py-2">
+        <a href="{% url 'dashboard' %}" class="nav-link-erp">
+            <i class="fas fa-desktop"></i> DASHBOARD
+        </a>
+        <a href="{% url 'profile' %}" class="nav-link-erp">
+            <i class="fas fa-user-circle"></i> PROFILE
+        </a>
+        <a href="{% url 'attendance_detailed' %}" class="nav-link-erp">
+            <i class="fas fa-chart-pie"></i> ATTENDANCE
+        </a>
+        <a href="{% url 'leave_application' %}" class="nav-link-erp active">
+            <i class="fas fa-paper-plane"></i> LEAVE REQUEST
+        </a>
+        <a href="{% url 'manage_timetable' %}" class="nav-link-erp">
+            <i class="fas fa-calendar-alt"></i> TIME TABLE
+        </a>
+    </div>
+</aside>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold text-dark mb-0">Leave Application</h2>
+            <p class="text-muted">Apply for official leaves and track approval status.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3 fw-bold border-bottom-0">
+                    <i class="fas fa-plus-circle text-primary me-2"></i> New Request
+                </div>
+                <div class="card-body p-4 pt-2">
+                    <form method="POST" action="{% url 'leave_application' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Leave Type</label>
+                            <select name="leave_type" class="form-select bg-light border-0" required>
+                                <option value="" selected disabled>Select category...</option>
+                                <option value="MEDICAL">Medical Leave</option>
+                                <option value="EVENT">Sports / College Event</option>
+                                <option value="PERSONAL">Personal / Family</option>
+                            </select>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label small fw-bold text-muted">From Date</label>
+                                <input type="date" name="start_date" class="form-control bg-light border-0" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small fw-bold text-muted">To Date</label>
+                                <input type="date" name="end_date" class="form-control bg-light border-0" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Reason</label>
+                            <textarea name="reason" class="form-control bg-light border-0" rows="3" placeholder="Briefly explain your reason..." required></textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-muted">Supporting Document</label>
+                            <div class="input-group">
+                                <input type="file" name="document" class="form-control bg-light border-0 form-control-sm">
+                            </div>
+                            <div class="form-text text-muted" style="font-size: 0.7rem;">
+                                <i class="fas fa-info-circle me-1"></i> Attach Medical Certificate/Letter (PDF, JPG, PNG).
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 fw-bold rounded-pill shadow-sm py-2">
+                            <i class="fas fa-paper-plane me-2"></i> Submit Application
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3 fw-bold border-bottom-0 d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-history text-primary me-2"></i> History</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light small text-uppercase text-muted">
+                                <tr>
+                                    <th class="ps-4">Date Applied</th>
+                                    <th>Type & Duration</th>
+                                    <th>Status</th>
+                                    <th class="pe-4 text-end">Doc</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for leave in leave_history %}
+                                <tr>
+                                    <td class="ps-4 small text-muted">{{ leave.applied_on|date:"d M, Y" }}</td>
+                                    <td>
+                                        <div class="fw-bold text-dark">{{ leave.get_leave_type_display }}</div>
+                                        <small class="text-muted">{{ leave.start_date|date:"d M" }} - {{ leave.end_date|date:"d M" }}</small>
+                                    </td>
+                                    <td>
+                                        {% if leave.status == 'APPROVED' %}
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
+                                                <i class="fas fa-check-circle me-1"></i> Approved
+                                            </span>
+                                        {% elif leave.status == 'REJECTED' %}
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">
+                                                <i class="fas fa-times-circle me-1"></i> Rejected
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill">
+                                                <i class="fas fa-clock me-1"></i> Pending
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="pe-4 text-end">
+                                        {% if leave.document %}
+                                            <a href="{{ leave.document.url }}" target="_blank" class="btn btn-sm btn-light text-primary rounded-circle">
+                                                <i class="fas fa-paperclip"></i>
+                                            </a>
+                                        {% else %}
+                                            <span class="text-muted opacity-50 small">None</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-5 text-muted">
+                                        <div class="mb-2"><i class="fas fa-folder-open fa-2x opacity-25"></i></div>
+                                        <p class="mb-0">You haven't applied for any leaves yet.</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Styling for the file input and light inputs to match your ERP theme */
+    .form-control:focus, .form-select:focus {
+        background-color: #fff !important;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+        border: 1px solid #0d6efd !important;
+    }
+    .badge { font-weight: 600; font-size: 0.75rem; padding: 0.4em 0.8em; }
+    .bg-success-subtle { background-color: #e1fcef; }
+    .bg-danger-subtle { background-color: #fce1e1; }
+    .bg-warning-subtle { background-color: #fff8e1; }
+</style>
+{% endblock %}

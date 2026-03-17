@@ -1,30 +1,39 @@
+# =========================================
+# STANDARD LIBRARY IMPORTS
+# =========================================
+import io
+import csv
+import calendar
+from datetime import datetime, timedelta
+
+# =========================================
+# DJANGO IMPORTS
+# =========================================
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
-from django.db.models import Q
+from django.http import HttpResponse, JsonResponse
+from django.db.models import Count, Q
 from django.utils import timezone
-from django.contrib.auth import authenticate, update_session_auth_hash
-from django.contrib.auth.views import PasswordChangeView #
+from django.contrib.auth import authenticate, update_session_auth_hash, logout
+from django.contrib.auth.views import PasswordChangeView
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.shortcuts import render, redirect
-# REST API Imports
-from rest_framework.views import APIView
+from django.core.signing import TimestampSigner
+
+# =========================================
+# REST FRAMEWORK IMPORTS
+# =========================================
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-import calendar
-from datetime import datetime
-from django.db.models import Count, Q
-import io
-import csv
-import uuid
 
-# ✅ IMPORT THE MODELS
+# =========================================
+# LOCAL MODEL IMPORTS
+# =========================================
 from .models import (
     User, StudentProfile, TeacherProfile, Department, Batch, Semester,
-    Course, Classroom, Lecture, Attendance, TimeTable
+    Course, Classroom, Lecture, Attendance, TimeTable, LeaveRequest
 )
 
 # =========================================
@@ -35,6 +44,11 @@ def custom_login(request):
         return dashboard_redirect(request)
     return redirect('/admin/')
 
+def custom_logout(request):
+    """ Bulletproof logout view that forces a redirect to the login page. """
+    logout(request) 
+    return redirect('login') 
+
 @login_required
 def dashboard_redirect(request):
     user = request.user
@@ -43,11 +57,7 @@ def dashboard_redirect(request):
     elif user.role == User.Role.STUDENT:
         return redirect('student_dashboard')
     elif user.role == User.Role.ADMIN:
-        # ⚠️ FIX: Send Admin to the Registrar View instead of raw Django Admin
-        # This keeps them inside the "Aura UI"
         return redirect('manage_students')
-    
-    # Fallback
     return redirect('login')
 
 # =========================================
@@ -57,21 +67,84 @@ def dashboard_redirect(request):
 def teacher_dashboard(request):
     if request.user.role != User.Role.TEACHER:
         return redirect('student_dashboard')
-    active_lectures = Lecture.objects.filter(teacher=request.user, is_active=True)
-    return render(request, 'dashboard.html', {'active_lectures': active_lectures, 'username': request.user.username})
+    
+    now = timezone.localtime(timezone.now())
+    today_weekday = now.weekday()
+    today_date = now.date()
+
+    todays_timetable = TimeTable.objects.filter(
+        teacher=request.user, day_of_week=today_weekday
+    ).order_by('start_time')
+    
+    students_present_count = Attendance.objects.filter(
+        lecture__teacher=request.user, timestamp__date=today_date, status='PRESENT'
+    ).values('student').distinct().count()
+
+    todays_lectures = []
+    for slot in todays_timetable:
+        is_active = slot.start_time <= now.time() <= slot.end_time
+        time_str = f"{slot.start_time.strftime('%I:%M %p')} - {slot.end_time.strftime('%I:%M %p')}"
+        
+        todays_lectures.append({
+            'id': slot.id,
+            'time': time_str,
+            'subject': {'name': slot.course.name},
+            'batch': f"{slot.course.code}", 
+            'room': slot.classroom.room_number if slot.classroom else "TBD",
+            'is_active': is_active
+        })
+
+    context = {
+        'stats': {
+            'today_lectures': todays_timetable.count(),
+            'students_present': students_present_count,
+            'pending_leaves': 0 
+        },
+        'todays_lectures': todays_lectures,
+        'username': request.user.username
+    }
+    return render(request, 'teacher_dashboard.html', context)
 
 # =========================================
 # 3. STUDENT DASHBOARD (Web Portal)
 # =========================================
 @login_required
 def student_dashboard(request):
+    # Security: Only allow Students
     if request.user.role != User.Role.STUDENT:
         return redirect('teacher_dashboard')
+
+    # 1. Fetch Basic History
+    attendance_history = Attendance.objects.filter(student=request.user).order_by('-timestamp')
+
+    # 2. CALCULATE OVERALL ATTENDANCE PERCENTAGE
+    # Get the student's profile to know their batch/semester
+    profile = getattr(request.user, 'student_profile', None)
     
-    # 🔄 RENAMED VARIABLE TO AVOID CONFUSION WITH API
-    recent_logs = Attendance.objects.filter(student=request.user).order_by('-timestamp')
-    
-    return render(request, 'student_dashboard.html', {'history': recent_logs, 'username': request.user.username})
+    attendance_percentage = 0
+    if profile:
+        # Total lectures conducted for the courses in the student's current semester
+        total_conducted = Lecture.objects.filter(
+            course__semester=profile.current_semester,
+            is_active=False # Only count finished classes
+        ).count()
+
+        # Total lectures this student actually attended
+        total_attended = Attendance.objects.filter(
+            student=request.user,
+            lecture__course__semester=profile.current_semester,
+            status='PRESENT'
+        ).count()
+
+        if total_conducted > 0:
+            attendance_percentage = round((total_attended / total_conducted) * 100, 1)
+
+    context = {
+        'history': attendance_history,
+        'username': request.user.username,
+        'attendance_percentage': attendance_percentage,
+    }
+    return render(request, 'student_dashboard.html', context)
 
 # =========================================
 # 4. REGISTRAR MODULE (Web Portal)
@@ -82,7 +155,7 @@ def manage_students(request):
         return redirect('student_dashboard')
 
     query = request.GET.get('q')
-    students = StudentProfile.objects.select_related('user', 'department', 'batch', 'current_semester').all().order_by('roll_no')
+    students = StudentProfile.objects.select_related('user', 'department', 'batch', 'current_semester').order_by('roll_no')
 
     if query:
         students = students.filter(
@@ -108,20 +181,14 @@ def bulk_upload_students(request):
 
             data_set = csv_file.read().decode('UTF-8')
             io_string = io.StringIO(data_set)
-            next(io_string, None) # Skip Header
+            next(io_string, None) 
             
             errors = []
-            
             for index, row in enumerate(csv.reader(io_string, delimiter=',', quotechar="|")):
                 try:
                     if not row or len(row) < 6: continue
                     
-                    roll_no = row[0].strip()
-                    first_name = row[1].strip()
-                    last_name = row[2].strip()
-                    dept_code = row[3].strip()
-                    batch_year_str = row[4].strip()
-                    division = row[5].strip()
+                    roll_no, first_name, last_name, dept_code, batch_year_str, division = [r.strip() for r in row[:6]]
 
                     try:
                         batch_year = int(batch_year_str)
@@ -131,31 +198,21 @@ def bulk_upload_students(request):
 
                     try:
                         dept = Department.objects.get(code=dept_code)
-                    except Department.DoesNotExist:
-                        errors.append(f"Row {index+2}: Dept '{dept_code}' not found.")
-                        continue
-
-                    try:
                         batch = Batch.objects.get(year=batch_year, department=dept)
-                    except Batch.DoesNotExist:
-                        errors.append(f"Row {index+2}: Batch '{batch_year}' not found.")
+                    except (Department.DoesNotExist, Batch.DoesNotExist) as e:
+                        errors.append(f"Row {index+2}: {str(e)} not found.")
                         continue
 
                     if not User.objects.filter(username=roll_no).exists():
                         user = User.objects.create_user(username=roll_no, password=roll_no, first_name=first_name, last_name=last_name, role=User.Role.STUDENT)
                         StudentProfile.objects.create(user=user, roll_no=roll_no, department=dept, batch=batch, division=division, current_semester=Semester.objects.filter(is_active=True).first())
-                    else:
-                        print(f"Skipping {roll_no}: Already exists.")
-
                 except Exception as inner_e:
                     errors.append(f"Row {index+2}: Error - {str(inner_e)}")
-                    continue
             
             if errors:
                 for err in errors: print(err)
 
             return redirect('manage_students')
-
         except Exception as e:
             return HttpResponse(f"Critical Upload Error: {str(e)}")
 
@@ -195,10 +252,6 @@ def add_schedule(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def hardware_sync(request):
-    """
-    Receives batch attendance data from ESP32 Gateway.
-    Payload: {"gateway_id": "AA:BB:CC...", "detected_students": ["roll_B069", "roll_B070"]}
-    """
     data = request.data
     gateway_id = data.get('gateway_id')
     detected_students = data.get('detected_students', [])
@@ -206,58 +259,41 @@ def hardware_sync(request):
     if not gateway_id or not detected_students:
         return Response({"status": "error", "message": "Missing gateway_id or detected_students"}, status=400)
 
-    # 1. Identify Room by Gateway MAC
     try:
         classroom = Classroom.objects.get(esp_device_id__iexact=gateway_id)
     except Classroom.DoesNotExist:
-        return Response({"status": "error", "message": f"Gateway {gateway_id} not registered"}, status=404)
+        return Response({"status": "error", "message": "Gateway not registered"}, status=404)
 
-    # 2. Find Active Lecture (or Smart Auto-Start)
     active_lecture = Lecture.objects.filter(classroom=classroom, is_active=True).first()
 
     if not active_lecture:
         now = timezone.localtime(timezone.now())
         timetable_slot = TimeTable.objects.filter(
-            classroom=classroom,
-            day_of_week=now.weekday(),
-            start_time__lte=now.time(),
-            end_time__gte=now.time()
+            classroom=classroom, day_of_week=now.weekday(),
+            start_time__lte=now.time(), end_time__gte=now.time()
         ).first()
 
         if timetable_slot:
             active_lecture = Lecture.objects.create(
-                course=timetable_slot.course,
-                classroom=timetable_slot.classroom,
-                teacher=timetable_slot.teacher,
-                is_active=True
+                course=timetable_slot.course, classroom=timetable_slot.classroom,
+                teacher=timetable_slot.teacher, is_active=True
             )
         else:
             return Response({"status": "ignored", "message": "No class scheduled."}, status=200)
 
-    # 3. Mark Attendance
     marked_count = 0
     for identifier in detected_students:
-        try:
-            # Match by Username (Roll No) OR Device ID
-            student_user = User.objects.filter(
-                Q(username=identifier) | Q(device_fingerprint=identifier)
-            ).first()
-
-            if student_user:
-                obj, created = Attendance.objects.get_or_create(
-                    student=student_user,
-                    lecture=active_lecture,
-                    defaults={'status': 'PRESENT', 'device_id': gateway_id}
-                )
-                if created: marked_count += 1
-        except Exception:
-            continue
+        student_user = User.objects.filter(Q(username=identifier) | Q(device_fingerprint=identifier)).first()
+        if student_user:
+            obj, created = Attendance.objects.get_or_create(
+                student=student_user, lecture=active_lecture,
+                defaults={'status': 'PRESENT', 'device_id': gateway_id}
+            )
+            if created: marked_count += 1
 
     return Response({
-        "status": "success",
-        "room": classroom.room_number,
-        "class": active_lecture.course.code,
-        "marked_new": marked_count
+        "status": "success", "room": classroom.room_number,
+        "class": active_lecture.course.code, "marked_new": marked_count
     })
 
 # =========================================
@@ -267,395 +303,324 @@ def hardware_sync(request):
 @permission_classes([AllowAny]) 
 def mark_attendance(request):
     """
-    Called by Android App when it detects a Classroom Beacon.
+    Called by Android App/Scanner when it scans a Student's Dynamic QR Code.
     """
-    student_username = request.data.get('student_id')
+    scanned_qr_token = request.data.get('student_id') # This is now the encrypted token!
     esp_mac_address = request.data.get('device_id')
 
-    if not student_username or not esp_mac_address:
-        return Response({"status": "error", "message": "Missing data"}, status=400)
+    if not scanned_qr_token or not esp_mac_address:
+        return Response({"status": "error", "message": "Missing scan data"}, status=400)
 
+    # 🔐 Step 1: Decrypt and Verify the QR Code
+    signer = TimestampSigner()
+    try:
+        # max_age=15 means the QR code is immediately rejected if it's older than 15 seconds!
+        student_username = signer.unsign(scanned_qr_token, max_age=15)
+        
+    except SignatureExpired:
+        return Response({"status": "error", "message": "QR Code Expired! Please scan the live screen."}, status=403)
+    except BadSignature:
+        return Response({"status": "error", "message": "Invalid or Tampered QR Code!"}, status=403)
+
+    # 🏫 Step 2: Proceed with standard Attendance Logic
     try:
         classroom = Classroom.objects.get(esp_device_id__iexact=esp_mac_address)
-    except Classroom.DoesNotExist:
-        return Response({"status": "error", "message": "Invalid Classroom Beacon"}, status=404)
-
-    try:
         current_lecture = Lecture.objects.get(classroom=classroom, is_active=True)
-    except Lecture.DoesNotExist:
-        return Response({"status": "error", "message": "No active class here."}, status=404)
-
-    try:
         user = User.objects.get(username=student_username)
-    except User.DoesNotExist:
-        return Response({"status": "error", "message": "Student not found"}, status=404)
+    except (Classroom.DoesNotExist, Lecture.DoesNotExist, User.DoesNotExist):
+        return Response({"status": "error", "message": "Invalid room scan or session."}, status=404)
 
+    # 🛑 Step 3: Prevent duplicate scans
     if Attendance.objects.filter(student=user, lecture=current_lecture).exists():
         return Response({"status": "warning", "message": "Attendance already marked!"})
 
-    Attendance.objects.create(
-        student=user,
-        lecture=current_lecture,
-        status='PRESENT',
-        device_id=esp_mac_address
-    )
-
-    return Response({"status": "success", "message": f"Present marked for {current_lecture.course.code}!"})
-
-
+    # ✅ Step 4: Mark them Present!
+    Attendance.objects.create(student=user, lecture=current_lecture, status='PRESENT', device_id=esp_mac_address)
+    
+    return Response({
+        "status": "success", 
+        "message": f"Present marked for {user.first_name} ({current_lecture.course.code})!"
+    })
 # =========================================
 # 9. AUTHENTICATION & PROFILE API
 # =========================================
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def app_login(request):
-    """
-    Secure Login with Debugging for Hardware Lock Issues.
-    """
-    username = request.data.get('username')
-    password = request.data.get('password')
-    
+    username, password = request.data.get('username'), request.data.get('password')
     incoming_fingerprint = request.data.get('device_fingerprint') or request.data.get('device_id')
     
-    if incoming_fingerprint:
-        incoming_fingerprint = incoming_fingerprint.strip()
-
-    if not username or not password:
-        return Response({"status": "error", "message": "Credentials missing"}, status=400)
+    if incoming_fingerprint: incoming_fingerprint = incoming_fingerprint.strip()
+    if not username or not password: return Response({"status": "error", "message": "Credentials missing"}, status=400)
 
     user = authenticate(username=username, password=password)
-
     if user is not None:
-        if not user.is_active:
-            return Response({"status": "error", "message": "Account disabled"}, status=403)
+        if not user.is_active: return Response({"status": "error", "message": "Account disabled"}, status=403)
 
-        # 🔍 DEBUGGING LOGS
-        print(f"\n--- DEBUG LOGIN FINGERPRINT ---")
-        print(f"Username: {user.username}")
-        print(f"Stored DB Fingerprint: '{user.device_fingerprint}'")
-        print(f"Incoming App Fingerprint: '{incoming_fingerprint}'")
-        
-        match_status = "MATCH" if user.device_fingerprint == incoming_fingerprint else "MISMATCH"
-        if user.device_fingerprint is None: match_status = "NEW DEVICE (Will Bind)"
-        print(f"Status: {match_status}")
-        print(f"-------------------------------\n")
-
-        # 🛡️ HARDWARE BINDING LOGIC
         if incoming_fingerprint:
-            # Case A: First time login (Bind the device)
             if user.device_fingerprint is None:
                 user.device_fingerprint = incoming_fingerprint
                 user.save()
-                print(f"✅ Device Bound Successfully: {incoming_fingerprint}")
-            
-            # Case B: Device mismatch (Block the login)
             elif user.device_fingerprint != incoming_fingerprint:
-                print(f"❌ BLOCKED: Stored '{user.device_fingerprint}' != Incoming '{incoming_fingerprint}'")
-                return Response({
-                    "status": "error", 
-                    "message": "Security Alert: This device is linked with another device."
-                }, status=403)
+                return Response({"status": "error", "message": "Device bound to another phone."}, status=403)
 
         refresh = RefreshToken.for_user(user)
-
         return Response({
-            "status": "success",
-            "username": user.username,
-            "role": user.role,
-            "name": f"{user.first_name} {user.last_name}",
-            "email": user.email if user.email else "",
-            "phone_number": user.phone_number,
-            "user_id": user.id,
+            "status": "success", "username": user.username, "role": user.role,
+            "name": f"{user.first_name} {user.last_name}", "email": user.email or "",
+            "phone_number": user.phone_number, "user_id": user.id,
             "device_fingerprint": user.device_fingerprint,
-            "access_token": str(refresh.access_token),
-            "refresh_token": str(refresh)
+            "access_token": str(refresh.access_token), "refresh_token": str(refresh)
         })
+    return Response({"status": "error", "message": "Invalid credentials"}, status=401)
 
-    else:
-        return Response({"status": "error", "message": "Invalid credentials"}, status=401)
-
-
-@api_view(['POST'])
+@api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def update_profile(request):
     user = request.user
-    data = request.data
 
-    if 'first_name' in data: user.first_name = data['first_name']
-    if 'last_name' in data: user.last_name = data['last_name']
-    if 'email' in data: user.email = data['email']
-    if 'phone_number' in data: user.phone_number = data['phone_number']
+    # 📥 GET: Mobile app wants to display the user's current info
+    if request.method == 'GET':
+        return Response({
+            "status": "success",
+            "user": {
+                "username": user.username,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email": user.email,
+                "phone_number": user.phone_number,
+                "blood_group": user.blood_group,
+                "address": user.address,
+                "emergency_contact": user.emergency_contact,
+                "dob": user.dob,
+                "role": user.role
+            }
+        })
 
-    user.save()
+    # 📤 POST: Mobile app is sending new data to save
+    if request.method == 'POST':
+        data = request.data
+        
+        if 'first_name' in data: user.first_name = data['first_name']
+        if 'last_name' in data: user.last_name = data['last_name']
+        if 'email' in data: user.email = data['email']
+        if 'phone_number' in data and hasattr(user, 'phone_number'): user.phone_number = data['phone_number']
+        
+        # ✅ NEW ERP PROFILE FIELDS
+        if 'blood_group' in data: user.blood_group = data['blood_group']
+        if 'address' in data: user.address = data['address']
+        if 'emergency_contact' in data: user.emergency_contact = data['emergency_contact']
+        if 'dob' in data and data['dob']: user.dob = data['dob']
+            
+        user.save()
 
-    return Response({
-        "status": "success",
-        "message": "Profile updated",
-        "user": {
-            "name": f"{user.first_name} {user.last_name}",
-            "email": user.email,
-            "phone": user.phone_number,
-            "username": user.username
-        }
-    })
+        return Response({
+            "status": "success", 
+            "message": "Profile updated",
+            "user": {
+                "name": f"{user.first_name} {user.last_name}", 
+                "email": user.email, 
+                "username": user.username
+            }
+        })
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def change_password(request):
-    """
-    Allows a logged-in user to change their password.
-    """
-    user = request.user
-    data = request.data
+    user, old_password, new_password = request.user, request.data.get('old_password'), request.data.get('new_password')
+    if not old_password or not new_password: return Response({"status": "error", "message": "Both required."}, status=400)
+    if not user.check_password(old_password): return Response({"status": "error", "message": "Wrong old password."}, status=400)
     
-    old_password = data.get('old_password')
-    new_password = data.get('new_password')
-
-    if not old_password or not new_password:
-        return Response({"status": "error", "message": "Both passwords required."}, status=400)
-
-    if not user.check_password(old_password):
-        return Response({"status": "error", "message": "Wrong old password."}, status=400)
-
     user.set_password(new_password)
     user.save()
-
-    # Prevent logout
     update_session_auth_hash(request, user)
-
     return Response({"status": "success", "message": "Password changed successfully"})
 
 # =========================================
-# 10. NEW FEATURE: ATTENDANCE REPORT CARD
+# 10. ATTENDANCE REPORT CARD
 # =========================================
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def attendance_history(request):
-    """
-    Returns comprehensive attendance stats for ALL subjects in the current semester.
-    Handles 'Zero-State' (courses with no lectures yet) to prevent App crashes.
-    """
-    
-    user = request.user
-    
-    # 1. Get Student Profile to find Batch/Semester
     try:
-        profile = user.student_profile
+        profile = request.user.student_profile
     except StudentProfile.DoesNotExist:
         return Response({"status": "error", "message": "Student profile not found"}, status=404)
 
-    # 2. Fetch All Courses for Student's Current Semester
-    # We filter by Department AND Semester to get the exact subject list.
-    courses = Course.objects.filter(
-        department=profile.department, 
-        semester=profile.current_semester
-    )
+    courses = Course.objects.filter(department=profile.department, semester=profile.current_semester)
+    history_data, overall_present, overall_total_lectures = [], 0, 0
 
-    history_data = []
-    overall_present = 0
-    overall_total_lectures = 0
-
-    # 3. Iterate & Calculate Stats per Course
     for course in courses:
-        # A. Total COMPLETED Lectures (is_active=False)
         total_lectures = Lecture.objects.filter(course=course, is_active=False).count()
-        
-        # B. Present Count for this Student
-        present_count = Attendance.objects.filter(
-            student=user, 
-            lecture__course=course, 
-            status='PRESENT'
-        ).count()
+        present_count = Attendance.objects.filter(student=request.user, lecture__course=course, status='PRESENT').count()
+        pct = (present_count / total_lectures * 100) if total_lectures > 0 else 0.0
 
-        # C. Percentage Logic (Safe Division)
-        if total_lectures > 0:
-            percentage = (present_count / total_lectures) * 100
-        else:
-            percentage = 0.0
-
-        # D. Teacher Name Lookup
         teacher_name = "Not Allocated"
-        timetable_entry = TimeTable.objects.filter(course=course).first()
-        
-        if timetable_entry:
-            teacher_name = timetable_entry.teacher.get_full_name()
-        else:
-            last_lecture = Lecture.objects.filter(course=course).first()
-            if last_lecture:
-                teacher_name = last_lecture.teacher.get_full_name()
+        if (tt := TimeTable.objects.filter(course=course).first()): teacher_name = tt.teacher.get_full_name()
+        elif (last_lec := Lecture.objects.filter(course=course).first()): teacher_name = last_lec.teacher.get_full_name()
 
-        # Add to list
         history_data.append({
-            "subject_name": course.name,
-            "subject_code": course.code,
-            "teacher_name": teacher_name,
-            "present": present_count,
-            "total": total_lectures,
-            "percentage": round(percentage, 1)
+            "subject_name": course.name, "subject_code": course.code, "teacher_name": teacher_name,
+            "present": present_count, "total": total_lectures, "percentage": round(pct, 1)
         })
-
-        # Update Overall Stats
         overall_present += present_count
         overall_total_lectures += total_lectures
 
-    # 4. Final Overall Calculation
-    if overall_total_lectures > 0:
-        overall_percentage = (overall_present / overall_total_lectures) * 100
-    else:
-        overall_percentage = 0.0
-
-    # 5. Build Final JSON Response
+    overall_percentage = (overall_present / overall_total_lectures * 100) if overall_total_lectures > 0 else 0.0
     return Response({
-        "status": "success",
-        "semester": str(profile.current_semester), # e.g. "Semester 5"
-        "overall_percentage": round(overall_percentage, 1),
-        "overall_present": overall_present,
-        "overall_total": overall_total_lectures,
-        "history": history_data
+        "status": "success", "semester": str(profile.current_semester),
+        "overall_percentage": round(overall_percentage, 1), "overall_present": overall_present,
+        "overall_total": overall_total_lectures, "history": history_data
     })
 
 # =========================================
-# 11. Web Portal Hanfling
+# 11. WEB PORTAL PROFILES & ANALYTICS
 # =========================================
 @login_required
+@login_required
 def profile(request):
-    """
-    Renders the User Profile page (Web Portal).
-    """
+    """ Web Portal Profile View """
     user = request.user
     
-    # Try to get the specific profile (Student or Teacher)
-    student_profile = None
-    teacher_profile = None
+    if request.method == "POST":
+        user.first_name = request.POST.get('first_name', user.first_name)
+        user.last_name = request.POST.get('last_name', user.last_name)
+        user.email = request.POST.get('email', user.email)
+        if hasattr(user, 'phone_number'): 
+            user.phone_number = request.POST.get('phone_number', user.phone_number)
+            
+        # The new ERP fields
+        user.blood_group = request.POST.get('blood_group', user.blood_group)
+        user.address = request.POST.get('address', user.address)
+        user.emergency_contact = request.POST.get('emergency_contact', user.emergency_contact)
+        new_dob = request.POST.get('dob')
+        if new_dob: 
+            user.dob = new_dob
 
-    try:
-        if user.role == User.Role.STUDENT:
-            student_profile = user.student_profile
-        elif user.role == User.Role.TEACHER:
-            teacher_profile = user.teacher_profile
-    except Exception:
-        pass # Handle cases where profile might be missing
+        user.save()
+        messages.success(request, "Your profile has been updated successfully!")
+        return redirect('profile') 
 
-    context = {
-        'user': user,
-        'student_profile': student_profile,
-        'teacher_profile': teacher_profile,
-    }
+    # ✅ THIS WAS THE MISSING PART CAUSING THE 'None' CRASH!
+    context = {'user': user}
+    if user.role == User.Role.STUDENT and hasattr(user, 'student_profile'): 
+        context['student_profile'] = user.student_profile
+    elif user.role == User.Role.TEACHER and hasattr(user, 'teacher_profile'): 
+        context['teacher_profile'] = user.teacher_profile
+        
     return render(request, 'profile.html', context)
 
 def coming_soon(request, module_name="Feature"):
-    formatted_name = module_name.replace('-', ' ').title()
-    return render(request, 'coming_soon.html', {'feature_name': formatted_name})
+    return render(request, 'coming_soon.html', {'feature_name': module_name.replace('-', ' ').title()})
 
-def login_view(request):
-    if request.user.is_authenticated:
-        return redirect('dashboard')
-
+from datetime import datetime
+import calendar
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
 
 @login_required
 def student_analytics(request):
-    """
-    Generates detailed data for the Student Analytics Dashboard.
-    Includes Subject-Wise breakdown and Monthly Heatmap data.
-    """
-    if request.user.role != User.Role.STUDENT:
+    # सुरक्षा check
+    if request.user.role != User.Role.STUDENT or not hasattr(request.user, 'student_profile'): 
         return redirect('dashboard')
-
+        
+    profile = request.user.student_profile
     user = request.user
-    try:
-        profile = user.student_profile
-    except StudentProfile.DoesNotExist:
-        return redirect('dashboard')
-
-    # ==========================================
-    # 1. SUBJECT ANALYSIS (The Report Card)
-    # ==========================================
-    courses = Course.objects.filter(department=profile.department, semester=profile.current_semester)
-    subject_data = []
     
-    total_lectures_overall = 0
-    total_present_overall = 0
+    # =========================
+    # 1. SUBJECT ANALYSIS
+    # =========================
+    courses = Course.objects.filter(
+        department=profile.department,
+        semester=profile.current_semester
+    )
+
+    subject_data = []
+    total_lec_overall = 0
+    total_pres_overall = 0
 
     for course in courses:
-        # Count total COMPLETED lectures for this subject
         total_lec = Lecture.objects.filter(course=course, is_active=False).count()
-        
-        # Count how many this student attended
-        attended = Attendance.objects.filter(student=user, lecture__course=course, status='PRESENT').count()
-        
-        # Calculate Percentage
+
+        attended = Attendance.objects.filter(
+            student=user,
+            lecture__course=course,
+            status__in=['PRESENT', 'EXCUSED']  # ✅ consistent
+        ).count()
+
         pct = (attended / total_lec * 100) if total_lec > 0 else 0.0
-        
-        # Status Logic
-        status = "Safe" if pct >= 75 else "Critical"
-        
+
         subject_data.append({
             'name': course.name,
             'code': course.code,
             'attended': attended,
             'total': total_lec,
             'percentage': round(pct, 1),
-            'status': status
+            'status': "Safe" if pct >= 75 else "Critical"
         })
 
-        total_lectures_overall += total_lec
-        total_present_overall += attended
+        total_lec_overall += total_lec
+        total_pres_overall += attended
 
-    # Overall Aggregate
-    overall_percentage = (total_present_overall / total_lectures_overall * 100) if total_lectures_overall > 0 else 0.0
+    # =========================
+    # 2. OVERALL %
+    # =========================
+    overall_percentage = (
+        total_pres_overall / total_lec_overall * 100
+        if total_lec_overall > 0 else 0.0
+    )
 
-    # ==========================================
-    # 2. CALENDAR HEATMAP ENGINE
-    # ==========================================
+    # SVG circle math (circumference = 440)
+    svg_offset = 440 - (440 * overall_percentage / 100)
+
+    # =========================
+    # 3. CALENDAR HEATMAP
+    # =========================
     now = datetime.now()
-    year, month = now.year, now.month
-    num_days = calendar.monthrange(year, month)[1] # e.g., 28, 30, or 31
-    
-    # Fetch all attendance records for THIS month
-    month_attendance = Attendance.objects.filter(
-        student=user,
-        timestamp__year=year,
-        timestamp__month=month
-    ).values_list('timestamp__day', flat=True).distinct()
+    today = now.date()
+    num_days = calendar.monthrange(now.year, now.month)[1]
 
-    # Convert to a Set for fast O(1) lookup
-    present_days = set(month_attendance)
+    # Days where student is present/excused
+    present_days = set(
+        Attendance.objects.filter(
+            student=user,
+            timestamp__year=now.year,
+            timestamp__month=now.month,
+            status__in=['PRESENT', 'EXCUSED']
+        ).values_list('timestamp__day', flat=True).distinct()
+    )
 
     calendar_events = []
-    
+
     for day in range(1, num_days + 1):
-        # Create a date object to check for Weekends
-        current_date = datetime(year, month, day)
-        is_sunday = current_date.weekday() == 6
-        
-        day_status = 'N' # Default: No Class / Neutral
-        color = 'secondary'
+        curr_date = datetime(now.year, now.month, day).date()
 
         if day in present_days:
-            day_status = 'P'
-            color = 'success' # Green
-        elif is_sunday:
-            day_status = 'H'
-            color = 'warning' # Orange (Holiday)
-        elif current_date < now: 
-            # If date is in the past and NOT present and NOT Sunday -> Absent
-            # (Simplified logic: assumes every past weekday had a class)
-            day_status = 'A' 
-            color = 'danger' # Red
+            status = 'P'   # Present
+        elif curr_date.weekday() == 6:
+            status = 'H'   # Holiday (Sunday)
+        elif curr_date < today:
+            status = 'A'   # Absent (past)
+        elif curr_date > today:
+            status = 'U'   # Upcoming ✅ FIX
+        else:
+            status = 'N'   # Today but no data yet
 
         calendar_events.append({
             'date': str(day),
-            'status': day_status,
-            'color': color
+            'day_name': curr_date.strftime('%a'),
+            'full_date': curr_date.strftime('%Y-%m-%d'),
+            'status': status
         })
 
-    # ==========================================
-    # 3. RETURN CONTEXT
-    # ==========================================
+    # =========================
+    # 4. CONTEXT
+    # =========================
     context = {
         'overall_percentage': round(overall_percentage, 1),
-        'total_days_present': total_present_overall, 
-        'total_days_working': total_lectures_overall,
+        'total_days_present': total_pres_overall,
+        'total_days_working': total_lec_overall,
+        'svg_offset': svg_offset,
         'subject_analysis': subject_data,
         'calendar_events': calendar_events,
         'current_month_name': now.strftime("%B %Y")
@@ -663,11 +628,200 @@ def student_analytics(request):
 
     return render(request, 'attendance_detailed.html', context)
 
+# =========================================
+# 12. PASSWORD MANAGEMENT
+# =========================================
 class CustomPasswordChangeView(PasswordChangeView):
     template_name = 'password_change.html'
-    success_url = reverse_lazy('dashboard')  # ✅ Auto-redirect to Dashboard
-
+    success_url = reverse_lazy('dashboard')
     def form_valid(self, form):
-        # ✅ Inject the success message to be displayed on the dashboard
         messages.success(self.request, "Security Update: Your password has been changed successfully.")
         return super().form_valid(form)
+
+# =========================================
+# 13. LIVE MONITOR & UI APIs
+# =========================================
+@login_required
+def live_monitor(request):
+    if request.user.role != User.Role.TEACHER: return redirect('dashboard')
+    active_lecture = Lecture.objects.filter(teacher=request.user, is_active=True).first()
+    
+    if not active_lecture:
+        messages.warning(request, "You do not have an active live session right now.")
+        return redirect('teacher_dashboard')
+
+    expected_students = StudentProfile.objects.filter(department=active_lecture.course.department, current_semester=active_lecture.course.semester).select_related('user').order_by('roll_no')
+    present_user_ids = set(Attendance.objects.filter(lecture=active_lecture, status='PRESENT').values_list('student_id', flat=True))
+
+    students_data = [{'name': f"{p.user.first_name} {p.user.last_name}", 'roll_no': p.roll_no, 'is_present': p.user.id in present_user_ids} for p in expected_students]
+    return render(request, 'live_monitor.html', {'lecture': active_lecture, 'total_students': expected_students.count(), 'students': students_data})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def live_lecture_status(request, lecture_id):
+    lecture = get_object_or_404(Lecture, id=lecture_id)
+    expected_students = StudentProfile.objects.filter(department=lecture.course.department, current_semester=lecture.course.semester).select_related('user').order_by('roll_no')
+    present_user_ids = set(Attendance.objects.filter(lecture=lecture, status='PRESENT').values_list('student_id', flat=True))
+
+    students_data, present_count = [], 0
+    for p in expected_students:
+        is_pres = p.user.id in present_user_ids
+        if is_pres: present_count += 1
+        students_data.append({"roll_no": p.roll_no, "is_present": is_pres})
+
+    total_expected = expected_students.count()
+    return Response({
+        "present_count": present_count, "absent_count": total_expected - present_count,
+        "attendance_percentage": round((present_count / total_expected * 100) if total_expected > 0 else 0.0, 1),
+        "students": students_data
+    })
+
+# =========================================
+# 14. LEAVE MANAGEMENT
+# =========================================
+@login_required
+def student_leave_view(request):
+    if request.user.role != User.Role.STUDENT: return redirect('dashboard')
+    if request.method == 'POST':
+        LeaveRequest.objects.create(
+            student=request.user, leave_type=request.POST.get('leave_type'), start_date=request.POST.get('start_date'),
+            end_date=request.POST.get('end_date'), reason=request.POST.get('reason'), document=request.FILES.get('document')
+        )
+        messages.success(request, "Leave application submitted successfully!")
+        return redirect('leave_application')
+    return render(request, 'student_leave.html', {'leave_history': LeaveRequest.objects.filter(student=request.user).order_by('-applied_on')})
+
+@login_required
+def teacher_leave_view(request):
+    if request.user.role != User.Role.TEACHER: return redirect('dashboard')
+    pending_requests = LeaveRequest.objects.filter(status='PENDING').order_by('-applied_on')
+    return render(request, 'teacher_leave_approval.html', {
+        'pending_requests': pending_requests, 'pending_count': pending_requests.count(),
+        'processed_requests': LeaveRequest.objects.filter(Q(status='APPROVED') | Q(status='REJECTED')).order_by('-applied_on')[:50]
+    })
+
+@login_required
+def process_leave_action(request, request_id):
+    if request.user.role != User.Role.TEACHER or request.method != 'POST': return redirect('dashboard')
+    leave_request, action = get_object_or_404(LeaveRequest, id=request_id), request.POST.get('action')
+    
+    if action == 'approve':
+        leave_request.status = 'APPROVED'
+        leave_request.save()
+        _process_excused_attendance(leave_request)
+        messages.success(request, "Leave approved. Attendance updated to 'Excused'.")
+    elif action == 'reject':
+        leave_request.status = 'REJECTED'
+        leave_request.save()
+        messages.warning(request, "Leave request rejected.")
+    return redirect('leave_approvals')
+
+def _process_excused_attendance(leave_req):
+    student_profile = leave_req.student.student_profile
+    current_date = leave_req.start_date
+    while current_date <= leave_req.end_date:
+        daily_slots = TimeTable.objects.filter(course__department=student_profile.department, course__semester=student_profile.current_semester, day_of_week=current_date.weekday())
+        for slot in daily_slots:
+            lecture, _ = Lecture.objects.get_or_create(course=slot.course, teacher=slot.teacher, is_active=False)
+            Attendance.objects.update_or_create(student=leave_req.student, lecture=lecture, defaults={'status': 'EXCUSED'})
+        current_date += timedelta(days=1)
+
+# =========================================
+# 15. STUDENT QUICK ACTIONS
+# =========================================
+@login_required
+def virtual_id_view(request):
+    return render(request, 'virtual_id.html') if request.user.role == User.Role.STUDENT else redirect('dashboard')
+
+@login_required
+def device_integrity_view(request):
+    return render(request, 'device_integrity.html') if request.user.role == User.Role.STUDENT else redirect('dashboard')
+
+@login_required
+def contact_mentor_view(request):
+    return render(request, 'contact_mentor.html') if request.user.role == User.Role.STUDENT else redirect('dashboard')
+
+@login_required
+def report_lost_device(request):
+    if request.user.role == User.Role.STUDENT and request.method == 'POST':
+        request.user.device_fingerprint = None
+        request.user.save()
+        messages.success(request, "Device reported lost. Your hardware lock has been reset. Please log in from your new device to secure it.")
+    return redirect('device_integrity')
+
+@login_required
+def send_mentor_message(request):
+    if request.user.role == User.Role.STUDENT and request.method == 'POST':
+        messages.success(request, "Your message has been sent to your mentor successfully!")
+    return redirect('contact_mentor')
+
+@login_required
+def get_dynamic_qr_token(request):
+    """ Generates a cryptographically signed token that expires in 15 seconds. """
+    if request.user.role != User.Role.STUDENT:
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    # Sign the user's ID/Roll Number securely
+    return JsonResponse({'token': TimestampSigner().sign(request.user.username)})
+
+# =========================================
+# 16. WEB AJAX APIs (Modals & Async UI)
+# =========================================
+@login_required
+def student_daily_attendance_api(request, date_string):
+    """
+    AJAX API: Returns a breakdown of lectures and attendance status for a specific date.
+    Works for both explicit records (testing/manual) and implicit absences (production).
+    """
+    if request.user.role != User.Role.STUDENT:
+        return JsonResponse({"error": "Unauthorized"}, status=403)
+
+    try:
+        target_date = datetime.strptime(date_string, '%Y-%m-%d').date()
+    except ValueError:
+        return JsonResponse({"error": "Invalid date format"}, status=400)
+
+    user = request.user
+    profile = getattr(user, 'student_profile', None)
+
+    # 1. Fetch the records they ACTUALLY have (Present, Excused, or Fake Absents)
+    actual_attendances = Attendance.objects.filter(
+        student=user,
+        timestamp__date=target_date
+    ).select_related('lecture__course').order_by('timestamp')
+
+    # Dictionary to quickly check if they attended a specific lecture
+    attended_dict = {a.lecture.id: a for a in actual_attendances}
+    lecture_data = []
+
+    # 2. Add all the records we actually found in the database
+    for a in actual_attendances:
+        lecture_data.append({
+            "time": a.timestamp.strftime('%I:%M %p'),
+            "subject": a.lecture.course.name,
+            "status": a.status.title()
+        })
+
+    # 3. PRODUCTION CHECK: Find lectures they missed entirely (No DB record exists)
+    if profile:
+        scheduled_lectures = Lecture.objects.filter(
+            course__department=profile.department,
+            course__semester=profile.current_semester,
+            start_time__date=target_date
+        ).select_related('course')
+
+        for lec in scheduled_lectures:
+            # If the lecture happened, but they don't have a record for it, they were Absent!
+            if lec.id not in attended_dict:
+                lecture_data.append({
+                    "time": lec.start_time.strftime('%I:%M %p'),
+                    "subject": lec.course.name,
+                    "status": "Absent" # Implicit absence
+                })
+
+    # Sort the final list by time so it looks neat in the UI
+    lecture_data = sorted(lecture_data, key=lambda x: x['time'])
+
+    return JsonResponse({
+        "date": date_string,
+        "lectures": lecture_data
+    })

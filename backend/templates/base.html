@@ -301,10 +301,41 @@
 </header>
 
 <!-- Sidebar Block -->
-{% block sidebar %}{% endblock %}
+{% block sidebar %}
+    {% if user.is_authenticated %}
+    <nav class="aura-sidebar d-flex flex-column" id="sidebar">
+        <div class="h-100 py-4 d-flex flex-column gap-2">
+            <div class="px-4 mb-3 mt-2">
+                <small class="text-uppercase fw-bold text-muted" style="letter-spacing: 1px;">Nav Menu</small>
+            </div>
+            
+            <a href="{% url 'dashboard' %}" class="nav-link-erp">
+                <i class="fas fa-desktop"></i> Dashboard Hub
+            </a>
+            <a href="{% url 'profile' %}" class="nav-link-erp">
+                <i class="fas fa-user-circle"></i> My Profile
+            </a>
+            
+            <div class="px-4 mb-2 mt-4">
+                <small class="text-uppercase fw-bold text-muted" style="letter-spacing: 1px;">Preferences</small>
+            </div>
+            
+            <a href="{% url 'coming_soon' module_name='Notifications' %}" class="nav-link-erp">
+                <i class="fas fa-bell"></i> Notifications Drop
+            </a>
+            <a href="{% url 'coming_soon' module_name='System Settings' %}" class="nav-link-erp">
+                <i class="fas fa-sliders-h"></i> System Settings
+            </a>
+            <a href="{% url 'coming_soon' module_name='Help Desk' %}" class="nav-link-erp mt-auto border-top mx-3 pt-4 text-primary">
+                <i class="fas fa-headset"></i> IT Help Desk
+            </a>
+        </div>
+    </nav>
+    {% endif %}
+{% endblock %}
 
 <!-- Main Content -->
-<main class="aura-main {% block main_class %}no-sidebar-centered{% endblock %}">
+<main class="aura-main {% block main_class %}{% if user.is_authenticated %}has-sidebar{% else %}no-sidebar-centered{% endif %}{% endblock %}">
 
     <div class="container-fluid">
 

@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}Super Admin | Aura ERP{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-0">System Override Console</h2>
+            <p class="text-muted"><i class="fas fa-server me-2 text-primary"></i>Super Admin • Global Infrastructure Logging</p>
+        </div>
+        <div>
+            <span class="badge bg-success shadow-sm rounded-pill py-2 px-3 fw-bold"><i class="fas fa-check-circle me-1"></i> System Online</span>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Server Health -->
+    <div class="col-md-3">
+        <div class="glass-card p-4 h-100 hover-lift border-primary border-opacity-50" style="border-left: 4px solid var(--aura-primary) !important;">
+            <p class="text-muted small fw-bold text-uppercase mb-1">Database Load</p>
+            <h3 class="fw-bold mb-0">12.4%</h3>
+            <p class="text-success small mt-2 mb-0"><i class="fas fa-arrow-down me-1"></i> Optimally distributed</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="glass-card p-4 h-100 hover-lift">
+            <p class="text-muted small fw-bold text-uppercase mb-1">Active IoT Gateways</p>
+            <h3 class="fw-bold mb-0">{{ active_nodes }} / {{ total_nodes }}</h3>
+            {% if active_nodes < total_nodes %}
+            <p class="text-warning small mt-2 mb-0"><i class="fas fa-exclamation-triangle me-1"></i> {{ total_nodes|add:"-"|add:active_nodes }} nodes offline</p>
+            {% else %}
+            <p class="text-success small mt-2 mb-0"><i class="fas fa-check me-1"></i> All systems nominal</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="glass-card p-4 h-100 hover-lift">
+            <p class="text-muted small fw-bold text-uppercase mb-1">Total Daily Logs</p>
+            <h3 class="fw-bold mb-0">84,029</h3>
+            <p class="text-primary small mt-2 mb-0"><i class="fas fa-sync fa-spin me-1"></i> Syncing passive BLE</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="glass-card p-4 h-100 hover-lift text-center">
+            <button class="btn btn-danger w-100 h-100 rounded-3 shadow-sm d-flex flex-column align-items-center justify-content-center">
+                <i class="fas fa-power-off fs-4 mb-2"></i>
+                <span class="fw-bold">Global Lockdown</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-8">
+        <div class="glass-card p-4 h-100 relative">
+            <div class="d-flex justify-content-between mb-4">
+                <h5 class="fw-bold"><i class="fas fa-microchip me-2 text-primary"></i>IoT Node Matrix</h5>
+                <button class="btn btn-sm btn-outline-primary rounded-pill">View All Network</button>
+            </div>
+            <table class="table table-borderless align-middle">
+                <thead style="background: rgba(255,255,255,0.05);">
+                    <tr><th>MAC ID</th><th>Deployed Location</th><th>Ping Latency</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    {% for node in iot_nodes %}
+                    <tr>
+                        <td class="text-muted">{{ node.mac }}</td>
+                        <td>{{ node.location }}</td>
+                        <td>{{ node.latency }}</td>
+                        <td><span class="badge bg-{{ node.status_class }}">{{ node.status }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center text-muted">No IoT Nodes Synced</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-card p-4 h-100">
+            <h5 class="fw-bold mb-4"><i class="fas fa-database me-2 text-primary"></i>Structural Config</h5>
+            <div class="d-grid gap-3">
+                <button class="btn btn-primary text-start rounded-3 shadow-sm"><i class="fas fa-plus-circle me-3"></i>Deploy New Semester</button>
+                <button class="btn btn-outline-primary text-start rounded-3"><i class="fas fa-sitemap me-3"></i>Manage Batches / Courses</button>
+                <button class="btn btn-outline-primary text-start rounded-3"><i class="fas fa-user-shield me-3"></i>Audit User Tiers</button>
+                <button class="btn btn-outline-danger text-start rounded-3 mt-3"><i class="fas fa-trash-alt me-3"></i>Flush Cache Logs</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

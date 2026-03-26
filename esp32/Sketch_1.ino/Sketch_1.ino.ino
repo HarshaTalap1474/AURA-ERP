@@ -7,16 +7,12 @@
 #include <BLEScan.h>
 #include <BLEAdvertisedDevice.h>
 #include <set>
+#include "secrets.h"
 
 // ==========================================
 // 1. CONFIGURATION
 // ==========================================
-const char* WIFI_SSID     = "Room_6_7";
-const char* WIFI_PASSWORD = "Suraj@123";
-
-// UPDATE THIS with your PC's IP address (e.g., 192.168.1.10:8000)
-// The endpoint matches your new finalized specs
-const char* SERVER_URL    = "https://command-hay-inquire-moderator.trycloudflare.com/api/attendance/hardware-sync/";
+// Note: WIFI_SSID, WIFI_PASSWORD, and SERVER_URL are now loaded from secrets.h
 
 // The Service UUID to filter (Aura Attendix App)
 const char* TARGET_SERVICE_UUID = "0000b81d-0000-1000-8000-00805f9b34fb";

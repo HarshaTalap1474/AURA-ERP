@@ -11,11 +11,19 @@ class User(AbstractUser):
     Custom User model supporting Admin, Teachers, and Students.
     """
     class Role(models.TextChoices):
-        ADMIN = "ADMIN", "Admin"
+        SUPER_ADMIN = "SUPER_ADMIN", "Super Admin"
+        ACADEMIC_COORDINATOR = "ACADEMIC_COORDINATOR", "Academic Coordinator"
+        HOD = "HOD", "Head of Department"
         TEACHER = "TEACHER", "Teacher"
+        TEACHER_GUARDIAN = "TEACHER_GUARDIAN", "Teacher Guardian"
+        SECURITY_OFFICER = "SECURITY_OFFICER", "Security Officer"
+        LIBRARIAN = "LIBRARIAN", "Librarian"
+        FINANCE_CLERK = "FINANCE_CLERK", "Finance Clerk"
         STUDENT = "STUDENT", "Student"
+        PARENT = "PARENT", "Parent"
+        ADMIN = "ADMIN", "Admin" # Legacy Fallback
 
-    role = models.CharField(max_length=10, choices=Role.choices, default=Role.STUDENT)
+    role = models.CharField(max_length=25, choices=Role.choices, default=Role.STUDENT)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     
     # Security: Locks the account to a specific phone (Anti-Proxy)
@@ -92,17 +100,26 @@ class StudentProfile(models.Model):
     batch = models.ForeignKey(Batch, on_delete=models.CASCADE)
     current_semester = models.ForeignKey(Semester, on_delete=models.SET_NULL, null=True)
     division = models.CharField(max_length=5, default="A")
+    # Pastoral Linkage constraint
+    teacher_guardian = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='tg_cohort')
 
     def __str__(self):
         return f"{self.roll_no} ({self.user.username})"
 
-class TeacherProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='teacher_profile')
-    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True)
+class StaffProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='staff_profile')
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
     employee_id = models.CharField(max_length=20, unique=True)
 
     def __str__(self):
         return self.user.get_full_name()
+
+class ParentProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='parent_profile')
+    students = models.ManyToManyField(StudentProfile, related_name='parents')
+    
+    def __str__(self):
+        return f"Parent: {self.user.get_full_name()}"
 
 # ==========================================
 # 4. SCHEDULING

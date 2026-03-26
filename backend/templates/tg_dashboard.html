@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Teacher Guardian | Aura ERP{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-0">Pastoral Care Cohort</h2>
+            <p class="text-muted"><i class="fas fa-users me-2 text-primary"></i>Teacher Guardian Overview</p>
+        </div>
+        <a href="{% url 'teacher_dashboard' %}" class="btn btn-outline-primary rounded-pill shadow-sm"><i class="fas fa-chalkboard-teacher me-2"></i>Switch to Teaching Operations</a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="glass-card p-4 h-100 text-center">
+            <h1 class="display-4 text-primary fw-bold mb-0">{{ cohort_count }}</h1>
+            <p class="text-muted small fw-bold text-uppercase mt-2">Assigned Students</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="glass-card p-4 h-100 text-center">
+            <h1 class="display-4 text-warning fw-bold mb-0">{{ at_risk_count }}</h1>
+            <p class="text-muted small fw-bold text-uppercase mt-2">At-Risk (<75% Att.)</p>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="glass-card p-4 h-100">
+            <h5 class="fw-bold mb-3"><i class="fas fa-inbox me-2 text-primary"></i>Parental Messages / Escalations</h5>
+            <div class="list-group list-group-flush bg-transparent">
+                <a href="#" class="list-group-item list-group-item-action bg-transparent px-0 border-0 border-bottom" style="border-color: var(--glass-border)!important;">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1 fw-bold text-white">Mrs. Sharma (Priya's Mother)</h6>
+                        <small class="text-muted">3 mins ago</small>
+                    </div>
+                    <p class="mb-1 text-muted small">Requesting medical leave clearance for upcoming surgery...</p>
+                </a>
+                <a href="#" class="list-group-item list-group-item-action bg-transparent px-0 border-0">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1 fw-bold text-white">Mr. Varma (Rahul's Father)</h6>
+                        <small class="text-muted">1 day ago</small>
+                    </div>
+                    <p class="mb-1 text-muted small">Why is Rahul marked absent for DBMS yesterday?</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="glass-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="fw-bold mb-0"><i class="fas fa-user-graduate me-2 text-primary"></i>My Mentorship Cohort Analysis</h5>
+        <div class="input-group w-25">
+             <input type="text" class="form-control form-control-sm bg-transparent border-primary text-white" placeholder="Search student...">
+        </div>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 text-center">
+            <thead style="background: rgba(255,255,255,0.05)">
+                <tr>
+                    <th class="text-start">Roll No</th>
+                    <th class="text-start">Name</th>
+                    <th>Average Attendance</th>
+                    <th>Library / Fee Dues</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in cohort %}
+                <tr>
+                    <td class="fw-bold text-start">{{ student.roll_no }}</td>
+                    <td class="text-start">{{ student.user.get_full_name|default:student.user.username }}</td>
+                    <td><span class="badge bg-primary rounded-pill px-3">Syncing...</span></td>
+                    <td><span class="text-success"><i class="fas fa-check-circle"></i> Clear</span></td>
+                    <td><button class="btn btn-sm btn-outline-primary rounded-pill">View 360° Profile</button></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-muted">No students assigned to your pastoral cohort.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

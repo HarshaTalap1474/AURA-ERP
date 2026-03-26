@@ -2,8 +2,9 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.html import format_html
 from .models import (
-    User, Department, Batch, Semester, Classroom, Course, 
-    StudentProfile, TeacherProfile, TimeTable, Lecture, Attendance
+    User, Department, Batch, Semester, Classroom, Course,
+    StudentProfile, StaffProfile, ParentProfile, TimeTable, Lecture, Attendance,
+    LeaveRequest
 )
 
 @admin.action(description='🔓 RESET DEVICE LOCK')
@@ -37,7 +38,8 @@ admin.site.register(Semester)
 admin.site.register(Classroom)
 admin.site.register(Course)
 admin.site.register(StudentProfile)
-admin.site.register(TeacherProfile)
+admin.site.register(StaffProfile)
+admin.site.register(ParentProfile)
 admin.site.register(TimeTable)
 admin.site.register(Lecture)
 admin.site.register(Attendance)

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Finance Terminal | Aura ERP{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-0">Finance & Fee Operations</h2>
+            <p class="text-muted"><i class="fas fa-rupee-sign me-2 text-primary"></i>Revenue Tracking and Central Flags</p>
+        </div>
+        <button class="btn btn-primary rounded-pill shadow-sm"><i class="fas fa-cloud-download-alt me-2"></i>Export Defaulters Bank</button>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="glass-card p-4 h-100 hover-lift border-primary border-opacity-50" style="border-left: 4px solid #10b981 !important;">
+            <p class="text-muted small fw-bold text-uppercase mb-1">Total Fee Cleared (YTD)</p>
+            <h3 class="fw-bold mb-0 text-success">₹42.5 Cr</h3>
+            <p class="text-success small mt-2 mb-0"><i class="fas fa-arrow-up me-1"></i> 82% of campus requirement</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-card p-4 h-100 hover-lift border-primary border-opacity-50" style="border-left: 4px solid #ef4444 !important;">
+            <p class="text-muted small fw-bold text-uppercase mb-1">Active Deficient Flags</p>
+            <h3 class="fw-bold mb-0 text-danger">154 Students</h3>
+            <p class="text-danger small mt-2 mb-0">Their Virtual ID / Exam Hall Tickets are currently locked.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-card p-4 h-100 hover-lift bg-primary text-white" style="background: linear-gradient(135deg, var(--aura-primary) 0%, var(--aura-accent) 100%);">
+            <h5 class="fw-bold mb-3"><i class="fas fa-flag me-2"></i>Action Needed</h5>
+            <p class="small mb-3">Install a new financial deficiency block on a student to instantly revoke their core ERP access across all boundaries.</p>
+            <button class="btn btn-light text-primary w-100 fw-bold rounded-pill shadow-sm">Raise Financial Block <i class="fas fa-lock ms-2"></i></button>
+        </div>
+    </div>
+</div>
+
+<div class="glass-card p-4">
+    <h5 class="fw-bold mb-3"><i class="fas fa-file-invoice-dollar me-2 text-primary"></i>High-Risk Defaulter Matrix</h5>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead style="background: rgba(255,255,255,0.05)">
+                <tr>
+                    <th>Roll No</th>
+                    <th>Student Name</th>
+                    <th>Department</th>
+                    <th>Pending Dues</th>
+                    <th>Sanction Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="fw-bold">COMP2024-112</td>
+                    <td>Rahul Dravid</td>
+                    <td>Computer Engg</td>
+                    <td class="text-danger fw-bold">₹1,14,500</td>
+                    <td><span class="badge bg-danger"><i class="fas fa-ban me-1"></i> Locked</span></td>
+                    <td><button class="btn btn-sm btn-outline-success rounded-pill">Clear Dues</button></td>
+                </tr>
+                <tr>
+                    <td class="fw-bold">IT2024-044</td>
+                    <td>Aditi Sharma</td>
+                    <td>Info Tech</td>
+                    <td class="text-warning fw-bold">₹24,000</td>
+                    <td><span class="badge bg-warning text-dark"><i class="fas fa-envelope me-1"></i> Warned</span></td>
+                    <td><button class="btn btn-sm btn-outline-danger rounded-pill">Enforce Lock</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

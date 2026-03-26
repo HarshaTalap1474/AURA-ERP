@@ -19,80 +19,83 @@
         </a>
         </div>
 </aside>
-<style>
-    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
-    .pulse-badge { animation: pulse 2s infinite; font-size: 0.65rem; }
-    
-    /* Smooth transition for student cards when they turn green */
-    .student-card { transition: all 0.4s ease-in-out; }
-    .status-present { background-color: #d1e7dd !important; border-color: #badbcc !important; }
-    .status-absent { background-color: #f8f9fa !important; border-color: #e2e3e5 !important; opacity: 0.7; }
-</style>
+    <style>
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        .pulse-badge { animation: pulse 2s infinite; font-size: 0.65rem; }
+        
+        /* Smooth transition for student cards */
+        .student-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 16px; border: 1px solid rgba(0,0,0,0.05); }
+        .status-present { background-color: rgba(209, 231, 221, 0.9) !important; border-color: rgba(25, 135, 84, 0.3) !important; box-shadow: 0 8px 16px rgba(25,135,84,0.15); transform: translateY(-4px); }
+        .status-absent { background-color: rgba(255, 255, 255, 0.8) !important; opacity: 0.8; }
+    </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid">
     
-    <div class="row mb-4 align-items-center bg-white p-3 shadow-sm rounded border-start border-danger border-5">
+    <div class="row mb-4 align-items-center glass-card p-3 border-start border-danger border-5">
         <div class="col-md-8">
             <div class="d-flex align-items-center">
                 <div class="spinner-grow text-danger me-3" role="status" style="width: 1.5rem; height: 1.5rem;">
                     <span class="visually-hidden">Live...</span>
                 </div>
                 <div>
-                    <h3 class="fw-bold text-dark mb-0">Data Structures (SE - Div A)</h3>
-                    <p class="text-muted mb-0"><i class="fas fa-map-marker-alt text-primary me-1"></i> Room 204 | ESP32 Node: <span class="badge bg-success">Active</span></p>
+                    <h3 class="fw-bold text-dark mb-0">{{ lecture.course.name }} ({{ lecture.course.code }})</h3>
+                    <p class="text-muted mb-0 fw-bold opacity-75"><i class="fas fa-map-marker-alt text-primary me-1"></i> Room {{ lecture.classroom.room_number }} | ESP32 Node: <span class="badge bg-success shadow-sm">Active</span></p>
                 </div>
             </div>
         </div>
         <div class="col-md-4 text-md-end mt-3 mt-md-0">
-            <button class="btn btn-outline-danger fw-bold shadow-sm" id="endSessionBtn">
-                <i class="fas fa-stop-circle me-2"></i>End Session
-            </button>
+            <form method="POST" action="{% url 'end_lecture' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger fw-bold shadow-sm rounded-pill px-4">
+                    <i class="fas fa-stop-circle me-2"></i>End Session
+                </button>
+            </form>
         </div>
     </div>
 
     <div class="row g-3 mb-4 text-center">
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm py-3 bg-light">
-                <h6 class="text-uppercase small fw-bold text-muted mb-1">Total Strength</h6>
-                <h3 class="fw-bold mb-0" id="stat-total">{{ total_students|default:"60" }}</h3>
+            <div class="glass-card py-3">
+                <h6 class="text-uppercase small fw-bold text-muted mb-1 opacity-75">Total Strength</h6>
+                <h3 class="fw-bold mb-0 text-dark" id="stat-total">{{ total_students|default:"60" }}</h3>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm py-3 bg-success text-white">
-                <h6 class="text-uppercase small fw-bold opacity-75 mb-1">Present</h6>
-                <h3 class="fw-bold mb-0" id="stat-present">0</h3>
+            <div class="glass-card py-3" style="background: rgba(25, 135, 84, 0.1); border-color: rgba(25, 135, 84, 0.2);">
+                <h6 class="text-uppercase small fw-bold text-success opacity-75 mb-1">Present</h6>
+                <h3 class="fw-bold mb-0 text-success" id="stat-present">0</h3>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm py-3 bg-secondary text-white">
-                <h6 class="text-uppercase small fw-bold opacity-75 mb-1">Absent</h6>
-                <h3 class="fw-bold mb-0" id="stat-absent">{{ total_students|default:"60" }}</h3>
+            <div class="glass-card py-3" style="background: rgba(108, 117, 125, 0.1); border-color: rgba(108, 117, 125, 0.2);">
+                <h6 class="text-uppercase small fw-bold text-secondary opacity-75 mb-1">Absent</h6>
+                <h3 class="fw-bold mb-0 text-secondary" id="stat-absent">{{ total_students|default:"60" }}</h3>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm py-3 bg-primary text-white">
-                <h6 class="text-uppercase small fw-bold opacity-75 mb-1">Attendance %</h6>
-                <h3 class="fw-bold mb-0" id="stat-percent">0%</h3>
+            <div class="glass-card py-3" style="background: rgba(67, 56, 202, 0.1); border-color: rgba(67, 56, 202, 0.2);">
+                <h6 class="text-uppercase small fw-bold" style="color: #4338ca; opacity: 0.8; margin-bottom: 0.25rem;">Attendance %</h6>
+                <h3 class="fw-bold mb-0" style="color: #4338ca;" id="stat-percent">0%</h3>
             </div>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white py-3 fw-bold border-bottom-0 d-flex justify-content-between align-items-center">
-            <span><i class="fas fa-users text-primary me-2"></i> Live Roster</span>
-            <small class="text-muted">Auto-updating every 3 seconds...</small>
+    <div class="glass-card overflow-hidden">
+        <div class="p-3 border-bottom border-light d-flex justify-content-between align-items-center" style="background: rgba(255,255,255,0.5);">
+            <span class="fw-bold text-dark"><i class="fas fa-users text-primary me-2"></i> Live Roster</span>
+            <small class="text-muted fw-bold opacity-75">Auto-updating every 3 seconds...</small>
         </div>
-        <div class="card-body p-4 bg-light">
+        <div class="p-4" style="background: rgba(0,0,0,0.02);">
             <div class="row g-3" id="student-grid">
                 
                 {% for student in students %}
                 <div class="col-lg-2 col-md-3 col-sm-4 col-6">
-                    <div class="card student-card text-center border p-3 h-100 shadow-sm {% if student.is_present %}status-present{% else %}status-absent{% endif %}" id="student-{{ student.roll_no }}">
+                    <div class="student-card text-center p-3 h-100 {% if student.is_present %}status-present{% else %}status-absent{% endif %}" id="student-{{ student.roll_no }}">
                         
-                        <div class="mx-auto bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm mb-2" style="width: 50px; height: 50px; border: 2px solid #fff;">
-                            <i class="fas fa-user text-secondary"></i>
+                        <div class="mx-auto bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm mb-2" style="width: 50px; height: 50px; border: 2px solid rgba(0,0,0,0.05);">
+                            <i class="fas fa-user text-secondary opacity-50"></i>
                         </div>
                         
                         <h6 class="fw-bold mb-0 small text-truncate" title="{{ student.name }}">{{ student.name }}</h6>

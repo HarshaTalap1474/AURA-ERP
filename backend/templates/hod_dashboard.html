@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}HOD Dashboard | Aura ERP{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-0">Head of Department Hub</h2>
+            <p class="text-muted"><i class="fas fa-crown me-2 text-primary"></i>Departmental Insight & Escalations</p>
+        </div>
+        <a href="{% url 'teacher_dashboard' %}" class="btn btn-outline-primary rounded-pill shadow-sm"><i class="fas fa-chalkboard-teacher me-2"></i>Enter Personal Teaching Duties</a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="glass-card p-4 h-100 hover-lift text-center">
+            <p class="text-muted small fw-bold text-uppercase mb-1">Total Enrolled</p>
+            <h3 class="fw-bold mb-0 text-primary">{{ total_enrolled }}</h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="glass-card p-4 h-100 hover-lift text-center">
+            <p class="text-muted small fw-bold text-uppercase mb-1">Overall Dept Attendance</p>
+            <h3 class="fw-bold mb-0 text-success">88.4%</h3>
+            <p class="text-success small mb-0 mt-1"><i class="fas fa-caret-up"></i> 2.1% this week</p>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="glass-card p-4 h-100 d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="fw-bold mb-1"><i class="fas fa-envelope-open-text me-2 text-warning"></i>Faculty Leave Approvals</h5>
+                <p class="text-muted small mb-0">2 teaching staff members have requested substitute allocations and standard leave.</p>
+            </div>
+            <button class="btn btn-warning text-dark fw-bold rounded-pill px-4 shadow">Process (2)</button>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-8">
+        <div class="glass-card p-4 h-100">
+            <h5 class="fw-bold mb-4"><i class="fas fa-fire-alt me-2 text-danger"></i>Critical Student Escalations</h5>
+            <table class="table table-borderless align-middle mb-0">
+                <thead style="background: rgba(255,255,255,0.05)">
+                    <tr><th>Student</th><th>Escalation Reason</th><th>Teacher Guardian</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                    {% for esc in escalations %}
+                    <tr>
+                        <td class="fw-bold">{{ esc.student }}</td>
+                        <td class="text-{{ esc.color }}">{{ esc.reason }}</td>
+                        <td>{{ esc.tg }}</td>
+                        <td><button class="btn btn-sm btn-outline-{{ esc.color }} rounded-pill">Action</button></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-muted text-center pt-3">No active escalations.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-card p-4 h-100 bg-primary text-white" style="background: linear-gradient(135deg, var(--aura-primary) 0%, var(--aura-accent) 100%);">
+            <h5 class="fw-bold mb-3"><i class="fas fa-bullhorn me-2"></i>Department Broadcast</h5>
+            <p class="small mb-3">Send a prioritized notification or SMS to all Faculty or Students in your department immediately.</p>
+            <textarea class="form-control bg-white bg-opacity-25 border-0 text-white placeholder-white mb-3" rows="4" placeholder="Enter broadcast message..."></textarea>
+            <button class="btn btn-light text-primary w-100 fw-bold rounded-pill shadow-sm">Dispatch Broadcast</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

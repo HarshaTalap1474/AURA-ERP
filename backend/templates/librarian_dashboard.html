@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}Library Operations | Aura ERP{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-0">Library Operations Terminal</h2>
+            <p class="text-muted"><i class="fas fa-book-reader me-2 text-primary"></i>Resource Checkout and Dues Tracking</p>
+        </div>
+        <button class="btn btn-primary rounded-pill shadow-sm py-2 px-4 shadow">Issue New Resource <i class="fas fa-barcode ms-2"></i></button>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="glass-card p-4 h-100 hover-lift text-center">
+            <h1 class="display-4 text-primary fw-bold mb-0">{{ active_checkouts }}</h1>
+            <p class="text-muted small fw-bold text-uppercase mt-2">Active Checkouts</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="glass-card p-4 h-100 hover-lift text-center">
+            <h1 class="display-4 text-warning fw-bold mb-0">{{ overdue_defaults }}</h1>
+            <p class="text-muted small fw-bold text-uppercase mt-2">Overdue Defaults</p>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="glass-card p-4 h-100">
+            <h5 class="fw-bold mb-3"><i class="fas fa-search me-2 text-primary"></i>Student Quick Scan</h5>
+            <div class="input-group input-group-lg shadow-sm">
+                <span class="input-group-text bg-transparent border-end-0 border-primary"><i class="fas fa-qrcode text-primary"></i></span>
+                <input type="text" class="form-control border-start-0 border-primary" placeholder="Scan Virtual ID or Enter Roll No...">
+                <button class="btn btn-primary px-4">Verify ERP Link</button>
+            </div>
+            <p class="small text-muted mt-2"><i class="fas fa-info-circle me-1"></i> Scan a student's ID to instantly display their clearance status.</p>
+        </div>
+    </div>
+</div>
+
+<div class="glass-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="fw-bold mb-0"><i class="fas fa-exclamation-circle me-2 text-danger"></i>Critical Overdue Resources</h5>
+        <button class="btn btn-sm btn-outline-danger rounded-pill">Trigger Automatic Library Fines</button>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 text-center">
+            <thead style="background: rgba(255,255,255,0.05)">
+                <tr>
+                    <th>Roll No</th>
+                    <th>Book / Resource</th>
+                    <th>Issue Date</th>
+                    <th>Days Overdue</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for book in overdue_books %}
+                <tr>
+                    <td class="fw-bold text-start">{{ book.roll }}</td>
+                    <td class="text-start">{{ book.book }}</td>
+                    <td>{{ book.date }}</td>
+                    <td><span class="badge bg-{{ book.color }} rounded-pill px-3">{{ book.days }} Days</span></td>
+                    <td><button class="btn btn-sm btn-outline-warning rounded-pill">Send ERP Notice</button></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-muted text-center pt-3">No overdue defaults.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

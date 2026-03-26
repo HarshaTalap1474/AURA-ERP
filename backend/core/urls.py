@@ -10,6 +10,11 @@ from .views import (
     dashboard_redirect,
     teacher_dashboard,
     student_dashboard,
+    export_attendance_csv,
+    send_defaulter_warnings,
+    start_timetable_class,
+    start_extra_class,
+    end_lecture,
     manage_students,
     bulk_upload_students,
     manage_timetable,
@@ -24,15 +29,25 @@ from .views import (
     report_lost_device, 
     contact_mentor_view, 
     send_mentor_message,
+    student_leave_view, 
+    teacher_leave_view, 
+    process_leave_action,
     
     # API Views
     app_login,
     update_profile,
     change_password,
     attendance_history,
-    mark_attendance,
     hardware_sync,
-    live_lecture_status,student_leave_view, teacher_leave_view, process_leave_action,get_dynamic_qr_token,student_daily_attendance_api,
+    live_lecture_status,
+    get_dynamic_qr_token,
+    student_daily_attendance_api,
+    verify_virtual_id, # ✅ IMPORTED NEW VIEW
+    
+    # New RBAC Views
+    super_admin_dashboard, academic_coordinator_dashboard, hod_dashboard,
+    tg_dashboard, security_dashboard, librarian_dashboard, finance_dashboard,
+    parent_dashboard
 )
 
 urlpatterns = [
@@ -65,7 +80,13 @@ urlpatterns = [
     
     # Active feature
     path('dashboard/teacher/live/', live_monitor, name='live_monitor'),
+    path('dashboard/teacher/start-class/<int:timetable_id>/', start_timetable_class, name='start_timetable_class'),
+    path('dashboard/teacher/start-extra-class/', start_extra_class, name='start_extra_class'),
+    path('dashboard/teacher/end-lecture/', end_lecture, name='end_lecture'),
     
+    path('dashboard/teacher/export-csv/', export_attendance_csv, name='export_attendance_csv'),
+    path('dashboard/teacher/send-warnings/', send_defaulter_warnings, name='send_warnings'),
+
     # Stubbed features (Prevents NoReverseMatch crashes)
     path('dashboard/teacher/subjects/', coming_soon, {'module_name': 'My Subjects'}, name='my_subjects'),
     path('dashboard/teacher/reports/', coming_soon, {'module_name': 'Attendance Reports'}, name='attendance_reports'),
@@ -88,15 +109,17 @@ urlpatterns = [
     # 📱 6. MOBILE APP APIs (Android / JSON)
     # ============================================
     path('api/auth/login/', app_login, name='app_login'),
-    path('api/auth/change-password/', change_password, name='api_change_password'), # Fixed collision
-    path('api/profile/update/', update_profile, name='api_update_profile'), # Standardized URL
+    path('api/auth/change-password/', change_password, name='api_change_password'), 
+    path('api/profile/update/', update_profile, name='api_update_profile'), 
     path('api/attendance/history/', attendance_history, name='attendance_history'),
-    path('api/attendance/mark/', mark_attendance, name='mark_attendance'),
+    
+    # ✅ UPDATED: Points to the new Security Identity Verification view
+    path('api/verify-virtual-id/', verify_virtual_id, name='verify_virtual_id'),
 
     # ============================================
     # 📡 7. IOT HARDWARE & LIVE MONITOR APIs
     # ============================================
-    # ESP32 Pushes data here
+    # ESP32 Pushes data here (The passive BLE engine)
     path('api/hardware/sync/', hardware_sync, name='hardware_sync'),
     
     # Frontend polls data from here
@@ -118,11 +141,23 @@ urlpatterns = [
     path('dashboard/student/contact-mentor/', contact_mentor_view, name='contact_mentor'),
     path('dashboard/student/contact-mentor/send/', send_mentor_message, name='send_mentor_message'),
     
-    
+    # Generates the cryptographically signed token for the Virtual ID
     path('dashboard/student/api/qr-token/', get_dynamic_qr_token, name='get_qr_token'),
     
     # ============================================
     # 📡 AJAX & MODAL APIs
     # ============================================
     path('student/attendance/day/<str:date_string>/', student_daily_attendance_api, name='daily_attendance_api'),
+
+    # ============================================
+    # 🌐 10. NEW RBAC DASHBOARDS
+    # ============================================
+    path('dashboard/super-admin/', super_admin_dashboard, name='super_admin_dashboard'),
+    path('dashboard/academic-coordinator/', academic_coordinator_dashboard, name='academic_coordinator_dashboard'),
+    path('dashboard/hod/', hod_dashboard, name='hod_dashboard'),
+    path('dashboard/tg/', tg_dashboard, name='tg_dashboard'),
+    path('dashboard/security/', security_dashboard, name='security_dashboard'),
+    path('dashboard/librarian/', librarian_dashboard, name='librarian_dashboard'),
+    path('dashboard/finance/', finance_dashboard, name='finance_dashboard'),
+    path('dashboard/parent/', parent_dashboard, name='parent_dashboard'),
 ]

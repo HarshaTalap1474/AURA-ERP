@@ -8,7 +8,7 @@ Profile | Aura ERP
 <div class="row g-4">
 
     <div class="col-lg-4">
-        <div class="card border-0 shadow-sm text-center p-4 bg-white">
+        <div class="glass-card text-center p-4">
 
             <div class="bg-primary rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center text-white fw-bold"
                  style="width:80px;height:80px;font-size:2rem;">
@@ -56,7 +56,7 @@ Profile | Aura ERP
                         Designation
                     </p>
                     <p class="fw-bold">
-                        {{ user.teacher_profile.designation|default:"Faculty Member" }}
+                        {{ user.staff_profile.designation|default:"Faculty Member" }}
                     </p>
 
                 {% endif %}
@@ -68,14 +68,14 @@ Profile | Aura ERP
 
     <div class="col-lg-8">
 
-        <div id="personal-info" class="card border-0 shadow-sm mb-4">
+        <div id="personal-info" class="glass-card mb-4 overflow-hidden">
 
-            <div class="card-header bg-white py-3 fw-bold">
-                <i class="fas fa-edit me-2"></i>
+            <div class="p-3 fw-bold border-bottom" style="background: rgba(255,255,255,0.02)">
+                <i class="fas fa-edit text-primary me-2"></i>
                 Edit Personal Details
             </div>
 
-            <div class="card-body">
+            <div class="p-4">
 
                 <form action="{% url 'profile' %}" method="POST">
                     {% csrf_token %}
@@ -144,14 +144,14 @@ Profile | Aura ERP
         </div>
 
 
-        <div id="security" class="card border-0 shadow-sm">
+        <div id="security" class="glass-card overflow-hidden">
 
-            <div class="card-header bg-white py-3 fw-bold">
-                <i class="fas fa-lock me-2"></i>
+            <div class="p-3 fw-bold border-bottom" style="background: rgba(255,255,255,0.02)">
+                <i class="fas fa-lock text-primary me-2"></i>
                 Security Settings
             </div>
 
-            <div class="card-body">
+            <div class="p-4">
 
                 <div class="row align-items-center">
                     <div class="col-md-7">

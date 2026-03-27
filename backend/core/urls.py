@@ -42,12 +42,17 @@ from .views import (
     live_lecture_status,
     get_dynamic_qr_token,
     student_daily_attendance_api,
-    verify_virtual_id, # ✅ IMPORTED NEW VIEW
+    verify_virtual_id,
+    verify_gate_pass,
     
     # New RBAC Views
     super_admin_dashboard, academic_coordinator_dashboard, hod_dashboard,
     tg_dashboard, security_dashboard, librarian_dashboard, finance_dashboard,
-    parent_dashboard
+    parent_dashboard,
+    
+    # Core Engine Expansions
+    generate_transcript,
+    initiate_payment, webhook_payment_success
 )
 
 urlpatterns = [
@@ -113,8 +118,9 @@ urlpatterns = [
     path('api/profile/update/', update_profile, name='api_update_profile'), 
     path('api/attendance/history/', attendance_history, name='attendance_history'),
     
-    # ✅ UPDATED: Points to the new Security Identity Verification view
+    # ✅ SECURITY SCANNER API VIEWS
     path('api/verify-virtual-id/', verify_virtual_id, name='verify_virtual_id'),
+    path('api/verify-gate-pass/', verify_gate_pass, name='verify_gate_pass'),
 
     # ============================================
     # 📡 7. IOT HARDWARE & LIVE MONITOR APIs
@@ -158,6 +164,16 @@ urlpatterns = [
     path('dashboard/tg/', tg_dashboard, name='tg_dashboard'),
     path('dashboard/security/', security_dashboard, name='security_dashboard'),
     path('dashboard/librarian/', librarian_dashboard, name='librarian_dashboard'),
-    path('dashboard/finance/', finance_dashboard, name='finance_dashboard'),
     path('dashboard/parent/', parent_dashboard, name='parent_dashboard'),
+    
+    # ============================================
+    # 📄 11. ACADEMIC ENGINES (Transcripts)
+    # ============================================
+    path('student/<int:student_id>/transcript/', generate_transcript, name='generate_transcript'),
+    
+    # ============================================
+    # 💳 12. FINANCIAL GATEWAYS
+    # ============================================
+    path('api/finance/pay/<int:invoice_id>/', initiate_payment, name='initiate_payment'),
+    path('api/finance/webhook/success/', webhook_payment_success, name='webhook_payment_success'),
 ]

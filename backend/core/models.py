@@ -23,8 +23,9 @@ class User(AbstractUser):
         PARENT = "PARENT", "Parent"
         ADMIN = "ADMIN", "Admin" # Legacy Fallback
 
-    role = models.CharField(max_length=25, choices=Role.choices, default=Role.STUDENT)
+    role = models.CharField(max_length=50, choices=Role.choices, default=Role.STUDENT)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
+    fcm_device_token = models.CharField(max_length=255, blank=True, null=True, help_text="Firebase Cloud Messaging Device Token for Android Push Notifications")
     
     # Security: Locks the account to a specific phone (Anti-Proxy)
     device_fingerprint = models.CharField(
@@ -86,6 +87,7 @@ class Course(models.Model):
     code = models.CharField(max_length=20, unique=True)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    credits = models.IntegerField(default=3)
 
     def __str__(self):
         return f"{self.code} - {self.name}"
@@ -102,6 +104,16 @@ class StudentProfile(models.Model):
     division = models.CharField(max_length=5, default="A")
     # Pastoral Linkage constraint
     teacher_guardian = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='tg_cohort')
+    
+    @property
+    def cgpa(self):
+        records = self.grades.filter(is_absent=False)
+        if not records.exists():
+            return 0.0
+        
+        total_points = sum(r.grade_point * r.course.credits for r in records if r.course.credits)
+        total_credits = sum(r.course.credits for r in records if r.course.credits)
+        return round(float(total_points / total_credits), 2) if total_credits > 0 else 0.0
 
     def __str__(self):
         return f"{self.roll_no} ({self.user.username})"
@@ -193,7 +205,8 @@ class LeaveRequest(models.Model):
         ('PERSONAL', 'Personal Reason'),
     )
     STATUS_CHOICES = (
-        ('PENDING', 'Pending'),
+        ('DRAFT', 'Draft'),
+        ('PENDING_TG', 'Pending TG Approval'),
         ('APPROVED', 'Approved'),
         ('REJECTED', 'Rejected'),
     )
@@ -204,8 +217,140 @@ class LeaveRequest(models.Model):
     end_date = models.DateField()
     reason = models.TextField()
     document = models.FileField(upload_to='leave_docs/', null=True, blank=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING_TG')
     applied_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.student.username} | {self.leave_type} | {self.status}"
+
+# ==========================================
+# 7. ASSESSMENT & GRADING ENGINE
+# ==========================================
+class Exam(models.Model):
+    EXAM_TYPES = [
+        ('MID', 'Mid-Term'),
+        ('END', 'End-Semester'),
+        ('PRAC', 'Practical'),
+        ('UNIT', 'Unit Test')
+    ]
+    name = models.CharField(max_length=100)
+    exam_type = models.CharField(max_length=20, choices=EXAM_TYPES)
+    date = models.DateField()
+    semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    max_marks = models.PositiveIntegerField(default=100)
+    passing_marks = models.PositiveIntegerField(default=40)
+    
+    def __str__(self):
+        return f"{self.name} ({self.get_exam_type_display()})"
+
+class GradeRecord(models.Model):
+    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name='grades')
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='results')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    marks_obtained = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    is_absent = models.BooleanField(default=False)
+    
+    @property
+    def passed(self):
+        if self.is_absent or self.marks_obtained is None:
+            return False
+        return self.marks_obtained >= self.exam.passing_marks
+        
+    @property
+    def grade_point(self):
+        if self.is_absent or self.marks_obtained is None:
+            return 0
+        percentage = (self.marks_obtained / self.exam.max_marks) * 100
+        if percentage >= 90: return 10
+        elif percentage >= 80: return 9
+        elif percentage >= 70: return 8
+        elif percentage >= 60: return 7
+        elif percentage >= 50: return 6
+        elif percentage >= 40: return 5
+        elif percentage >= 35: return 4
+        return 0
+
+    class Meta:
+        unique_together = ('student', 'exam', 'course')
+        
+    def __str__(self):
+        return f"{self.student.roll_no} - {self.course.code}: {self.marks_obtained}/{self.exam.max_marks}"
+
+# ==========================================
+# 8. AUTOMATED WORKFLOWS & GATE PASS
+# ==========================================
+class GatePass(models.Model):
+    leave_request = models.OneToOneField(LeaveRequest, on_delete=models.CASCADE, related_name='gate_pass')
+    qr_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    generated_at = models.DateTimeField(auto_now_add=True)
+    scanned_at = models.DateTimeField(null=True, blank=True)
+    scanned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='scanned_passes')
+    is_active = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return f"Pass for {self.leave_request.student.username} (Active: {self.is_active})"
+
+# ==========================================
+# 9. FINANCE & INVENTORY ENGINE
+# ==========================================
+class FeeInvoice(models.Model):
+    FEE_TYPES = (
+        ('TUITION', 'Tuition Fee'),
+        ('HOSTEL', 'Hostel Fee'),
+        ('TRANSPORT', 'Transport Fee'),
+        ('EXAM', 'Examination Fee'),
+        ('PENALTY', 'Late/Disciplinary Penalty')
+    )
+    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name='invoices')
+    fee_type = models.CharField(max_length=20, choices=FEE_TYPES)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    due_date = models.DateField()
+    is_paid = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.fee_type} - {self.student.roll_no} - ₹{self.amount}"
+
+class PaymentTransaction(models.Model):
+    invoice = models.ForeignKey(FeeInvoice, on_delete=models.CASCADE, related_name='transactions')
+    transaction_id = models.CharField(max_length=100, unique=True, help_text="e.g. Razorpay/Stripe Payment ID")
+    amount_paid = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_method = models.CharField(max_length=50, default="RAZORPAY")
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_successful = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return f"TXN {self.transaction_id} - Success: {self.is_successful}"
+
+class LibraryAction(models.Model):
+    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name='library_books')
+    book_uid = models.CharField(max_length=50, help_text="Physical RFID tag or Barcode")
+    book_title = models.CharField(max_length=200)
+    issued_on = models.DateTimeField(auto_now_add=True)
+    due_date = models.DateField()
+    returned_on = models.DateTimeField(null=True, blank=True)
+    fine_accrued = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
+    
+    @property
+    def is_overdue(self):
+        if not self.returned_on:
+            from django.utils import timezone
+            return timezone.now().date() > self.due_date
+        return False
+        
+    def __str__(self):
+        return f"{self.book_title} -> {self.student.roll_no}"
+
+# ==========================================
+# 10. NOTIFICATION HUB & FCM
+# ==========================================
+class NotificationInbox(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    fcm_dispatched = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.title[:30]}"

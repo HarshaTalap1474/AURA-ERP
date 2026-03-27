@@ -61,6 +61,20 @@
     </div>
 </div>
 
+<div class="row g-4 mb-4">
+    <div class="col-md-12">
+        <div class="glass-card p-4 hover-lift d-flex align-items-center justify-content-between">
+            <div>
+                <p class="text-muted small fw-bold text-uppercase mb-1">Academic Performance Profile</p>
+                <h3 class="fw-bold mb-0 text-primary">Cumulative GPA: {% if children %}{{ children.0.cgpa|floatformat:2 }}{% else %}--{% endif %}</h3>
+            </div>
+            {% if children %}
+            <a href="{% url 'generate_transcript' children.0.id %}" class="btn btn-primary rounded-pill px-4 shadow-sm"><i class="fas fa-file-pdf me-2"></i>Official Transcript</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
 <div class="glass-card p-4">
     <h5 class="fw-bold mb-4"><i class="fas fa-calendar-day me-2 text-primary"></i>Today's Academic Log</h5>
     <div class="table-responsive">

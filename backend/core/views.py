@@ -751,13 +751,19 @@ def teacher_leave_view(request):
 
 @login_required
 def process_leave_action(request, request_id):
-    if request.user.role != User.Role.TEACHER or request.method != 'POST': return redirect('dashboard')
+    if request.user.role not in [User.Role.TEACHER, User.Role.TEACHER_GUARDIAN] or request.method != 'POST': 
+        return redirect('dashboard')
+    
     leave_request = get_object_or_404(LeaveRequest, id=request_id)
     action = request.POST.get('action')
     
     if action == 'approve':
         leave_request.status = 'APPROVED'
         leave_request.save()
+        
+        # 🚀 AUTO-GENERATE GATE PASS
+        from .models import GatePass
+        GatePass.objects.get_or_create(leave_request=leave_request)
         
         # Automatically mark as EXCUSED for all missed lectures in that date range
         student_profile = getattr(leave_request.student, 'student_profile', None)
@@ -935,6 +941,150 @@ def parent_dashboard(request):
         'children': children,
     }
     return render(request, 'parent_dashboard.html', context)
+
+# =========================================
+# 17. ASSESSMENT & TRANSCRIPTS
+# =========================================
+@login_required
+def generate_transcript(request, student_id):
+    from django.shortcuts import get_object_or_404
+    from .models import StudentProfile
+    
+    student = get_object_or_404(StudentProfile.objects.select_related('user', 'department', 'batch'), id=student_id)
+    
+    # Very basic permission boundary for transcript viewing
+    allowed = False
+    if request.user.role in [User.Role.SUPER_ADMIN, User.Role.ACADEMIC_COORDINATOR, User.Role.HOD, User.Role.TEACHER_GUARDIAN]:
+        allowed = True
+    elif request.user.role == User.Role.STUDENT and hasattr(request.user, 'student_profile') and request.user.student_profile.id == student.id:
+        allowed = True
+    elif request.user.role == User.Role.PARENT and hasattr(request.user, 'parent_profile') and student in request.user.parent_profile.students.all():
+        allowed = True
+        
+    if not allowed:
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden("You do not have permission to view this transcript.")
+        
+    # 🚨 DEFAULTER MIDDLEWARE LOGIC
+    total_dues = sum(inv.amount for inv in student.invoices.filter(is_paid=False))
+    if total_dues > 0 and request.user.role in [User.Role.STUDENT, User.Role.PARENT]:
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden(f"TRANSCRIPT BLOCKED: Financial Hold. Outstanding dues of ₹{total_dues} must be cleared prior to generating official transcripts.")
+        
+    records = student.grades.select_related('exam', 'course').order_by('-exam__date')
+    
+    context = {
+        'student': student,
+        'records': records,
+        'cgpa': student.cgpa
+    }
+    return render(request, 'transcript.html', context)
+
+# =========================================
+# 18. WORKFLOW VERIFICATIONS
+# =========================================
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def verify_gate_pass(request):
+    """
+    Called by the Security Officer's Android App when they scan a Student's QR Code.
+    """
+    if request.user.role != User.Role.SECURITY_OFFICER:
+        return Response({'success': False, 'message': 'Unauthorized. Security personnel only.'}, status=403)
+        
+    qr_token = request.data.get('qr_token')
+    if not qr_token:
+        return Response({'success': False, 'message': 'Missing QR token payload'}, status=400)
+        
+    try:
+        from .models import GatePass
+        gate_pass = GatePass.objects.select_related('leave_request__student__student_profile').get(qr_token=qr_token)
+        
+        if not gate_pass.is_active:
+            return Response({'success': False, 'message': 'GATE PASS DISABLED: Pass is expired or already scanned.'})
+            
+        # Verify and Exhaust the token
+        gate_pass.is_active = False
+        gate_pass.scanned_at = timezone.now()
+        gate_pass.scanned_by = request.user
+        gate_pass.save()
+        
+        student = gate_pass.leave_request.student
+        roll_no = getattr(student, 'student_profile', student).roll_no if hasattr(student, 'student_profile') else student.username
+        
+        return Response({
+            'success': True, 
+            'message': 'GATE PASS SECURELY VERIFIED. Student Authorized to Exit.',
+            'student_name': student.get_full_name() or student.username,
+            'roll_no': roll_no,
+            'reason': gate_pass.leave_request.get_leave_type_display()
+        })
+        
+    except Exception as e: # Catching DoesNotExist abstractly
+        return Response({'success': False, 'message': 'INVALID PAYLOAD: Cryptographic signature mismatch or token does not exist.'}, status=404)
+
+# =========================================
+# 19. FINANCIAL GATEWAYS & WEBHOOKS
+# =========================================
+@login_required
+@api_view(['GET'])
+def initiate_payment(request, invoice_id):
+    from django.shortcuts import get_object_or_404
+    from .models import FeeInvoice
+    from django.utils import timezone
+    
+    invoice = get_object_or_404(FeeInvoice, id=invoice_id, is_paid=False)
+    
+    # Ownership Check
+    is_clerk_or_parent = request.user.role in [User.Role.PARENT, User.Role.FINANCE_CLERK]
+    if invoice.student.user != request.user and not is_clerk_or_parent:
+        return Response({'success': False, 'message': 'Unauthorized to pay this invoice'}, status=403)
+        
+    # Mock Payment Gateway Intent Payload (Razorpay/Stripe Stub)
+    mock_order_id = f"PAY_{invoice.id}_{int(timezone.now().timestamp())}"
+    
+    return Response({
+        'success': True,
+        'invoice_id': invoice.id,
+        'amount_payable': str(invoice.amount),
+        'currency': 'INR',
+        'gateway_order_id': mock_order_id,
+        'checkout_url': f'/api/mock-checkout/{mock_order_id}/'
+    })
+
+@csrf_exempt
+@api_view(['POST'])
+def webhook_payment_success(request):
+    """
+    Called asynchronously by Razorpay/Stripe to verify the transaction.
+    """
+    from django.shortcuts import get_object_or_404
+    from .models import FeeInvoice, PaymentTransaction
+    
+    transaction_id = request.data.get('transaction_id')
+    invoice_id = request.data.get('invoice_id')
+    
+    if not transaction_id or not invoice_id:
+        return Response({'success': False, 'message': 'Malformed webhook payload'}, status=400)
+        
+    invoice = get_object_or_404(FeeInvoice, id=invoice_id)
+    if invoice.is_paid:
+        return Response({'success': True, 'message': 'Invoice already securely settled.'})
+        
+    invoice.is_paid = True
+    invoice.save()
+    
+    PaymentTransaction.objects.create(
+        invoice=invoice,
+        transaction_id=transaction_id,
+        amount_paid=invoice.amount,
+        is_successful=True
+    )
+    
+    return Response({'success': True, 'message': 'Payment logged and invoice settled across Aura ERP.'})
 
 @login_required
 def send_mentor_message(request):

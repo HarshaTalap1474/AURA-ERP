@@ -24,6 +24,7 @@ from django.urls import reverse_lazy
 from django.db import transaction # ✅ ADDED for Database Integrity
 from django.core.signing import TimestampSigner, SignatureExpired, BadSignature # ✅ FIXED Missing Imports
 from django.core.mail import send_mail # ✅ ADDED for Email Warnings
+from django.conf import settings # ✅ ADDED for ESP32_SECRET_KEY access
 
 # =========================================
 # REST FRAMEWORK IMPORTS
@@ -352,6 +353,17 @@ def add_schedule(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def hardware_sync(request):
+    # ✅ SECURITY: Hardware API Key Verification
+    # ESP32 nodes must send the shared secret via the X-ESP32-API-KEY header.
+    # Set ESP32_SECRET_KEY in your .env file. Anyone without this key gets 403
+    # before any database query is executed.
+    api_key = request.headers.get('X-ESP32-API-KEY')
+    if not api_key or api_key != settings.ESP32_SECRET_KEY:
+        return Response(
+            {"status": "error", "message": "Hardware Authentication Failed"},
+            status=403
+        )
+
     data = request.data
     gateway_id = data.get('gateway_id')
     detected_students = data.get('detected_students', [])
@@ -398,6 +410,7 @@ def hardware_sync(request):
         "status": "success", "room": classroom.room_number,
         "class": active_lecture.course.code, "marked_new": len(attendance_records)
     })
+
 
 # =========================================
 # 8. ANDROID VIRTUAL ID (Repurposed from mark_attendance)

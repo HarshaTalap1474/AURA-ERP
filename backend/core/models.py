@@ -32,6 +32,7 @@ class User(AbstractUser):
         max_length=255,
         null=True,
         blank=True,
+        db_index=True,  # ✅ B-Tree index for fast hardware_sync bulk-filter queries
         help_text="Unique Android ID of the student's registered device."
     )
 

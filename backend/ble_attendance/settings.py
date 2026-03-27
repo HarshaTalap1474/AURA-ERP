@@ -143,3 +143,11 @@ MEDIA_URL = '/media/'
 
 # Path where media is stored on the computer
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# ==========================================
+# 🔐 IOT HARDWARE AUTHENTICATION
+# ==========================================
+# Shared secret that every ESP32 node must send in the X-ESP32-API-KEY header.
+# Set a strong random value in your .env file. Example:
+#   ESP32_SECRET_KEY=a3f9d2c8e1b7...
+ESP32_SECRET_KEY = os.environ.get('ESP32_SECRET_KEY', 'changeme-esp32-secret')

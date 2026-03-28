@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!-- ⚙️ Allow local HTTP connections for testing -->
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">10.77.107.238</domain>
-    </domain-config>
-
-    <!-- Optional: allow localhost too -->
+    <!-- Allow cleartext only for localhost (Android emulator dev use) -->
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>
     </domain-config>
 
-    <base-config cleartextTrafficPermitted="true" />
+    <!-- All other traffic (including demo.harshalabs.online) uses HTTPS — no exceptions needed -->
+    <base-config cleartextTrafficPermitted="false" />
 </network-security-config>

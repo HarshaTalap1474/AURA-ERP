@@ -12,10 +12,15 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.RequestQueue;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONException;
@@ -174,7 +179,7 @@ public class ProfileActivity extends AppCompatActivity {
             return;
         }
 
-        RequestQueue queue = Volley.newRequestQueue(this);
+        RequestQueue queue = VolleySingleton.getInstance(this).getRequestQueue();
         JsonObjectRequest request = new JsonObjectRequest(
                 Request.Method.POST,
                 NetworkConfig.URL_PROFILE_UPDATE,

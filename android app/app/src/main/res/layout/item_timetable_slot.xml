@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    app:cardCornerRadius="14dp" app:cardElevation="4dp" app:cardBackgroundColor="@color/white">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:padding="16dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="center_vertical">
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                <TextView android:id="@+id/tvSubject" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Subject Name" android:textSize="16sp" android:textStyle="bold" android:textColor="#1F2937"/>
+                <TextView android:id="@+id/tvCode" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="CODE" android:textSize="12sp" android:textColor="#6B7280"/>
+            </LinearLayout>
+            <TextView android:id="@+id/tvStatus" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="UPCOMING" android:textColor="@color/white" android:textSize="11sp"
+                android:paddingHorizontal="10dp" android:paddingVertical="4dp"
+                android:background="@drawable/bg_status_chip"/>
+        </LinearLayout>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:layout_marginTop="8dp">
+            <TextView android:id="@+id/tvTime" android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:text="09:00 AM – 10:00 AM" android:textSize="13sp" android:textColor="#374151"/>
+            <TextView android:id="@+id/tvRoom" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="📍 Room 101" android:textSize="13sp" android:textColor="#6B7280"/>
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

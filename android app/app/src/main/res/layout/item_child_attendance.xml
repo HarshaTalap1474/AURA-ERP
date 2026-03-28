@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="16dp" app:cardElevation="4dp" app:cardBackgroundColor="@color/white">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:padding="16dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="center_vertical">
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                <TextView android:id="@+id/tvChildName" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Child Name" android:textSize="17sp" android:textStyle="bold" android:textColor="#1F2937"/>
+                <TextView android:id="@+id/tvChildRoll" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Roll No" android:textSize="12sp" android:textColor="#6B7280"/>
+                <TextView android:id="@+id/tvChildDept" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Dept • Sem 4" android:textSize="12sp" android:textColor="#9CA3AF"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center">
+                <TextView android:id="@+id/tvAttendancePct" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="0.0%" android:textSize="24sp" android:textStyle="bold" android:textColor="#10B981"/>
+                <TextView android:id="@+id/tvAtRisk" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="AT RISK" android:textSize="10sp" android:textColor="#EF4444" android:textStyle="bold"
+                    android:visibility="gone"/>
+            </LinearLayout>
+        </LinearLayout>
+        <ProgressBar android:id="@+id/progressAttendance" style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="match_parent" android:layout_height="6dp"
+            android:layout_marginTop="10dp" android:max="100" android:progress="0"/>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

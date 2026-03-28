@@ -1144,3 +1144,473 @@ def student_daily_attendance_api(request, date_string):
                 lecture_data.append({"time": lec.start_time.strftime('%I:%M %p'), "subject": lec.course.name, "status": "Absent"})
 
     return JsonResponse({"date": date_string, "lectures": sorted(lecture_data, key=lambda x: x['time'])})
+
+
+# =========================================
+# ══════════════════════════════════════════
+# 🚀 PHASE B: MOBILE FEATURE PARITY APIs
+# ══════════════════════════════════════════
+# =========================================
+
+# ──────────────────────────────────────────
+# TEACHER: TIMETABLE & LIVE CLASS CONTROL
+# ──────────────────────────────────────────
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_teacher_timetable(request):
+    """Returns today's timetable for the logged-in teacher."""
+    if request.user.role not in [
+        User.Role.TEACHER, User.Role.HOD,
+        User.Role.ACADEMIC_COORDINATOR, User.Role.TEACHER_GUARDIAN
+    ]:
+        return Response({'status': 'error', 'message': 'Unauthorized'}, status=403)
+
+    now = timezone.localtime(timezone.now())
+    today_weekday = now.weekday()
+    today_date = now.date()
+
+    slots = TimeTable.objects.filter(
+        teacher=request.user, day_of_week=today_weekday
+    ).select_related('course', 'classroom').order_by('start_time')
+
+    active_lecture = Lecture.objects.filter(teacher=request.user, is_active=True).first()
+
+    result = []
+    for slot in slots:
+        finished = Lecture.objects.filter(
+            teacher=request.user, course=slot.course,
+            classroom=slot.classroom, start_time__date=today_date, is_active=False
+        ).exists()
+
+        if active_lecture and active_lecture.course == slot.course:
+            status_flag = 'ACTIVE'
+        elif finished:
+            status_flag = 'FINISHED'
+        else:
+            status_flag = 'UPCOMING'
+
+        result.append({
+            'timetable_id': slot.id,
+            'course_name': slot.course.name,
+            'course_code': slot.course.code,
+            'room': slot.classroom.room_number if slot.classroom else 'TBD',
+            'start_time': slot.start_time.strftime('%I:%M %p'),
+            'end_time': slot.end_time.strftime('%I:%M %p'),
+            'status': status_flag,
+            'active_lecture_id': active_lecture.id if active_lecture and status_flag == 'ACTIVE' else None,
+        })
+
+    return Response({
+        'status': 'success',
+        'day': now.strftime('%A, %d %B %Y'),
+        'has_active_lecture': bool(active_lecture),
+        'active_lecture_id': active_lecture.id if active_lecture else None,
+        'timetable': result
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_start_class(request):
+    """Start a timetable-based class session (Teacher only)."""
+    if request.user.role not in [User.Role.TEACHER, User.Role.HOD, User.Role.ACADEMIC_COORDINATOR]:
+        return Response({'status': 'error', 'message': 'Unauthorized'}, status=403)
+
+    if Lecture.objects.filter(teacher=request.user, is_active=True).exists():
+        return Response({'status': 'error', 'message': 'You already have an active session. End it first.'}, status=400)
+
+    timetable_id = request.data.get('timetable_id')
+    if not timetable_id:
+        return Response({'status': 'error', 'message': 'timetable_id required'}, status=400)
+
+    try:
+        slot = TimeTable.objects.get(id=timetable_id, teacher=request.user)
+    except TimeTable.DoesNotExist:
+        return Response({'status': 'error', 'message': 'Timetable slot not found'}, status=404)
+
+    lecture = Lecture.objects.create(
+        course=slot.course, classroom=slot.classroom,
+        teacher=request.user, is_active=True
+    )
+    return Response({
+        'status': 'success',
+        'message': f'Class started: {slot.course.name}',
+        'lecture_id': lecture.id
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_start_extra_class(request):
+    """Start an ad-hoc / extra class session."""
+    if request.user.role not in [User.Role.TEACHER, User.Role.HOD, User.Role.ACADEMIC_COORDINATOR]:
+        return Response({'status': 'error', 'message': 'Unauthorized'}, status=403)
+
+    if Lecture.objects.filter(teacher=request.user, is_active=True).exists():
+        return Response({'status': 'error', 'message': 'Active session already running.'}, status=400)
+
+    course_id = request.data.get('course_id')
+    room_id = request.data.get('room_id')
+    if not course_id or not room_id:
+        return Response({'status': 'error', 'message': 'course_id and room_id required'}, status=400)
+
+    try:
+        course = Course.objects.get(id=course_id)
+        room = Classroom.objects.get(id=room_id)
+    except (Course.DoesNotExist, Classroom.DoesNotExist):
+        return Response({'status': 'error', 'message': 'Invalid course or room'}, status=404)
+
+    lecture = Lecture.objects.create(course=course, classroom=room, teacher=request.user, is_active=True)
+    return Response({
+        'status': 'success',
+        'message': f'Extra class started: {course.name}',
+        'lecture_id': lecture.id
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_end_class(request):
+    """End the teacher's currently active lecture."""
+    if request.user.role not in [User.Role.TEACHER, User.Role.HOD, User.Role.ACADEMIC_COORDINATOR]:
+        return Response({'status': 'error', 'message': 'Unauthorized'}, status=403)
+
+    active = Lecture.objects.filter(teacher=request.user, is_active=True).first()
+    if not active:
+        return Response({'status': 'error', 'message': 'No active session to end.'}, status=400)
+
+    active.is_active = False
+    active.end_time = timezone.now()
+    active.save()
+    return Response({'status': 'success', 'message': 'Session ended successfully.'})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_live_monitor(request, lecture_id):
+    """Returns real-time present/absent list for a lecture."""
+    lecture = get_object_or_404(Lecture, id=lecture_id)
+
+    if request.user.role not in [
+        User.Role.TEACHER, User.Role.HOD,
+        User.Role.ACADEMIC_COORDINATOR, User.Role.SUPER_ADMIN
+    ] and lecture.teacher != request.user:
+        return Response({'status': 'error', 'message': 'Unauthorized'}, status=403)
+
+    expected = StudentProfile.objects.filter(
+        department=lecture.course.department,
+        current_semester=lecture.course.semester
+    ).select_related('user').order_by('roll_no')
+
+    present_ids = set(
+        Attendance.objects.filter(lecture=lecture, status='PRESENT').values_list('student_id', flat=True)
+    )
+
+    students = []
+    present_count = 0
+    for sp in expected:
+        is_present = sp.user.id in present_ids
+        if is_present:
+            present_count += 1
+        students.append({
+            'roll_no': sp.roll_no,
+            'name': sp.user.get_full_name() or sp.user.username,
+            'is_present': is_present
+        })
+
+    total = expected.count()
+    return Response({
+        'status': 'success',
+        'lecture_id': lecture_id,
+        'course': lecture.course.name,
+        'is_active': lecture.is_active,
+        'present_count': present_count,
+        'absent_count': total - present_count,
+        'total': total,
+        'percentage': round((present_count / total * 100) if total > 0 else 0.0, 1),
+        'students': students
+    })
+
+
+# ──────────────────────────────────────────
+# TEACHER/HOD: LEAVE MANAGEMENT APIs
+# ──────────────────────────────────────────
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_leave_requests(request):
+    """Returns pending and processed leave requests for teacher/HOD/TG review."""
+    if request.user.role not in [
+        User.Role.TEACHER, User.Role.HOD,
+        User.Role.TEACHER_GUARDIAN, User.Role.ACADEMIC_COORDINATOR, User.Role.SUPER_ADMIN
+    ]:
+        return Response({'status': 'error', 'message': 'Unauthorized'}, status=403)
+
+    pending = LeaveRequest.objects.filter(status='PENDING').select_related('student').order_by('-applied_on')
+    processed = LeaveRequest.objects.exclude(status='PENDING').select_related('student').order_by('-applied_on')[:20]
+
+    def serialize_leave(lr):
+        return {
+            'id': lr.id,
+            'student_name': lr.student.get_full_name() or lr.student.username,
+            'student_roll': lr.student.username,
+            'leave_type': lr.get_leave_type_display(),
+            'start_date': str(lr.start_date),
+            'end_date': str(lr.end_date),
+            'reason': lr.reason,
+            'status': lr.status,
+            'applied_on': lr.applied_on.strftime('%d %b %Y'),
+        }
+
+    return Response({
+        'status': 'success',
+        'pending': [serialize_leave(lr) for lr in pending],
+        'processed': [serialize_leave(lr) for lr in processed]
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_process_leave(request, request_id):
+    """Approve or reject a leave request (Teacher/TG/HOD only)."""
+    if request.user.role not in [
+        User.Role.TEACHER, User.Role.HOD,
+        User.Role.TEACHER_GUARDIAN, User.Role.ACADEMIC_COORDINATOR
+    ]:
+        return Response({'status': 'error', 'message': 'Unauthorized'}, status=403)
+
+    leave_request = get_object_or_404(LeaveRequest, id=request_id)
+    action = request.data.get('action')  # 'approve' or 'reject'
+
+    if action == 'approve':
+        leave_request.status = 'APPROVED'
+        leave_request.save()
+
+        from .models import GatePass
+        GatePass.objects.get_or_create(leave_request=leave_request)
+
+        student_profile = getattr(leave_request.student, 'student_profile', None)
+        if student_profile:
+            lectures_missed = Lecture.objects.filter(
+                course__department=student_profile.department,
+                course__semester=student_profile.current_semester,
+                start_time__date__gte=leave_request.start_date,
+                start_time__date__lte=leave_request.end_date,
+                is_active=False
+            )
+            excused = [
+                Attendance(student=leave_request.student, lecture=lec,
+                           status='EXCUSED', is_manual_override=True)
+                for lec in lectures_missed
+            ]
+            if excused:
+                Attendance.objects.bulk_create(excused, ignore_conflicts=True)
+
+        return Response({'status': 'success', 'message': 'Leave approved. Attendance auto-excused.'})
+
+    elif action == 'reject':
+        leave_request.status = 'REJECTED'
+        leave_request.save()
+        return Response({'status': 'success', 'message': 'Leave rejected.'})
+
+    return Response({'status': 'error', 'message': 'action must be approve or reject'}, status=400)
+
+
+# ──────────────────────────────────────────
+# STUDENT: LEAVE APPLICATION APIs
+# ──────────────────────────────────────────
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_student_apply_leave(request):
+    """Student submits a leave application."""
+    if request.user.role != User.Role.STUDENT:
+        return Response({'status': 'error', 'message': 'Students only'}, status=403)
+
+    leave_type = request.data.get('leave_type')
+    start_date = request.data.get('start_date')
+    end_date = request.data.get('end_date')
+    reason = request.data.get('reason')
+
+    if not all([leave_type, start_date, end_date, reason]):
+        return Response({'status': 'error', 'message': 'All fields are required'}, status=400)
+
+    LeaveRequest.objects.create(
+        student=request.user,
+        leave_type=leave_type,
+        start_date=start_date,
+        end_date=end_date,
+        reason=reason
+    )
+    return Response({'status': 'success', 'message': 'Leave application submitted.'})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_student_leave_history(request):
+    """Returns the student's own leave request history."""
+    if request.user.role != User.Role.STUDENT:
+        return Response({'status': 'error', 'message': 'Students only'}, status=403)
+
+    leaves = LeaveRequest.objects.filter(student=request.user).order_by('-applied_on')
+    data = [{
+        'id': lr.id,
+        'leave_type': lr.get_leave_type_display(),
+        'start_date': str(lr.start_date),
+        'end_date': str(lr.end_date),
+        'reason': lr.reason,
+        'status': lr.status,
+        'applied_on': lr.applied_on.strftime('%d %b %Y'),
+    } for lr in leaves]
+
+    return Response({'status': 'success', 'leaves': data})
+
+
+# ──────────────────────────────────────────
+# STUDENT: QR VIRTUAL ID TOKEN
+# ──────────────────────────────────────────
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_qr_token(request):
+    """Issues a fresh cryptographic 15-second QR token for the student's Virtual ID."""
+    if request.user.role != User.Role.STUDENT:
+        return Response({'status': 'error', 'message': 'Students only'}, status=403)
+
+    token = TimestampSigner().sign(request.user.username)
+    return Response({
+        'status': 'success',
+        'token': token,
+        'expires_in_seconds': 15,
+        'student_name': request.user.get_full_name() or request.user.username,
+        'roll_no': request.user.username
+    })
+
+
+# ──────────────────────────────────────────
+# HOD: DEPARTMENT STATS API
+# ──────────────────────────────────────────
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_hod_stats(request):
+    """Returns HOD department summary stats."""
+    if request.user.role != User.Role.HOD:
+        return Response({'status': 'error', 'message': 'HOD only'}, status=403)
+
+    dept = None
+    if hasattr(request.user, 'staff_profile'):
+        dept = request.user.staff_profile.department
+
+    # Compute at-risk students (< 75% attendance in this dept)
+    at_risk = []
+    if dept:
+        students = StudentProfile.objects.filter(department=dept).select_related('user')
+        for sp in students:
+            total = Lecture.objects.filter(
+                course__department=dept,
+                course__semester=sp.current_semester,
+                is_active=False
+            ).count()
+            if total == 0:
+                continue
+            attended = Attendance.objects.filter(
+                student=sp.user, status__in=['PRESENT', 'EXCUSED']
+            ).count()
+            pct = (attended / total) * 100
+            if pct < 75:
+                at_risk.append({
+                    'name': sp.user.get_full_name() or sp.user.username,
+                    'roll_no': sp.roll_no,
+                    'percentage': round(pct, 1)
+                })
+
+    return Response({
+        'status': 'success',
+        'department': dept.name if dept else 'Unassigned',
+        'total_students': StudentProfile.objects.filter(department=dept).count() if dept else 0,
+        'total_faculty': StaffProfile.objects.filter(department=dept).count() if dept else 0,
+        'pending_leaves': LeaveRequest.objects.filter(status='PENDING').count(),
+        'at_risk_students': at_risk[:10]  # top 10
+    })
+
+
+# ──────────────────────────────────────────
+# PARENT: CHILDREN ATTENDANCE API
+# ──────────────────────────────────────────
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_parent_children(request):
+    """Returns a parent's linked children with their attendance summary."""
+    if request.user.role != User.Role.PARENT:
+        return Response({'status': 'error', 'message': 'Parents only'}, status=403)
+
+    if not hasattr(request.user, 'parent_profile'):
+        return Response({'status': 'success', 'children': []})
+
+    children = request.user.parent_profile.students.select_related(
+        'user', 'department', 'current_semester'
+    ).all()
+
+    result = []
+    for child in children:
+        total = Lecture.objects.filter(
+            course__semester=child.current_semester, is_active=False
+        ).count()
+        attended = Attendance.objects.filter(
+            student=child.user, status='PRESENT'
+        ).count()
+        pct = round((attended / total * 100) if total > 0 else 0.0, 1)
+        result.append({
+            'name': child.user.get_full_name() or child.user.username,
+            'roll_no': child.roll_no,
+            'department': child.department.name if child.department else '',
+            'semester': str(child.current_semester),
+            'attendance_percentage': pct,
+            'is_at_risk': pct < 75,
+            'student_profile_id': child.id
+        })
+
+    return Response({'status': 'success', 'children': result})
+
+
+# ──────────────────────────────────────────
+# FINANCE: FEE INVOICES API
+# ──────────────────────────────────────────
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_fee_invoices(request):
+    """Returns fee invoices for the student (or all unpaid if Finance Clerk)."""
+    from .models import FeeInvoice
+
+    if request.user.role == User.Role.STUDENT:
+        if not hasattr(request.user, 'student_profile'):
+            return Response({'status': 'error', 'message': 'Profile not found'}, status=404)
+        invoices = FeeInvoice.objects.filter(student=request.user.student_profile).order_by('-due_date')
+
+    elif request.user.role in [User.Role.FINANCE_CLERK, User.Role.SUPER_ADMIN]:
+        invoices = FeeInvoice.objects.filter(is_paid=False).select_related(
+            'student__user'
+        ).order_by('-due_date')[:50]
+
+    elif request.user.role == User.Role.PARENT:
+        if not hasattr(request.user, 'parent_profile'):
+            return Response({'status': 'success', 'invoices': []})
+        student_ids = list(request.user.parent_profile.students.values_list('id', flat=True))
+        invoices = FeeInvoice.objects.filter(student_id__in=student_ids).order_by('-due_date')
+    else:
+        return Response({'status': 'error', 'message': 'Unauthorized'}, status=403)
+
+    data = [{
+        'id': inv.id,
+        'title': getattr(inv, 'title', f'Invoice #{inv.id}'),
+        'amount': str(inv.amount),
+        'due_date': str(inv.due_date) if hasattr(inv, 'due_date') else '',
+        'is_paid': inv.is_paid,
+        'student_name': inv.student.user.get_full_name() if request.user.role != User.Role.STUDENT else None,
+    } for inv in invoices]
+
+    return Response({'status': 'success', 'invoices': data})

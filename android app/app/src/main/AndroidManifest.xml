@@ -30,6 +30,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
+        android:name=".AuraApp"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -85,6 +86,70 @@
             android:exported="false"
             android:foregroundServiceType="connectedDevice" />
 
+        <!-- ── Phase 2: Role Dashboards ──────────────────────────── -->
+        <activity android:name=".HodHomeActivity"
+            android:exported="false" />
+
+        <activity android:name=".AcademicCoordinatorHomeActivity"
+            android:exported="false" />
+
+        <activity android:name=".SuperAdminHomeActivity"
+            android:exported="false" />
+
+        <activity android:name=".SecurityHomeActivity"
+            android:exported="false" />
+
+        <activity android:name=".FinanceHomeActivity"
+            android:exported="false" />
+
+        <activity android:name=".LibrarianHomeActivity"
+            android:exported="false" />
+
+        <activity android:name=".ParentHomeActivity"
+            android:exported="false" />
+
+        <activity android:name=".ComingSoonActivity"
+            android:exported="false" />
+
+        <!-- ══ Phase B: Feature Parity Activities ══════════════ -->
+
+        <!-- Security: QR + BLE hybrid scanner -->
+        <activity android:name=".SecurityScanActivity"
+            android:exported="false" />
+
+        <!-- Student: Virtual ID (live QR) -->
+        <activity android:name=".VirtualIdActivity"
+            android:exported="false" />
+
+        <!-- Student: Leave application form -->
+        <activity android:name=".LeaveApplyActivity"
+            android:exported="false" />
+
+        <!-- Student: Leave history -->
+        <activity android:name=".LeaveHistoryActivity"
+            android:exported="false" />
+
+        <!-- Teacher: Daily timetable + class control -->
+        <activity android:name=".TimetableActivity"
+            android:exported="false" />
+
+        <!-- Teacher: Real-time live attendance monitor -->
+        <activity android:name=".LiveMonitorActivity"
+            android:exported="false" />
+
+        <!-- Teacher / HOD / TG: Leave approval queue -->
+        <activity android:name=".LeaveApprovalsActivity"
+            android:exported="false" />
+
+        <!-- Parent: Children attendance overview -->
+        <activity android:name=".ChildAttendanceActivity"
+            android:exported="false" />
+
+        <!-- Finance / Student: Fee invoices list -->
+        <activity android:name=".FeeInvoicesActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>
+

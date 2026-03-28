@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/gradient_background"
+    android:fitsSystemWindows="true">
+
+    <!-- Top App Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="24dp"
+        android:paddingBottom="16dp"
+        android:gravity="center_vertical">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvWelcomeName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dr. Name"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:fontFamily="font/poppins_bold"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Head of Department"
+                android:textSize="13sp"
+                android:textColor="@color/white_alpha_80"
+                android:fontFamily="font/poppins_regular"
+                android:layout_marginTop="2dp"/>
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/ivProfile"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@drawable/ic_person"
+            android:background="@drawable/circle_background_white"
+            android:padding="10dp"
+            android:contentDescription="Profile"
+            android:clickable="true"
+            android:focusable="true"/>
+
+        <ImageView
+            android:id="@+id/ivLogout"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@drawable/ic_logout"
+            android:background="@drawable/circle_background_white"
+            android:padding="10dp"
+            android:layout_marginStart="10dp"
+            android:contentDescription="Logout"
+            android:clickable="true"
+            android:focusable="true"/>
+    </LinearLayout>
+
+    <!-- Section Label -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="DEPARTMENT CONTROL"
+        android:textAllCaps="true"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:textColor="@color/white"
+        android:fontFamily="font/poppins_bold"
+        android:letterSpacing="0.12"
+        android:background="@drawable/pill_background_white_alpha"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="6dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginBottom="12dp"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="none"
+        android:paddingHorizontal="16dp" android:paddingBottom="24dp" android:clipToPadding="false">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Row 1: Student Overview + Timetable -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardManageStudents"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="4dp"
+                    app:cardBackgroundColor="@color/white"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical" android:padding="20dp" android:gravity="center">
+                        <ImageView android:layout_width="48dp" android:layout_height="48dp"
+                            android:src="@drawable/ic_person" app:tint="@color/primary"
+                            android:layout_marginBottom="12dp" android:contentDescription="Students"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Students" android:textSize="14sp" android:textColor="@color/text_primary"
+                            android:fontFamily="font/poppins_semibold" android:gravity="center"
+                            android:layout_marginBottom="8dp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="View department roster" android:textSize="12sp"
+                            android:textColor="@color/text_secondary" android:fontFamily="font/poppins_regular"
+                            android:gravity="center" android:layout_marginBottom="16dp"/>
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnManageStudents"
+                            android:layout_width="match_parent" android:layout_height="40dp"
+                            android:text="View" android:textSize="13sp" app:cornerRadius="12dp"
+                            android:fontFamily="font/poppins_medium"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardTimetable"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="4dp"
+                    app:cardBackgroundColor="@color/white"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical" android:padding="20dp" android:gravity="center">
+                        <ImageView android:layout_width="48dp" android:layout_height="48dp"
+                            android:src="@drawable/ic_timetable" app:tint="@color/primary"
+                            android:layout_marginBottom="12dp" android:contentDescription="Timetable"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Timetable" android:textSize="14sp" android:textColor="@color/text_primary"
+                            android:fontFamily="font/poppins_semibold" android:gravity="center"
+                            android:layout_marginBottom="8dp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Dept. schedule" android:textSize="12sp"
+                            android:textColor="@color/text_secondary" android:fontFamily="font/poppins_regular"
+                            android:gravity="center" android:layout_marginBottom="16dp"/>
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnTimetable"
+                            android:layout_width="match_parent" android:layout_height="40dp"
+                            android:text="View" android:textSize="13sp" app:cornerRadius="12dp"
+                            android:fontFamily="font/poppins_medium"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <!-- Row 2: Leave Approvals + Attendance -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardLeaveApprovals"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="4dp"
+                    app:cardBackgroundColor="@color/white"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical" android:padding="20dp" android:gravity="center">
+                        <ImageView android:layout_width="48dp" android:layout_height="48dp"
+                            android:src="@drawable/ic_calendar" app:tint="@color/warning"
+                            android:layout_marginBottom="12dp" android:contentDescription="Leave"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Leave Requests" android:textSize="14sp" android:textColor="@color/text_primary"
+                            android:fontFamily="font/poppins_semibold" android:gravity="center"
+                            android:layout_marginBottom="8dp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Approve / Reject" android:textSize="12sp"
+                            android:textColor="@color/text_secondary" android:fontFamily="font/poppins_regular"
+                            android:gravity="center" android:layout_marginBottom="16dp"/>
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnLeaveApprovals"
+                            android:layout_width="match_parent" android:layout_height="40dp"
+                            android:text="Review" android:textSize="13sp" app:cornerRadius="12dp"
+                            android:fontFamily="font/poppins_medium"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardProfile"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="4dp"
+                    app:cardBackgroundColor="@color/white"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical" android:padding="20dp" android:gravity="center">
+                        <ImageView android:layout_width="48dp" android:layout_height="48dp"
+                            android:src="@drawable/ic_profile" app:tint="@color/primary"
+                            android:layout_marginBottom="12dp" android:contentDescription="Profile"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="My Profile" android:textSize="14sp" android:textColor="@color/text_primary"
+                            android:fontFamily="font/poppins_semibold" android:gravity="center"
+                            android:layout_marginBottom="8dp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Edit details" android:textSize="12sp"
+                            android:textColor="@color/text_secondary" android:fontFamily="font/poppins_regular"
+                            android:gravity="center" android:layout_marginBottom="16dp"/>
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnProfile"
+                            android:layout_width="match_parent" android:layout_height="40dp"
+                            android:text="Open" android:textSize="13sp" app:cornerRadius="12dp"
+                            android:fontFamily="font/poppins_medium"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

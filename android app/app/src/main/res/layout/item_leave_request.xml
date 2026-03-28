@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    app:cardCornerRadius="14dp" app:cardElevation="4dp" app:cardBackgroundColor="@color/white">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:padding="16dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="center_vertical">
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                <TextView android:id="@+id/tvStudentName" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="Student Name"
+                    android:textSize="16sp" android:textStyle="bold" android:textColor="#1F2937"/>
+                <TextView android:id="@+id/tvRoll" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="Roll No"
+                    android:textSize="12sp" android:textColor="#6B7280"/>
+            </LinearLayout>
+            <TextView android:id="@+id/tvStatus" android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:text="PENDING"
+                android:textSize="11sp" android:textStyle="bold" android:textColor="#F59E0B"
+                android:paddingHorizontal="12dp" android:paddingVertical="4dp"
+                android:background="@drawable/bg_status_chip"/>
+        </LinearLayout>
+        <TextView android:id="@+id/tvLeaveType" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Medical" android:textSize="13sp" android:textColor="#374151" android:layout_marginTop="8dp"/>
+        <TextView android:id="@+id/tvDates" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="2026-04-01 → 2026-04-03" android:textSize="13sp" android:textColor="#6B7280"/>
+        <TextView android:id="@+id/tvReason" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="Reason" android:textSize="13sp" android:textColor="#374151"
+            android:layout_marginTop="4dp" android:maxLines="2" android:ellipsize="end"/>
+        <TextView android:id="@+id/tvAppliedOn" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Applied: 28 Mar 2026" android:textSize="11sp" android:textColor="#9CA3AF"
+            android:layout_marginTop="4dp"/>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:layout_marginTop="12dp">
+            <Button android:id="@+id/btnApprove"
+                android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1"
+                android:layout_marginEnd="6dp" android:text="✅ Approve"
+                android:backgroundTint="#10B981" android:textColor="@color/white" android:textSize="13sp"
+                android:visibility="gone"/>
+            <Button android:id="@+id/btnReject"
+                android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1"
+                android:layout_marginStart="6dp" android:text="❌ Reject"
+                android:backgroundTint="#EF4444" android:textColor="@color/white" android:textSize="13sp"
+                android:visibility="gone"/>
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

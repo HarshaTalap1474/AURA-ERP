@@ -10,9 +10,13 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.RequestQueue;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONException;
@@ -34,20 +38,21 @@ public class TeacherHomeActivity extends AppCompatActivity {
         initViews();
         loadTeacherProfile();
 
-        fetchCurrentClass(); // Get live data
-
         btnLogout.setOnClickListener(v -> logout());
-        btnViewAttendance.setOnClickListener(v -> {
-            // We will build this Activity next
-            Toast.makeText(this, "Opening Live Attendance...", Toast.LENGTH_SHORT).show();
-            // Intent intent = new Intent(this, LiveAttendanceActivity.class);
-            // startActivity(intent);
-        });
 
-        ivTeacherProfile.setOnClickListener(v -> {
-            Intent intent = new Intent(this, ProfileActivity.class);
-            startActivity(intent);
-        });
+        // Open today's timetable (start/end classes from there)
+        btnViewAttendance.setOnClickListener(v ->
+                startActivity(new Intent(this, TimetableActivity.class)));
+
+        // Leave approvals — Teacher/HOD/TG can approve pending requests
+        android.view.View btnLeaves = findViewById(R.id.cardLeaveApproval);
+        if (btnLeaves != null) {
+            btnLeaves.setOnClickListener(v ->
+                    startActivity(new Intent(this, LeaveApprovalsActivity.class)));
+        }
+
+        ivTeacherProfile.setOnClickListener(v ->
+                startActivity(new Intent(this, ProfileActivity.class)));
     }
 
     private void initViews() {
@@ -57,7 +62,7 @@ public class TeacherHomeActivity extends AppCompatActivity {
         tvTime = findViewById(R.id.tvTime);
         btnViewAttendance = findViewById(R.id.btnViewAttendance);
         btnLogout = findViewById(R.id.btnLogout);
-        requestQueue = Volley.newRequestQueue(this);
+        requestQueue = VolleySingleton.getInstance(this).getRequestQueue();
         ivTeacherProfile = findViewById(R.id.ivTeacherProfile);
     }
 

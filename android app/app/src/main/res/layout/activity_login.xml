@@ -6,53 +6,63 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/gradient_background"
-    android:gravity="center"
-    android:padding="24dp">
+    android:fitsSystemWindows="true">
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fadeScrollbars="false"
+        android:scrollbars="none"
+        android:fillViewport="true"
         tools:ignore="UselessParent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="32dp">
+            android:gravity="center"
+            android:paddingHorizontal="20dp"
+            android:paddingTop="32dp"
+            android:paddingBottom="24dp">
 
+            <!-- Logo -->
             <ImageView
-                android:layout_width="120dp"
-                android:layout_height="120dp"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
                 android:layout_gravity="center"
-                android:layout_marginBottom="20dp"
+                android:layout_marginBottom="12dp"
                 android:src="@drawable/ic_app_logo"
                 android:contentDescription="@string/app_name"
                 app:tint="@color/white" />
 
+            <!-- App Name -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/app_name"
                 android:textColor="@color/white"
-                android:textSize="42sp"
-                android:textStyle="bold" />
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:fontFamily="font/poppins_bold"/>
 
+            <!-- Tagline -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="@string/app_tagline"
                 android:textColor="@color/white"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:alpha="0.8"
-                android:layout_marginBottom="60dp" />
+                android:gravity="center"
+                android:layout_marginBottom="28dp"
+                android:fontFamily="font/poppins_regular"/>
 
+            <!-- Login Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
+                android:layout_marginBottom="20dp"
                 app:cardCornerRadius="24dp"
                 app:cardElevation="8dp"
                 app:cardBackgroundColor="@color/white">
@@ -61,27 +71,30 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="32dp">
+                    android:padding="24dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/welcome_back"
-                        android:textSize="28sp"
+                        android:textSize="22sp"
                         android:textStyle="bold"
-                        android:textColor="@color/primary_dark" />
+                        android:textColor="@color/primary_dark"
+                        android:fontFamily="font/poppins_bold"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/sign_in_continue"
                         android:textColor="@color/text_secondary"
-                        android:layout_marginBottom="32dp" />
+                        android:textSize="13sp"
+                        android:fontFamily="font/poppins_regular"
+                        android:layout_marginBottom="24dp"/>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp"
+                        android:layout_marginBottom="14dp"
                         app:startIconDrawable="@drawable/ic_person">
 
                         <com.google.android.material.textfield.TextInputEditText
@@ -95,7 +108,7 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="24dp"
+                        android:layout_marginBottom="20dp"
                         app:startIconDrawable="@drawable/ic_lock"
                         app:endIconMode="password_toggle">
 
@@ -110,20 +123,23 @@
                     <Button
                         android:id="@+id/btnLogin"
                         android:layout_width="match_parent"
-                        android:layout_height="56dp"
-                        android:text="@string/secure_login" />
+                        android:layout_height="52dp"
+                        android:text="@string/secure_login"
+                        android:textSize="15sp"
+                        android:fontFamily="font/poppins_semibold"/>
 
                     <ProgressBar
                         android:id="@+id/progressBar"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:layout_marginTop="16dp"
+                        android:layout_marginTop="12dp"
                         android:visibility="gone" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Footer links -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -134,14 +150,18 @@
                     android:layout_height="wrap_content"
                     android:text="@string/forgot_password"
                     android:textColor="@color/white"
-                    android:padding="12dp" />
+                    android:textSize="13sp"
+                    android:padding="10dp"
+                    android:fontFamily="font/poppins_regular"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/create_account"
                     android:textColor="@color/white"
-                    android:padding="12dp" />
+                    android:textSize="13sp"
+                    android:padding="10dp"
+                    android:fontFamily="font/poppins_regular"/>
             </LinearLayout>
 
         </LinearLayout>

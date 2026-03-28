@@ -12,10 +12,10 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -42,7 +42,7 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         initViews();
-        requestQueue = Volley.newRequestQueue(this);
+        requestQueue = VolleySingleton.getInstance(this).getRequestQueue();
 
         btnLogin.setOnClickListener(v -> attemptLogin());
     }
@@ -88,6 +88,7 @@ public class LoginActivity extends AppCompatActivity {
                 error -> handleLoginError(error)
         );
 
+        request.setRetryPolicy(new DefaultRetryPolicy(6000, 0, 1.0f));
         requestQueue.add(request);
     }
 
@@ -109,12 +110,17 @@ public class LoginActivity extends AppCompatActivity {
                     .putString("name", name)
                     .putString("access_token", token)
                     .putString("email", email)
-                    .putString("phone", phone) // Now this should have data
+                    .putString("phone", phone)
                     .apply();
 
+            // Hide loading BEFORE navigating (progressBar is guaranteed non-null here
+            // because handleLoginSuccess is only reachable after a real network call
+            // which means setContentView + initViews() have already run)
+            showLoading(false);
             navigateByRole(role);
 
         } catch (JSONException e) {
+            showLoading(false);
             Toast.makeText(this, "Login Parsing Error", Toast.LENGTH_SHORT).show();
         }
     }
@@ -188,10 +194,60 @@ public class LoginActivity extends AppCompatActivity {
     private void navigateByRole(String role) {
         Intent intent;
 
-        if ("STUDENT".equalsIgnoreCase(role)) {
-            intent = new Intent(this, StudentHomeActivity.class);
-        } else {
-            intent = new Intent(this, TeacherHomeActivity.class);
+        switch (role.toUpperCase()) {
+
+            // ── Student ────────────────────────────────────
+            case "STUDENT":
+                intent = new Intent(this, StudentHomeActivity.class);
+                break;
+
+            // ── Teaching Staff ─────────────────────────────
+            case "TEACHER":
+                intent = new Intent(this, TeacherHomeActivity.class);
+                break;
+
+            case "TEACHER_GUARDIAN":
+                // TG shares the Teacher dashboard + extra mentorship tab
+                intent = new Intent(this, TeacherHomeActivity.class);
+                intent.putExtra("role", "TEACHER_GUARDIAN");
+                break;
+
+            case "HOD":
+                intent = new Intent(this, HodHomeActivity.class);
+                break;
+
+            case "ACADEMIC_COORDINATOR":
+                intent = new Intent(this, AcademicCoordinatorHomeActivity.class);
+                break;
+
+            // ── Administration ─────────────────────────────
+            case "SUPER_ADMIN":
+            case "ADMIN":          // legacy fallback also goes to SuperAdmin dashboard
+                intent = new Intent(this, SuperAdminHomeActivity.class);
+                break;
+
+            // ── Support Roles ──────────────────────────────
+            case "SECURITY_OFFICER":
+                intent = new Intent(this, SecurityHomeActivity.class);
+                break;
+
+            case "FINANCE_CLERK":
+                intent = new Intent(this, FinanceHomeActivity.class);
+                break;
+
+            case "LIBRARIAN":
+                intent = new Intent(this, LibrarianHomeActivity.class);
+                break;
+
+            // ── Parent Portal ───────────────────────────────
+            case "PARENT":
+                intent = new Intent(this, ParentHomeActivity.class);
+                break;
+
+            // ── Safety net: unknown role → Teacher dashboard ─
+            default:
+                intent = new Intent(this, TeacherHomeActivity.class);
+                break;
         }
 
         startActivity(intent);

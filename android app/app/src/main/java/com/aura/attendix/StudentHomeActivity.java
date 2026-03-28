@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -133,7 +134,7 @@ public class StudentHomeActivity extends AppCompatActivity {
                 startActivity(new Intent(this, ProfileActivity.class))
         );
 
-        // 2. Navigation to Attendance History (UPDATED)
+        // 2. Navigation to Attendance History
         btnViewHistory.setOnClickListener(v ->
                 startActivity(new Intent(this, AttendanceHistoryActivity.class))
         );
@@ -142,6 +143,34 @@ public class StudentHomeActivity extends AppCompatActivity {
         ivProfile.setOnClickListener(v ->
                 startActivity(new Intent(this, ProfileActivity.class))
         );
+
+        // 4. Virtual ID (live QR card)
+        View btnVirtualId = findViewById(R.id.cardVirtualId);
+        if (btnVirtualId != null) {
+            btnVirtualId.setOnClickListener(v ->
+                    startActivity(new Intent(this, VirtualIdActivity.class)));
+        }
+
+        // 5. Apply Leave
+        View btnApplyLeave = findViewById(R.id.cardApplyLeave);
+        if (btnApplyLeave != null) {
+            btnApplyLeave.setOnClickListener(v ->
+                    startActivity(new Intent(this, LeaveApplyActivity.class)));
+        }
+
+        // 6. Leave History / Status
+        View btnLeaveHistory = findViewById(R.id.cardLeaveStatus);
+        if (btnLeaveHistory != null) {
+            btnLeaveHistory.setOnClickListener(v ->
+                    startActivity(new Intent(this, LeaveHistoryActivity.class)));
+        }
+
+        // 7. Fee Invoices
+        View btnFees = findViewById(R.id.cardFeeInvoices);
+        if (btnFees != null) {
+            btnFees.setOnClickListener(v ->
+                    startActivity(new Intent(this, FeeInvoicesActivity.class)));
+        }
     }
 
     private void loadERPProfile() {

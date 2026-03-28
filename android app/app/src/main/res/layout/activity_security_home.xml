@@ -7,101 +7,148 @@
     android:background="@color/colorBackground"
     android:fitsSystemWindows="true">
 
-    <!-- Gradient Header -->
+    <!-- ─── Gradient Header ─────────────────────────────────── -->
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="vertical" android:background="@drawable/gradient_background"
         android:paddingHorizontal="@dimen/screen_padding"
         android:paddingTop="28dp" android:paddingBottom="24dp">
+
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="horizontal" android:gravity="center_vertical">
-            <FrameLayout android:layout_width="52dp" android:layout_height="52dp" android:layout_marginEnd="14dp">
+
+            <!-- Emoji avatar -->
+            <FrameLayout android:layout_width="52dp" android:layout_height="52dp"
+                android:layout_marginEnd="14dp">
                 <TextView android:layout_width="match_parent" android:layout_height="match_parent"
                     android:gravity="center" android:text="🔒" android:textSize="24sp"
                     android:background="@drawable/avatar_circle_bg_white"/>
             </FrameLayout>
+
+            <!-- Name + role -->
             <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
                 android:layout_weight="1" android:orientation="vertical">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="Gate Security" android:textSize="12sp" android:textColor="@color/white_alpha_80"/>
-                <TextView android:id="@+id/tvWelcomeName" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:text="Officer"
-                    android:textSize="20sp" android:textStyle="bold" android:textColor="@color/white"/>
+                    android:text="Gate Security" android:textSize="12sp"
+                    android:textColor="@color/white_alpha_80"/>
+                <TextView android:id="@+id/tvWelcomeName"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Officer" android:textSize="20sp" android:textStyle="bold"
+                    android:textColor="@color/white"/>
             </LinearLayout>
-            <ImageView android:id="@+id/ivSettings" android:layout_width="40dp" android:layout_height="40dp"
-                android:src="@drawable/ic_settings" android:padding="8dp" app:tint="@color/white"
+
+            <!-- Profile icon -->
+            <ImageView android:id="@+id/ivProfile"
+                android:layout_width="40dp" android:layout_height="40dp"
+                android:src="@drawable/ic_person" android:padding="8dp"
+                app:tint="@color/white"
                 android:background="@drawable/circle_background_white_alpha"
-                android:contentDescription="Settings" android:clickable="true" android:focusable="true"/>
+                android:layout_marginEnd="8dp"
+                android:contentDescription="Profile"
+                android:clickable="true" android:focusable="true"/>
+
+            <!-- Logout icon (rotated back-arrow) -->
+            <ImageView android:id="@+id/ivLogout"
+                android:layout_width="40dp" android:layout_height="40dp"
+                android:src="@drawable/ic_arrow_back" android:padding="8dp"
+                android:rotation="180"
+                app:tint="@color/white"
+                android:background="@drawable/circle_background_white_alpha"
+                android:contentDescription="Logout"
+                android:clickable="true" android:focusable="true"/>
         </LinearLayout>
     </LinearLayout>
 
+    <!-- ─── Scrollable Body ─────────────────────────────────── -->
     <ScrollView android:layout_width="match_parent" android:layout_height="0dp"
         android:layout_weight="1" android:scrollbars="none">
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:orientation="vertical" android:paddingHorizontal="@dimen/screen_padding"
-            android:paddingTop="@dimen/space_xl" android:paddingBottom="@dimen/space_xxl">
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/screen_padding"
+            android:paddingTop="@dimen/space_xl"
+            android:paddingBottom="@dimen/space_xxl">
 
-            <!-- Primary Hero: Scan QR -->
-            <com.google.android.material.card.MaterialCardView android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:layout_marginBottom="@dimen/space_lg"
-                style="@style/Widget.Aurora.Card.Hero">
+            <!-- ── Hero: Scanner ── -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_lg"
+                style="@style/Widget.Aurora.Card">
+
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:orientation="vertical" android:padding="28dp" android:gravity="center">
+
                     <FrameLayout android:layout_width="80dp" android:layout_height="80dp"
-                        android:background="@drawable/icon_bg_primary" android:layout_marginBottom="16dp">
+                        android:background="@drawable/icon_bg_primary"
+                        android:layout_marginBottom="16dp">
                         <ImageView android:layout_width="40dp" android:layout_height="40dp"
                             android:src="@drawable/ic_id_card" app:tint="@color/colorPrimary"
                             android:layout_gravity="center" android:contentDescription="Scanner"/>
                     </FrameLayout>
+
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Student ID Scanner" android:textSize="20sp" android:textStyle="bold"
-                        android:textColor="@color/colorTextPrimary" android:gravity="center"
-                        android:layout_marginBottom="6dp"/>
+                        android:text="Student ID Scanner" android:textSize="20sp"
+                        android:textStyle="bold" android:textColor="@color/colorTextPrimary"
+                        android:gravity="center" android:layout_marginBottom="8dp"/>
+
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Scan student Virtual ID QR codes at gate entry. If QR fails, detect nearby BLE devices."
+                        android:text="Scan student Virtual ID QR codes at gate entry. If QR fails, the app detects nearby BLE-enabled student devices."
                         android:textSize="13sp" android:textColor="@color/colorTextSecondary"
                         android:gravity="center" android:lineSpacingMultiplier="1.4"
                         android:layout_marginBottom="24dp"/>
+
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnScanQr"
-                        android:layout_width="match_parent" android:layout_height="@dimen/btn_height"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/btn_height"
                         android:text="📷 Open Scanner"
                         android:textSize="15sp" android:textStyle="bold"
                         style="@style/Widget.Aurora.Button"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Secondary cards row -->
+            <!-- ── Quick Access row ── -->
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:orientation="horizontal">
+
+                <!-- Profile card -->
                 <com.google.android.material.card.MaterialCardView android:id="@+id/cardProfile"
                     android:layout_width="0dp" android:layout_height="wrap_content"
                     android:layout_weight="1" android:layout_marginEnd="@dimen/space_sm"
-                    android:clickable="true" android:focusable="true" style="@style/Widget.Aurora.Card">
+                    android:clickable="true" android:focusable="true"
+                    style="@style/Widget.Aurora.Card">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:orientation="vertical" android:padding="@dimen/card_padding" android:gravity="center">
+                        android:orientation="vertical" android:padding="@dimen/card_padding"
+                        android:gravity="center">
                         <ImageView android:layout_width="32dp" android:layout_height="32dp"
                             android:src="@drawable/ic_person" app:tint="@color/colorPrimary"
-                            android:layout_marginBottom="8dp" android:contentDescription="Profile"/>
+                            android:layout_marginBottom="8dp"
+                            android:contentDescription="Profile"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="My Profile" android:textSize="13sp" android:textStyle="bold"
                             android:textColor="@color/colorTextPrimary" android:gravity="center"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
+
+                <!-- Change Password card -->
                 <com.google.android.material.card.MaterialCardView android:id="@+id/cardChangePassword"
                     android:layout_width="0dp" android:layout_height="wrap_content"
                     android:layout_weight="1" android:layout_marginStart="@dimen/space_sm"
-                    android:clickable="true" android:focusable="true" style="@style/Widget.Aurora.Card">
+                    android:clickable="true" android:focusable="true"
+                    style="@style/Widget.Aurora.Card">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:orientation="vertical" android:padding="@dimen/card_padding" android:gravity="center">
+                        android:orientation="vertical" android:padding="@dimen/card_padding"
+                        android:gravity="center">
                         <ImageView android:layout_width="32dp" android:layout_height="32dp"
-                            android:src="@drawable/ic_lock" app:tint="@color/colorPrimary"
-                            android:layout_marginBottom="8dp" android:contentDescription="Password"/>
+                            android:src="@drawable/ic_lock" app:tint="@color/colorSecondary"
+                            android:layout_marginBottom="8dp"
+                            android:contentDescription="Password"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="Change Password" android:textSize="13sp" android:textStyle="bold"
                             android:textColor="@color/colorTextPrimary" android:gravity="center"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
+
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

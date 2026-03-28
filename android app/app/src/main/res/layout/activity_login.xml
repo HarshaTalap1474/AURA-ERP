@@ -1,170 +1,169 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@drawable/gradient_background"
     android:fitsSystemWindows="true">
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scrollbars="none"
         android:fillViewport="true"
-        tools:ignore="UselessParent">
+        android:scrollbars="none">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:gravity="center"
-            android:paddingHorizontal="20dp"
-            android:paddingTop="32dp"
-            android:paddingBottom="24dp">
+            android:gravity="center_horizontal"
+            android:paddingHorizontal="@dimen/screen_padding"
+            android:paddingTop="64dp"
+            android:paddingBottom="32dp">
 
-            <!-- Logo -->
+            <!-- Logo Section -->
             <ImageView
-                android:layout_width="72dp"
-                android:layout_height="72dp"
-                android:layout_gravity="center"
-                android:layout_marginBottom="12dp"
+                android:layout_width="88dp"
+                android:layout_height="88dp"
                 android:src="@drawable/ic_app_logo"
-                android:contentDescription="@string/app_name"
-                app:tint="@color/white" />
+                android:alpha="0.95"
+                android:contentDescription="Aura ERP logo"
+                android:layout_marginBottom="16dp"/>
 
-            <!-- App Name -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="@string/app_name"
+                android:text="AURA ERP"
                 android:textColor="@color/white"
                 android:textSize="28sp"
                 android:textStyle="bold"
-                android:fontFamily="font/poppins_bold"/>
+                android:letterSpacing="0.1"
+                android:layout_marginBottom="6dp"/>
 
-            <!-- Tagline -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="@string/app_tagline"
-                android:textColor="@color/white"
-                android:textSize="13sp"
-                android:alpha="0.8"
-                android:gravity="center"
-                android:layout_marginBottom="28dp"
-                android:fontFamily="font/poppins_regular"/>
+                android:text="Zero-Touch Attendance System"
+                android:textColor="@color/white_alpha_80"
+                android:textSize="14sp"
+                android:layout_marginBottom="48dp"/>
 
             <!-- Login Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="8dp"
-                app:cardBackgroundColor="@color/white">
+                app:cardCornerRadius="28dp"
+                app:cardElevation="16dp"
+                app:cardBackgroundColor="@color/colorSurface"
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="24dp">
+                    android:padding="28dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/welcome_back"
+                        android:text="Welcome back"
                         android:textSize="22sp"
                         android:textStyle="bold"
-                        android:textColor="@color/primary_dark"
-                        android:fontFamily="font/poppins_bold"/>
+                        android:textColor="@color/colorTextPrimary"
+                        android:layout_marginBottom="4dp"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/sign_in_continue"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="13sp"
-                        android:fontFamily="font/poppins_regular"
-                        android:layout_marginBottom="24dp"/>
+                        android:text="Sign in to your account"
+                        android:textSize="14sp"
+                        android:textColor="@color/colorTextSecondary"
+                        android:layout_marginBottom="28dp"/>
 
+                    <!-- Username -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="14dp"
-                        app:startIconDrawable="@drawable/ic_person">
-
+                        android:hint="Username / Roll No"
+                        style="@style/Widget.Aurora.TextInput"
+                        android:layout_marginBottom="16dp">
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etUsername"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="@string/hint_username"
-                            android:inputType="text" />
+                            android:inputType="textNoSuggestions"
+                            android:imeOptions="actionNext"
+                            android:singleLine="true"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <!-- Password -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="20dp"
-                        app:startIconDrawable="@drawable/ic_lock"
-                        app:endIconMode="password_toggle">
-
+                        android:hint="Password"
+                        style="@style/Widget.Aurora.TextInput"
+                        app:endIconMode="password_toggle"
+                        android:layout_marginBottom="8dp">
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etPassword"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="@string/hint_password"
-                            android:inputType="textPassword" />
+                            android:inputType="textPassword"
+                            android:imeOptions="actionDone"
+                            android:singleLine="true"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <Button
-                        android:id="@+id/btnLogin"
+                    <!-- Error message -->
+                    <TextView
+                        android:id="@+id/tvError"
                         android:layout_width="match_parent"
-                        android:layout_height="52dp"
-                        android:text="@string/secure_login"
-                        android:textSize="15sp"
-                        android:fontFamily="font/poppins_semibold"/>
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/colorError"
+                        android:textSize="13sp"
+                        android:gravity="center"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginBottom="4dp"
+                        android:visibility="gone"/>
 
+                    <!-- Progress -->
                     <ProgressBar
                         android:id="@+id/progressBar"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:layout_marginTop="12dp"
-                        android:visibility="gone" />
+                        android:layout_marginVertical="8dp"
+                        android:visibility="gone"/>
 
+                    <!-- Sign In Button -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnLogin"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/btn_height"
+                        android:layout_marginTop="16dp"
+                        android:text="Sign In"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        style="@style/Widget.Aurora.Button"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Footer links -->
+            <!-- Footer -->
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/forgot_password"
-                    android:textColor="@color/white"
-                    android:textSize="13sp"
-                    android:padding="10dp"
-                    android:fontFamily="font/poppins_regular"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/create_account"
-                    android:textColor="@color/white"
-                    android:textSize="13sp"
-                    android:padding="10dp"
-                    android:fontFamily="font/poppins_regular"/>
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginTop="32dp">
+                <ImageView android:layout_width="16dp" android:layout_height="16dp"
+                    android:src="@drawable/ic_shield" app:tint="@color/white_alpha_60"
+                    android:layout_marginEnd="6dp" android:contentDescription="Secured"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Secured • IoT-Powered Attendance"
+                    android:textColor="@color/white_alpha_60" android:textSize="12sp"/>
             </LinearLayout>
 
         </LinearLayout>
     </ScrollView>
 
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

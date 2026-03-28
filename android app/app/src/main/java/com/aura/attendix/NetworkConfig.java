@@ -10,6 +10,7 @@ public class NetworkConfig {
     public static final String URL_CHANGE_PASSWORD = BASE_URL + "/api/auth/change-password/";
 
     // ── Profile ───────────────────────────────────────────────
+    public static final String URL_PROFILE_DETAIL  = BASE_URL + "/api/profile/";
     public static final String URL_PROFILE_UPDATE  = BASE_URL + "/api/profile/update/";
 
     // ── Attendance ────────────────────────────────────────────

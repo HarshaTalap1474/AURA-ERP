@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ══════════════════════════════════════ -->
+    <!--  AURORA DESIGN SYSTEM — DARK PALETTE  -->
+    <!-- ══════════════════════════════════════ -->
+
+    <!-- Brand (brighter for dark bg) -->
+    <color name="colorPrimary">#818CF8</color>
+    <color name="colorPrimaryDark">#6366F1</color>
+    <color name="colorPrimaryLight">#C7D2FE</color>
+    <color name="colorSecondary">#34D399</color>
+    <color name="colorSecondaryLight">#A7F3D0</color>
+    <color name="colorAccent">#A78BFA</color>
+
+    <!-- Semantic -->
+    <color name="colorSuccess">#34D399</color>
+    <color name="colorWarning">#FBBF24</color>
+    <color name="colorError">#F87171</color>
+    <color name="colorInfo">#60A5FA</color>
+
+    <!-- Surfaces (Dark) -->
+    <color name="colorBackground">#0F0F23</color>
+    <color name="colorSurface">#1A1A2E</color>
+    <color name="colorSurfaceVariant">#16213E</color>
+    <color name="colorCardBackground">#1E1E35</color>
+    <color name="colorDivider">#2D2D4A</color>
+
+    <!-- On-Surfaces (Dark) -->
+    <color name="colorOnPrimary">#1E1B4B</color>
+    <color name="colorOnBackground">#E2E8F0</color>
+    <color name="colorOnSurface">#CBD5E1</color>
+    <color name="colorTextPrimary">#E2E8F0</color>
+    <color name="colorTextSecondary">#94A3B8</color>
+    <color name="colorTextHint">#64748B</color>
+    <color name="text_primary">#E2E8F0</color>
+    <color name="text_secondary">#94A3B8</color>
+    <color name="text_hint">#64748B</color>
+
+    <!-- Gradient (deeper for dark) -->
+    <color name="gradient_start">#312E81</color>
+    <color name="gradient_mid">#4C1D95</color>
+    <color name="gradient_end">#5B21B6</color>
+
+    <!-- Utilities -->
+    <color name="white">#E2E8F0</color>
+    <color name="white_alpha_80">#CCE2E8F0</color>
+    <color name="white_alpha_60">#99CBD5E1</color>
+    <color name="white_alpha_20">#3394A3B8</color>
+
+    <!-- Status chip backgrounds (desaturated for dark) -->
+    <color name="chipPresent">#14532D</color>
+    <color name="chipPresentText">#86EFAC</color>
+    <color name="chipAbsent">#7F1D1D</color>
+    <color name="chipAbsentText">#FCA5A5</color>
+    <color name="chipPending">#78350F</color>
+    <color name="chipPendingText">#FCD34D</color>
+    <color name="chipApproved">#065F46</color>
+    <color name="chipApprovedText">#6EE7B7</color>
+    <color name="chipRejected">#7F1D1D</color>
+    <color name="chipRejectedText">#FCA5A5</color>
+
+    <!-- Aliases -->
+    <color name="primary">#818CF8</color>
+    <color name="primary_dark">#6366F1</color>
+    <color name="primary_light">#C7D2FE</color>
+    <color name="success">#34D399</color>
+    <color name="warning">#FBBF24</color>
+    <color name="error">#F87171</color>
+</resources>

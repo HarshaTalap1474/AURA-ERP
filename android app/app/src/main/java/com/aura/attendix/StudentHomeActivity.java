@@ -48,11 +48,14 @@ public class StudentHomeActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeManager.apply(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_student_home);
 
         verifyDeviceIdentity();
         initViews();
+        View ivSet = findViewById(R.id.ivSettings);
+        if (ivSet != null) ivSet.setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
         loadERPProfile();
 
         // Button Logic: Check Permissions FIRST, then start service

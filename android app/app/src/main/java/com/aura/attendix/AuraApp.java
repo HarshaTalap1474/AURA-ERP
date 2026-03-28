@@ -12,8 +12,9 @@ public class AuraApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        // Pre-warm the singleton so the first request doesn't pay
-        // the thread-pool + DNS initialisation cost.
+        // Apply saved theme (Light / Dark / System) before any UI renders
+        ThemeManager.apply(this);
+        // Pre-warm Volley connection pool
         VolleySingleton.getInstance(this);
     }
 }

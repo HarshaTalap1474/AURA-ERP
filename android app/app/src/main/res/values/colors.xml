@@ -1,37 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- ═══════════════════════════════════════ -->
+    <!--  AURORA DESIGN SYSTEM — LIGHT PALETTE  -->
+    <!-- ═══════════════════════════════════════ -->
 
-    <!-- Primary Colors -->
-    <color name="primary">#667EEA</color>
-    <color name="primary_dark">#5A6FD8</color>
-    <color name="primary_light">#A3B5FF</color>
+    <!-- Brand -->
+    <color name="colorPrimary">#6366F1</color>
+    <color name="colorPrimaryDark">#4F46E5</color>
+    <color name="colorPrimaryLight">#A5B4FC</color>
+    <color name="colorSecondary">#10B981</color>
+    <color name="colorSecondaryLight">#6EE7B7</color>
+    <color name="colorAccent">#8B5CF6</color>
 
-    <!-- Semantic Status Colors -->
-    <color name="success">#48BB78</color>
-    <color name="warning">#ED8936</color>
-    <color name="error">#F56565</color>
-    <color name="offline">#A0AEC0</color>
+    <!-- Semantic -->
+    <color name="colorSuccess">#10B981</color>
+    <color name="colorWarning">#F59E0B</color>
+    <color name="colorError">#EF4444</color>
+    <color name="colorInfo">#3B82F6</color>
 
-    <!-- Text Colors -->
-    <color name="text_primary">#2D3748</color>
-    <color name="text_secondary">#718096</color>
-    <color name="text_hint">#A0AEC0</color>
+    <!-- Surfaces (Light) -->
+    <color name="colorBackground">#F1F5F9</color>
+    <color name="colorSurface">#FFFFFF</color>
+    <color name="colorSurfaceVariant">#F8FAFC</color>
+    <color name="colorCardBackground">#FFFFFF</color>
+    <color name="colorDivider">#E2E8F0</color>
+
+    <!-- On-Surfaces (Light) -->
+    <color name="colorOnPrimary">#FFFFFF</color>
+    <color name="colorOnBackground">#0F172A</color>
+    <color name="colorOnSurface">#1E293B</color>
+    <color name="colorTextPrimary">#1E293B</color>
+    <color name="colorTextSecondary">#64748B</color>
+    <color name="colorTextHint">#94A3B8</color>
+    <color name="text_primary">#1E293B</color>
+    <color name="text_secondary">#64748B</color>
+    <color name="text_hint">#94A3B8</color>
+
+    <!-- Gradient -->
+    <color name="gradient_start">#6366F1</color>
+    <color name="gradient_mid">#7C3AED</color>
+    <color name="gradient_end">#8B5CF6</color>
+
+    <!-- Utilities -->
     <color name="white">#FFFFFF</color>
-
-    <!-- Alpha Whites -->
     <color name="white_alpha_80">#CCFFFFFF</color>
-    <color name="white_alpha_30">#4DFFFFFF</color>
+    <color name="white_alpha_60">#99FFFFFF</color>
     <color name="white_alpha_20">#33FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="transparent">#00000000</color>
 
-    <!-- Background Colors -->
-    <color name="background_light">#F7FAFC</color>
+    <!-- Status chip backgrounds -->
+    <color name="chipPresent">#DCFCE7</color>
+    <color name="chipPresentText">#166534</color>
+    <color name="chipAbsent">#FEE2E2</color>
+    <color name="chipAbsentText">#991B1B</color>
+    <color name="chipPending">#FEF3C7</color>
+    <color name="chipPendingText">#92400E</color>
+    <color name="chipApproved">#D1FAE5</color>
+    <color name="chipApprovedText">#065F46</color>
+    <color name="chipRejected">#FEE2E2</color>
+    <color name="chipRejectedText">#991B1B</color>
 
-    <!-- Button / Accent Colors -->
-    <color name="button_gradient_start">#667EEA</color>
-    <color name="button_gradient_end">#764BA2</color>
-
-    <!-- Dark Theme / Overlay Colors -->
-    <color name="black_alpha_80">#CC000000</color>
-    <color name="black_alpha_40">#66000000</color>
-
+    <!-- Aliases for backward compatibility -->
+    <color name="primary">#6366F1</color>
+    <color name="primary_dark">#4F46E5</color>
+    <color name="primary_light">#A5B4FC</color>
+    <color name="success">#10B981</color>
+    <color name="warning">#F59E0B</color>
+    <color name="error">#EF4444</color>
 </resources>

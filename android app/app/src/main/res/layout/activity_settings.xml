@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/colorBackground"
+    android:fitsSystemWindows="true">
+
+    <!-- Top App Bar -->
+    <LinearLayout android:layout_width="match_parent" android:layout_height="@dimen/appbar_height"
+        android:orientation="horizontal" android:gravity="center_vertical"
+        android:paddingHorizontal="@dimen/space_lg" android:background="@color/colorSurface">
+        <ImageView android:id="@+id/ivBack" android:layout_width="@dimen/appbar_icon_size"
+            android:layout_height="@dimen/appbar_icon_size" android:src="@drawable/ic_arrow_back"
+            android:padding="8dp" app:tint="@color/colorOnSurface" android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Back" android:clickable="true" android:focusable="true"/>
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:text="Settings"
+            android:textSize="@dimen/text_title" android:textStyle="bold"
+            android:textColor="@color/colorTextPrimary" android:layout_marginStart="8dp"/>
+    </LinearLayout>
+
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/colorDivider"/>
+
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+        android:scrollbars="none">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:padding="@dimen/screen_padding">
+
+            <!-- Section: Appearance -->
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="APPEARANCE" android:textSize="11sp" android:textStyle="bold"
+                android:letterSpacing="0.1" android:textColor="@color/colorPrimary"
+                android:layout_marginBottom="@dimen/space_sm" android:layout_marginTop="@dimen/space_sm"/>
+
+            <com.google.android.material.card.MaterialCardView android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginBottom="@dimen/space_lg"
+                style="@style/Widget.Aurora.Card">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:padding="@dimen/card_padding">
+
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Theme" android:textSize="@dimen/text_body" android:textStyle="bold"
+                        android:textColor="@color/colorTextPrimary" android:layout_marginBottom="@dimen/space_md"/>
+
+                    <com.google.android.material.button.MaterialButtonToggleGroup
+                        android:id="@+id/themeToggleGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:singleSelection="true"
+                        app:selectionRequired="true">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnThemeSystem"
+                            android:layout_width="0dp"
+                            android:layout_height="44dp"
+                            android:layout_weight="1"
+                            android:text="System"
+                            android:textSize="12sp"
+                            style="?attr/materialButtonOutlinedStyle"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnThemeLight"
+                            android:layout_width="0dp"
+                            android:layout_height="44dp"
+                            android:layout_weight="1"
+                            android:text="☀ Light"
+                            android:textSize="12sp"
+                            style="?attr/materialButtonOutlinedStyle"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnThemeDark"
+                            android:layout_width="0dp"
+                            android:layout_height="44dp"
+                            android:layout_weight="1"
+                            android:text="🌙 Dark"
+                            android:textSize="12sp"
+                            style="?attr/materialButtonOutlinedStyle"/>
+                    </com.google.android.material.button.MaterialButtonToggleGroup>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Section: Account -->
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="ACCOUNT" android:textSize="11sp" android:textStyle="bold"
+                android:letterSpacing="0.1" android:textColor="@color/colorPrimary"
+                android:layout_marginBottom="@dimen/space_sm" android:layout_marginTop="@dimen/space_sm"/>
+
+            <com.google.android.material.card.MaterialCardView android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginBottom="@dimen/space_lg"
+                style="@style/Widget.Aurora.Card">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <!-- Change Password row -->
+                    <LinearLayout android:id="@+id/rowChangePassword"
+                        android:layout_width="match_parent" android:layout_height="56dp"
+                        android:orientation="horizontal" android:gravity="center_vertical"
+                        android:paddingHorizontal="@dimen/card_padding"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true" android:focusable="true">
+                        <ImageView android:layout_width="20dp" android:layout_height="20dp"
+                            android:src="@drawable/ic_lock" app:tint="@color/colorTextSecondary"
+                            android:layout_marginEnd="16dp" android:contentDescription="Password"/>
+                        <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="1" android:text="Change Password"
+                            android:textSize="@dimen/text_body" android:textColor="@color/colorTextPrimary"/>
+                        <ImageView android:layout_width="16dp" android:layout_height="16dp"
+                            android:src="@drawable/ic_chevron_right" app:tint="@color/colorTextHint"
+                            android:contentDescription=""/>
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:background="@color/colorDivider" android:layout_marginHorizontal="@dimen/card_padding"/>
+
+                    <!-- Profile row -->
+                    <LinearLayout android:id="@+id/rowProfile"
+                        android:layout_width="match_parent" android:layout_height="56dp"
+                        android:orientation="horizontal" android:gravity="center_vertical"
+                        android:paddingHorizontal="@dimen/card_padding"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true" android:focusable="true">
+                        <ImageView android:layout_width="20dp" android:layout_height="20dp"
+                            android:src="@drawable/ic_person" app:tint="@color/colorTextSecondary"
+                            android:layout_marginEnd="16dp" android:contentDescription="Profile"/>
+                        <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="1" android:text="Edit Profile"
+                            android:textSize="@dimen/text_body" android:textColor="@color/colorTextPrimary"/>
+                        <ImageView android:layout_width="16dp" android:layout_height="16dp"
+                            android:src="@drawable/ic_chevron_right" app:tint="@color/colorTextHint"
+                            android:contentDescription=""/>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Section: About -->
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="ABOUT" android:textSize="11sp" android:textStyle="bold"
+                android:letterSpacing="0.1" android:textColor="@color/colorPrimary"
+                android:layout_marginBottom="@dimen/space_sm" android:layout_marginTop="@dimen/space_sm"/>
+
+            <com.google.android.material.card.MaterialCardView android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginBottom="@dimen/space_xl"
+                style="@style/Widget.Aurora.Card">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:padding="@dimen/card_padding">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Aura ERP — Attendix"
+                        android:textSize="@dimen/text_body" android:textStyle="bold"
+                        android:textColor="@color/colorTextPrimary"/>
+                    <TextView android:id="@+id/tvVersion"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Version 1.1" android:textSize="@dimen/text_label"
+                        android:textColor="@color/colorTextSecondary" android:layout_marginTop="4dp"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="IoT-Powered Zero-Touch Attendance"
+                        android:textSize="@dimen/text_caption" android:textColor="@color/colorTextHint"
+                        android:layout_marginTop="2dp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Logout -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnLogout"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/btn_height"
+                android:text="Sign Out"
+                style="@style/Widget.Aurora.Button.Danger"/>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

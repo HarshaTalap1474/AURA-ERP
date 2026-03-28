@@ -1,704 +1,284 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@drawable/gradient_background"
-    android:paddingHorizontal="16dp"
+    android:background="@color/colorBackground"
     android:fitsSystemWindows="true">
 
-    <!-- App Bar with User Info -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingVertical="16dp"
-        android:gravity="center_vertical">
+    <!-- Gradient Header -->
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:background="@drawable/gradient_background"
+        android:paddingHorizontal="@dimen/screen_padding"
+        android:paddingTop="28dp" android:paddingBottom="28dp">
 
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+        <!-- Top row: Avatar + Name + Settings -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="center_vertical"
+            android:layout_marginBottom="20dp">
 
-            <TextView
-                android:id="@+id/tvWelcomeName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/welcome_student"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="@color/white"
-                android:fontFamily="font/poppins_bold"
-                android:letterSpacing="0.02"/>
+            <!-- Avatar -->
+            <FrameLayout android:layout_width="52dp" android:layout_height="52dp"
+                android:layout_marginEnd="14dp">
+                <TextView android:id="@+id/tvAvatar" android:layout_width="match_parent"
+                    android:layout_height="match_parent" android:gravity="center"
+                    android:text="S" android:textSize="20sp" android:textStyle="bold"
+                    android:textColor="@color/colorPrimary"
+                    android:background="@drawable/avatar_circle_bg_white"/>
+            </FrameLayout>
 
-            <TextView
-                android:id="@+id/tvUsername"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/roll_no_placeholder"
-                android:textSize="14sp"
-                android:textColor="@color/white_alpha_80"
-                android:fontFamily="font/poppins_regular"
-                android:layout_marginTop="4dp"/>
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:orientation="vertical">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Good morning 👋" android:textSize="12sp"
+                    android:textColor="@color/white_alpha_80"/>
+                <TextView android:id="@+id/tvStudentName" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="Student"
+                    android:textSize="20sp" android:textStyle="bold" android:textColor="@color/white"/>
+            </LinearLayout>
+
+            <!-- Settings icon -->
+            <ImageView android:id="@+id/ivSettings" android:layout_width="40dp"
+                android:layout_height="40dp" android:src="@drawable/ic_settings"
+                android:padding="8dp" app:tint="@color/white"
+                android:background="@drawable/circle_background_white_alpha"
+                android:contentDescription="Settings" android:clickable="true" android:focusable="true"/>
         </LinearLayout>
 
-        <ImageView
-            android:id="@+id/ivProfile"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/ic_person"
-            android:background="@drawable/circle_background_white"
-            android:padding="12dp"
-            android:contentDescription="@string/profile_icon"
-            android:clickable="true"
-            android:focusable="true" />
-
+        <!-- BLE Beacon Status Bar -->
+        <com.google.android.material.card.MaterialCardView android:layout_width="match_parent"
+            android:layout_height="wrap_content" app:cardCornerRadius="16dp"
+            app:cardElevation="0dp" app:cardBackgroundColor="@color/white_alpha_20">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical"
+                android:paddingHorizontal="16dp" android:paddingVertical="12dp">
+                <ImageView android:id="@+id/ivBeaconStatus" android:layout_width="20dp"
+                    android:layout_height="20dp" android:src="@drawable/ic_bluetooth"
+                    app:tint="@color/white" android:layout_marginEnd="10dp"
+                    android:contentDescription="Bluetooth"/>
+                <TextView android:id="@+id/tvBeaconStatus" android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:layout_weight="1"
+                    android:text="BLE Beacon: Checking..." android:textSize="13sp"
+                    android:textColor="@color/white"/>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnToggleBle"
+                    android:layout_width="wrap_content" android:layout_height="36dp"
+                    android:text="Enable" android:textSize="12sp"
+                    app:cornerRadius="10dp" android:backgroundTint="@color/white"
+                    android:textColor="@color/colorPrimary"
+                    style="@style/Widget.MaterialComponents.Button"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 
-    <!-- Main Content -->
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:scrollbars="none"
-        android:paddingTop="16dp">
+    <!-- Scrollable content -->
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp"
+        android:layout_weight="1" android:scrollbars="none" android:clipToPadding="false">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:paddingHorizontal="@dimen/screen_padding"
+            android:paddingTop="@dimen/space_lg" android:paddingBottom="@dimen/space_xxl">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <!-- Attendance Beacon Section -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="8dp"
-                app:cardBackgroundColor="@color/white"
-                android:layout_marginBottom="24dp"
-                app:cardPreventCornerOverlap="true">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="28dp">
-
-                    <!-- Section Header -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/attendance_beacon"
-                        android:textAllCaps="true"
-                        android:textSize="10sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/primary"
-                        android:fontFamily="font/poppins_bold"
-                        android:letterSpacing="0.1"
-                        android:layout_marginBottom="16dp"
-                        android:background="@drawable/pill_background_primary"
-                        android:paddingHorizontal="12dp"
-                        android:paddingVertical="4dp"/>
-
-                    <!-- Beacon Icon with Glow Effect -->
-                    <FrameLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_marginBottom="20dp">
-
-                        <ImageView
-                            android:layout_width="80dp"
-                            android:layout_height="80dp"
-                            android:src="@drawable/ic_app_logo"
-                            app:tint="@color/primary"
-                            android:alpha="0.8"
-                            android:contentDescription="@string/beacon_icon"/>
-
-                        <ImageView
-                            android:id="@+id/ivBeaconIcon"
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_fingerprint"
-                            app:tint="@color/white"
-                            android:contentDescription="@string/fingerprint_icon"/>
-                    </FrameLayout>
-
-                    <!-- Status Indicator -->
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:orientation="horizontal"
-                        android:gravity="center"
-                        android:layout_marginBottom="24dp">
-
-                        <View
-                            android:id="@+id/vStatusIndicator"
-                            android:layout_width="12dp"
-                            android:layout_height="12dp"
-                            android:background="@drawable/circle_background_offline"
-                            android:layout_marginEnd="8dp"/>
-
-                        <TextView
-                            android:id="@+id/tvStatus"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/status_offline"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="16sp"
-                            android:fontFamily="font/poppins_medium"/>
+            <!-- Attendance % and CGPA row -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:layout_marginBottom="@dimen/space_lg">
+                <!-- Attendance % -->
+                <com.google.android.material.card.MaterialCardView android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:layout_weight="1"
+                    android:layout_marginEnd="@dimen/space_sm" style="@style/Widget.Aurora.Card">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical" android:padding="@dimen/card_padding"
+                        android:gravity="center">
+                        <TextView android:id="@+id/tvAttendancePct"
+                            android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="—%" android:textSize="28sp" android:textStyle="bold"
+                            android:textColor="@color/colorPrimary"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Attendance" android:textSize="12sp"
+                            android:textColor="@color/colorTextSecondary" android:layout_marginTop="4dp"/>
                     </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-                    <!-- Activate Button -->
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnScanAttendance"
-                        android:layout_width="match_parent"
-                        android:layout_height="56dp"
-                        android:text="@string/activate_signal"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:letterSpacing="0.05"
-                        app:cornerRadius="16dp"
-                        app:icon="@drawable/ic_shield"
-                        app:iconGravity="textStart"
-                        app:iconPadding="8dp"
-                        app:iconSize="20dp"
-                        app:iconTint="@color/white"
-                        android:fontFamily="font/poppins_semibold"
-                        style="@style/Widget.MaterialComponents.Button"/>
+                <!-- CGPA -->
+                <com.google.android.material.card.MaterialCardView android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:layout_weight="1"
+                    android:layout_marginStart="@dimen/space_sm" style="@style/Widget.Aurora.Card">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical" android:padding="@dimen/card_padding"
+                        android:gravity="center">
+                        <TextView android:id="@+id/tvCgpa"
+                            android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="—" android:textSize="28sp" android:textStyle="bold"
+                            android:textColor="@color/colorSecondary"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="CGPA" android:textSize="12sp"
+                            android:textColor="@color/colorTextSecondary" android:layout_marginTop="4dp"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
 
-                    <!-- Info Text -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:text="@string/keep_screen_on"
-                        android:textSize="12sp"
-                        android:textColor="@color/text_hint"
-                        android:fontFamily="font/poppins_regular"
-                        android:layout_marginTop="16dp"
-                        android:drawablePadding="4dp"
-                        android:drawableStart="@drawable/ic_info"
-                        android:drawableTint="@color/text_hint"/>
+            <!-- Quick Actions label -->
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Quick Actions" android:textSize="16sp" android:textStyle="bold"
+                android:textColor="@color/colorTextPrimary" android:layout_marginBottom="@dimen/space_md"/>
+
+            <!-- Row 1: Virtual ID + Attendance History -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:layout_marginBottom="@dimen/space_md">
+
+                <com.google.android.material.card.MaterialCardView android:id="@+id/cardVirtualId"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:layout_marginEnd="@dimen/space_sm"
+                    android:clickable="true" android:focusable="true" style="@style/Widget.Aurora.Card">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical" android:padding="@dimen/card_padding" android:gravity="center">
+                        <FrameLayout android:layout_width="52dp" android:layout_height="52dp"
+                            android:background="@drawable/icon_bg_primary" android:layout_marginBottom="10dp">
+                            <ImageView android:layout_width="24dp" android:layout_height="24dp"
+                                android:src="@drawable/ic_id_card" app:tint="@color/colorPrimary"
+                                android:layout_gravity="center" android:contentDescription="Virtual ID"/>
+                        </FrameLayout>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Virtual ID" android:textSize="13sp" android:textStyle="bold"
+                            android:textColor="@color/colorTextPrimary" android:gravity="center"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Live QR card" android:textSize="11sp"
+                            android:textColor="@color/colorTextSecondary" android:gravity="center"
+                            android:layout_marginTop="2dp"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView android:id="@+id/cardAttendance"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:layout_marginStart="@dimen/space_sm"
+                    android:clickable="true" android:focusable="true" style="@style/Widget.Aurora.Card">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical" android:padding="@dimen/card_padding" android:gravity="center">
+                        <FrameLayout android:layout_width="52dp" android:layout_height="52dp"
+                            android:background="@drawable/icon_bg_secondary" android:layout_marginBottom="10dp">
+                            <ImageView android:layout_width="24dp" android:layout_height="24dp"
+                                android:src="@drawable/ic_calendar" app:tint="@color/colorSecondary"
+                                android:layout_gravity="center" android:contentDescription="Attendance"/>
+                        </FrameLayout>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Attendance" android:textSize="13sp" android:textStyle="bold"
+                            android:textColor="@color/colorTextPrimary" android:gravity="center"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="View history" android:textSize="11sp"
+                            android:textColor="@color/colorTextSecondary" android:gravity="center"
+                            android:layout_marginTop="2dp"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <!-- Row 2: Apply Leave + Leave Status -->
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:layout_marginBottom="@dimen/space_md">
+
+                <com.google.android.material.card.MaterialCardView android:id="@+id/cardApplyLeave"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:layout_marginEnd="@dimen/space_sm"
+                    android:clickable="true" android:focusable="true" style="@style/Widget.Aurora.Card">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical" android:padding="@dimen/card_padding" android:gravity="center">
+                        <FrameLayout android:layout_width="52dp" android:layout_height="52dp"
+                            android:background="@drawable/icon_bg_warning" android:layout_marginBottom="10dp">
+                            <ImageView android:layout_width="24dp" android:layout_height="24dp"
+                                android:src="@drawable/ic_filter" app:tint="@color/colorWarning"
+                                android:layout_gravity="center" android:contentDescription="Apply Leave"/>
+                        </FrameLayout>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Apply Leave" android:textSize="13sp" android:textStyle="bold"
+                            android:textColor="@color/colorTextPrimary" android:gravity="center"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Submit request" android:textSize="11sp"
+                            android:textColor="@color/colorTextSecondary" android:gravity="center"
+                            android:layout_marginTop="2dp"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView android:id="@+id/cardLeaveStatus"
+                    android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:layout_marginStart="@dimen/space_sm"
+                    android:clickable="true" android:focusable="true" style="@style/Widget.Aurora.Card">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical" android:padding="@dimen/card_padding" android:gravity="center">
+                        <FrameLayout android:layout_width="52dp" android:layout_height="52dp"
+                            android:background="@drawable/icon_bg_info" android:layout_marginBottom="10dp">
+                            <ImageView android:layout_width="24dp" android:layout_height="24dp"
+                                android:src="@drawable/ic_download" app:tint="@color/colorInfo"
+                                android:layout_gravity="center" android:contentDescription="Leave Status"/>
+                        </FrameLayout>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Leave Status" android:textSize="13sp" android:textStyle="bold"
+                            android:textColor="@color/colorTextPrimary" android:gravity="center"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Track requests" android:textSize="11sp"
+                            android:textColor="@color/colorTextSecondary" android:gravity="center"
+                            android:layout_marginTop="2dp"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <!-- Row 3: Fee Invoices (full width) -->
+            <com.google.android.material.card.MaterialCardView android:id="@+id/cardFeeInvoices"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:clickable="true" android:focusable="true"
+                android:layout_marginBottom="@dimen/space_lg" style="@style/Widget.Aurora.Card">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:gravity="center_vertical"
+                    android:padding="@dimen/card_padding">
+                    <FrameLayout android:layout_width="48dp" android:layout_height="48dp"
+                        android:background="@drawable/icon_bg_error" android:layout_marginEnd="14dp">
+                        <ImageView android:layout_width="22dp" android:layout_height="22dp"
+                            android:src="@drawable/ic_chart" app:tint="@color/colorError"
+                            android:layout_gravity="center" android:contentDescription="Fee Invoices"/>
+                    </FrameLayout>
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Fee Invoices" android:textSize="15sp" android:textStyle="bold"
+                            android:textColor="@color/colorTextPrimary"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="View dues &amp; payment status"
+                            android:textSize="12sp" android:textColor="@color/colorTextSecondary"
+                            android:layout_marginTop="2dp"/>
+                    </LinearLayout>
+                    <ImageView android:layout_width="16dp" android:layout_height="16dp"
+                        android:src="@drawable/ic_chevron_right" app:tint="@color/colorTextHint"
+                        android:contentDescription=""/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Academic ERP Section -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/academic_erp"
-                android:textAllCaps="true"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:textColor="@color/white"
-                android:fontFamily="font/poppins_bold"
-                android:letterSpacing="0.1"
-                android:layout_marginBottom="12dp"
-                android:background="@drawable/pill_background_white_alpha"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="6dp"/>
-
-            <!-- ERP Features Grid -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingBottom="32dp">
-
-                <!-- Row 1 -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="16dp">
-
-                    <!-- Attendance History Card -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        app:cardCornerRadius="20dp"
-                        app:cardElevation="4dp"
-                        app:cardBackgroundColor="@color/white"
-                        android:layout_marginEnd="8dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="20dp"
-                            android:gravity="center">
-
-                            <ImageView
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:src="@drawable/ic_calendar"
-                                app:tint="@color/primary"
-                                android:layout_marginBottom="12dp"
-                                android:contentDescription="@string/calendar_icon"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/attendance_history"
-                                android:textSize="14sp"
-                                android:textColor="@color/text_primary"
-                                android:fontFamily="font/poppins_semibold"
-                                android:layout_marginBottom="12dp"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/view_your_records"
-                                android:textSize="12sp"
-                                android:textColor="@color/text_secondary"
-                                android:fontFamily="font/poppins_regular"
-                                android:gravity="center"
-                                android:layout_marginBottom="16dp"/>
-
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btnViewHistory"
-                                android:layout_width="match_parent"
-                                android:layout_height="40dp"
-                                android:text="@string/view"
-                                android:textSize="13sp"
-                                app:cornerRadius="12dp"
-                                android:fontFamily="font/poppins_medium"
-                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Timetable Card -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        app:cardCornerRadius="20dp"
-                        app:cardElevation="4dp"
-                        app:cardBackgroundColor="@color/white"
-                        android:layout_marginStart="8dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="20dp"
-                            android:gravity="center">
-
-                            <ImageView
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:src="@drawable/ic_timetable"
-                                app:tint="@color/primary"
-                                android:layout_marginBottom="12dp"
-                                android:contentDescription="@string/timetable_icon"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/my_timetable"
-                                android:textSize="14sp"
-                                android:textColor="@color/text_primary"
-                                android:fontFamily="font/poppins_semibold"
-                                android:layout_marginBottom="12dp"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/coming_soon"
-                                android:textSize="12sp"
-                                android:textColor="@color/text_secondary"
-                                android:fontFamily="font/poppins_regular"
-                                android:gravity="center"
-                                android:layout_marginBottom="16dp"/>
-
-                            <com.google.android.material.button.MaterialButton
-                                android:layout_width="match_parent"
-                                android:layout_height="40dp"
-                                android:text="@string/soon"
-                                android:textSize="13sp"
-                                app:cornerRadius="12dp"
-                                android:enabled="false"
-                                android:fontFamily="font/poppins_medium"
-                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
+            <!-- Results -->
+            <com.google.android.material.card.MaterialCardView android:id="@+id/cardResults"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:clickable="true" android:focusable="true" style="@style/Widget.Aurora.Card">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:gravity="center_vertical"
+                    android:padding="@dimen/card_padding">
+                    <FrameLayout android:layout_width="48dp" android:layout_height="48dp"
+                        android:background="@drawable/icon_bg_primary" android:layout_marginEnd="14dp">
+                        <ImageView android:layout_width="22dp" android:layout_height="22dp"
+                            android:src="@drawable/ic_visibility" app:tint="@color/colorPrimary"
+                            android:layout_gravity="center" android:contentDescription="Results"/>
+                    </FrameLayout>
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Academic Results" android:textSize="15sp" android:textStyle="bold"
+                            android:textColor="@color/colorTextPrimary"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Marks, grades &amp; CGPA"
+                            android:textSize="12sp" android:textColor="@color/colorTextSecondary"
+                            android:layout_marginTop="2dp"/>
+                    </LinearLayout>
+                    <ImageView android:layout_width="16dp" android:layout_height="16dp"
+                        android:src="@drawable/ic_chevron_right" app:tint="@color/colorTextHint"
+                        android:contentDescription=""/>
                 </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-                <!-- Row 2 -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <!-- Results Card -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        app:cardCornerRadius="20dp"
-                        app:cardElevation="4dp"
-                        app:cardBackgroundColor="@color/white"
-                        android:layout_marginEnd="8dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="20dp"
-                            android:gravity="center">
-
-                            <ImageView
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:src="@drawable/ic_chart"
-                                app:tint="@color/primary"
-                                android:layout_marginBottom="12dp"
-                                android:contentDescription="@string/results_icon"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/exam_results"
-                                android:textSize="14sp"
-                                android:textColor="@color/text_primary"
-                                android:fontFamily="font/poppins_semibold"
-                                android:layout_marginBottom="12dp"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/check_scores"
-                                android:textSize="12sp"
-                                android:textColor="@color/text_secondary"
-                                android:fontFamily="font/poppins_regular"
-                                android:gravity="center"
-                                android:layout_marginBottom="16dp"/>
-
-                            <com.google.android.material.button.MaterialButton
-                                android:layout_width="match_parent"
-                                android:layout_height="40dp"
-                                android:text="@string/soon"
-                                android:textSize="13sp"
-                                app:cornerRadius="12dp"
-                                android:enabled="false"
-                                android:fontFamily="font/poppins_medium"
-                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Profile Card -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        app:cardCornerRadius="20dp"
-                        app:cardElevation="4dp"
-                        app:cardBackgroundColor="@color/white"
-                        android:layout_marginStart="8dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="20dp"
-                            android:gravity="center">
-
-                            <ImageView
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:src="@drawable/ic_profile"
-                                app:tint="@color/primary"
-                                android:layout_marginBottom="12dp"
-                                android:contentDescription="@string/profile_icon"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/my_profile"
-                                android:textSize="14sp"
-                                android:textColor="@color/text_primary"
-                                android:fontFamily="font/poppins_semibold"
-                                android:layout_marginBottom="12dp"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/edit_details"
-                                android:textSize="12sp"
-                                android:textColor="@color/text_secondary"
-                                android:fontFamily="font/poppins_regular"
-                                android:gravity="center"
-                                android:layout_marginBottom="16dp"/>
-
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btnViewProfile"
-                                android:layout_width="match_parent"
-                                android:layout_height="40dp"
-                                android:text="@string/view"
-                                android:textSize="13sp"
-                                app:cornerRadius="12dp"
-                                android:fontFamily="font/poppins_medium"
-                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
-                <!-- Row 3: Virtual ID + Apply Leave -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="16dp">
-
-                    <!-- Virtual ID Card -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardVirtualId"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="8dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        app:cardCornerRadius="20dp"
-                        app:cardElevation="4dp"
-                        app:cardBackgroundColor="@color/white">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="20dp"
-                            android:gravity="center">
-
-                            <ImageView
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:src="@drawable/ic_id_card"
-                                app:tint="@color/primary"
-                                android:layout_marginBottom="12dp"
-                                android:contentDescription="Virtual ID"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Virtual ID"
-                                android:textSize="14sp"
-                                android:textColor="@color/text_primary"
-                                android:fontFamily="font/poppins_semibold"
-                                android:layout_marginBottom="8dp"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Live QR card"
-                                android:textSize="12sp"
-                                android:textColor="@color/text_secondary"
-                                android:fontFamily="font/poppins_regular"
-                                android:gravity="center"
-                                android:layout_marginBottom="16dp"/>
-
-                            <com.google.android.material.button.MaterialButton
-                                android:layout_width="match_parent"
-                                android:layout_height="40dp"
-                                android:text="Open"
-                                android:textSize="13sp"
-                                app:cornerRadius="12dp"
-                                android:fontFamily="font/poppins_medium"
-                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Apply Leave Card -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardApplyLeave"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="8dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        app:cardCornerRadius="20dp"
-                        app:cardElevation="4dp"
-                        app:cardBackgroundColor="@color/white">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="20dp"
-                            android:gravity="center">
-
-                            <ImageView
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:src="@drawable/ic_calendar"
-                                app:tint="@color/primary"
-                                android:layout_marginBottom="12dp"
-                                android:contentDescription="Apply Leave"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Apply Leave"
-                                android:textSize="14sp"
-                                android:textColor="@color/text_primary"
-                                android:fontFamily="font/poppins_semibold"
-                                android:layout_marginBottom="8dp"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Submit request"
-                                android:textSize="12sp"
-                                android:textColor="@color/text_secondary"
-                                android:fontFamily="font/poppins_regular"
-                                android:gravity="center"
-                                android:layout_marginBottom="16dp"/>
-
-                            <com.google.android.material.button.MaterialButton
-                                android:layout_width="match_parent"
-                                android:layout_height="40dp"
-                                android:text="Apply"
-                                android:textSize="13sp"
-                                app:cornerRadius="12dp"
-                                android:fontFamily="font/poppins_medium"
-                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
-
-                <!-- Row 4: Leave Status + Fee Invoices -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="32dp">
-
-                    <!-- Leave Status Card -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardLeaveStatus"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="8dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        app:cardCornerRadius="20dp"
-                        app:cardElevation="4dp"
-                        app:cardBackgroundColor="@color/white">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="20dp"
-                            android:gravity="center">
-
-                            <ImageView
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:src="@drawable/ic_filter"
-                                app:tint="@color/primary"
-                                android:layout_marginBottom="12dp"
-                                android:contentDescription="Leave Status"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Leave Status"
-                                android:textSize="14sp"
-                                android:textColor="@color/text_primary"
-                                android:fontFamily="font/poppins_semibold"
-                                android:layout_marginBottom="8dp"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Track requests"
-                                android:textSize="12sp"
-                                android:textColor="@color/text_secondary"
-                                android:fontFamily="font/poppins_regular"
-                                android:gravity="center"
-                                android:layout_marginBottom="16dp"/>
-
-                            <com.google.android.material.button.MaterialButton
-                                android:layout_width="match_parent"
-                                android:layout_height="40dp"
-                                android:text="View"
-                                android:textSize="13sp"
-                                app:cornerRadius="12dp"
-                                android:fontFamily="font/poppins_medium"
-                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Fee Invoices Card -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardFeeInvoices"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="8dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        app:cardCornerRadius="20dp"
-                        app:cardElevation="4dp"
-                        app:cardBackgroundColor="@color/white">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="20dp"
-                            android:gravity="center">
-
-                            <ImageView
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:src="@drawable/ic_download"
-                                app:tint="@color/primary"
-                                android:layout_marginBottom="12dp"
-                                android:contentDescription="Fee Invoices"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Fee Invoices"
-                                android:textSize="14sp"
-                                android:textColor="@color/text_primary"
-                                android:fontFamily="font/poppins_semibold"
-                                android:layout_marginBottom="8dp"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="View &amp; pay dues"
-                                android:textSize="12sp"
-                                android:textColor="@color/text_secondary"
-                                android:fontFamily="font/poppins_regular"
-                                android:gravity="center"
-                                android:layout_marginBottom="16dp"/>
-
-                            <com.google.android.material.button.MaterialButton
-                                android:layout_width="match_parent"
-                                android:layout_height="40dp"
-                                android:text="View"
-                                android:textSize="13sp"
-                                app:cornerRadius="12dp"
-                                android:fontFamily="font/poppins_medium"
-                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
-
-            </LinearLayout>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

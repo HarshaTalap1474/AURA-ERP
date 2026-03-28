@@ -1,5 +1,6 @@
 package com.aura.attendix;
 
+import android.view.View;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -32,10 +33,13 @@ public class TeacherHomeActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeManager.apply(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_teacher_home);
 
         initViews();
+        View ivSet = findViewById(R.id.ivSettings);
+        if (ivSet != null) ivSet.setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
         loadTeacherProfile();
 
         btnLogout.setOnClickListener(v -> logout());

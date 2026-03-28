@@ -1,244 +1,226 @@
 package com.aura.attendix;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
-import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.RequestQueue;
-import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.toolbox.Volley;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ProfileActivity extends AppCompatActivity {
 
-    // UI Components
-    private EditText etRollNo, etFirstName, etLastName, etEmail, etPhone;
-    private Button btnSaveProfile, btnLogout, btnChangePass;
+    private com.google.android.material.textfield.TextInputEditText
+            etRollNo, etFirstName, etLastName, etEmail, etPhone,
+            etDob, etAddress, etEmergencyContact;
+    private AutoCompleteTextView etBloodGroup;
+    private com.google.android.material.button.MaterialButton btnSaveProfile;
+    private TextView tvAvatar, tvProfileName, tvProfileRole;
 
-    // State Variables to track changes
-    private String originalFirstName = "";
-    private String originalLastName = "";
-    private String originalEmail = "";
-    private String originalPhone = "";
+    private String originalFirstName = "", originalLastName = "";
+    private String originalEmail     = "", originalPhone     = "";
+    private String originalDob       = "", originalBloodGroup = "";
+    private String originalAddress   = "", originalEmergency  = "";
+
+    private static final String[] BLOOD_GROUPS = {"A+","A-","B+","B-","O+","O-","AB+","AB-"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeManager.apply(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
         initViews();
         loadCurrentData();
-
-        // 1. SETUP SAVE BUTTON LOGIC
-        // Initially disable save button
-        btnSaveProfile.setEnabled(false);
-        btnSaveProfile.setAlpha(0.5f); // Make it look disabled (dimmed)
-
-        // Add listeners to watch for typing
+        setupBloodGroupDropdown();
+        setupDobPicker();
         setupTextWatchers();
-
+        btnSaveProfile.setEnabled(false);
+        btnSaveProfile.setAlpha(0.4f);
         btnSaveProfile.setOnClickListener(v -> saveChanges());
-
-        // 2. SETUP LOGOUT BUTTON LOGIC
-        // (Make sure you add a button with id 'btnLogout' to your XML later)
-        if (btnLogout != null) {
-            btnLogout.setOnClickListener(v -> performLogout());
-        }
-
-        // 3. SETUP CHANGE PASSWORD BUTTON LOGIC
-        btnChangePass.setOnClickListener(v ->
-                startActivity(new Intent(this, ChangePasswordActivity.class))
-        );
+        findViewById(R.id.ivBack).setOnClickListener(v -> finish());
+        findViewById(R.id.ivSettings).setOnClickListener(v ->
+                startActivity(new Intent(this, SettingsActivity.class)));
     }
 
     private void initViews() {
-        etRollNo = findViewById(R.id.etRollNo);
-        etFirstName = findViewById(R.id.etFirstName);
-        etLastName = findViewById(R.id.etLastName);
-        etEmail = findViewById(R.id.etEmail);
-        etPhone = findViewById(R.id.etPhone);
-        btnSaveProfile = findViewById(R.id.btnSaveProfile);
-        btnLogout = findViewById(R.id.btnLogout);
-        btnChangePass = findViewById(R.id.btnChangePass);
+        etRollNo           = findViewById(R.id.etRollNo);
+        etFirstName        = findViewById(R.id.etFirstName);
+        etLastName         = findViewById(R.id.etLastName);
+        etEmail            = findViewById(R.id.etEmail);
+        etPhone            = findViewById(R.id.etPhone);
+        etDob              = findViewById(R.id.etDob);
+        etBloodGroup       = findViewById(R.id.etBloodGroup);
+        etAddress          = findViewById(R.id.etAddress);
+        etEmergencyContact = findViewById(R.id.etEmergencyContact);
+        btnSaveProfile     = findViewById(R.id.btnSaveProfile);
+        tvAvatar           = findViewById(R.id.tvAvatar);
+        tvProfileName      = findViewById(R.id.tvProfileName);
+        tvProfileRole      = findViewById(R.id.tvProfileRole);
     }
 
     private void loadCurrentData() {
         SharedPreferences prefs = getSharedPreferences("UserSession", MODE_PRIVATE);
 
-        // Identity (Read Only)
-        etRollNo.setText(prefs.getString("username", "---"));
+        String username  = prefs.getString("username", "—");
+        String fullName  = prefs.getString("name", "");
+        String role      = prefs.getString("role", "Student");
+        String email     = prefs.getString("email", "");
+        String phone     = prefs.getString("phone", "");
+        String dob       = prefs.getString("dob", "");
+        String blood     = prefs.getString("blood_group", "");
+        String address   = prefs.getString("address", "");
+        String emergency = prefs.getString("emergency_contact", "");
 
-        // Name Parsing
-        String fullName = prefs.getString("name", "");
-        String[] parts = fullName.split(" ");
-        if (parts.length > 0) originalFirstName = parts[0];
+        // Parse name
+        String[] parts = fullName.split(" ", 2);
+        originalFirstName  = parts.length > 0 ? parts[0] : "";
+        originalLastName   = parts.length > 1 ? parts[1] : "";
+        originalEmail      = email;
+        originalPhone      = phone;
+        originalDob        = dob;
+        originalBloodGroup = blood;
+        originalAddress    = address;
+        originalEmergency  = emergency;
 
-        if (parts.length > 1) {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 1; i < parts.length; i++) {
-                sb.append(parts[i]).append(" ");
-            }
-            originalLastName = sb.toString().trim();
-        } else {
-            originalLastName = "";
-        }
+        // Avatar initials
+        String initials = "";
+        if (!originalFirstName.isEmpty()) initials += originalFirstName.charAt(0);
+        if (!originalLastName.isEmpty())  initials += originalLastName.charAt(0);
+        tvAvatar.setText(initials.isEmpty() ? "?" : initials.toUpperCase());
 
-        // Contact Info
-        originalEmail = prefs.getString("email", "");
-        originalPhone = prefs.getString("phone", "");
+        tvProfileName.setText(fullName.isEmpty() ? username : fullName);
+        tvProfileRole.setText(formatRole(role));
 
-        // Set values to UI
+        etRollNo.setText(username);
         etFirstName.setText(originalFirstName);
         etLastName.setText(originalLastName);
         etEmail.setText(originalEmail);
         etPhone.setText(originalPhone);
+        etDob.setText(originalDob);
+        etBloodGroup.setText(originalBloodGroup, false);
+        etAddress.setText(originalAddress);
+        etEmergencyContact.setText(originalEmergency);
+    }
+
+    private String formatRole(String raw) {
+        if (raw == null) return "User";
+        return raw.replace("_", " ").replace("-", " ")
+                  .toLowerCase()
+                  .replaceAll("\\b[a-z]", m -> m.toUpperCase());
+    }
+
+    private void setupBloodGroupDropdown() {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_dropdown_item_1line, BLOOD_GROUPS);
+        etBloodGroup.setAdapter(adapter);
+    }
+
+    private void setupDobPicker() {
+        etDob.setOnClickListener(v -> {
+            Calendar c = Calendar.getInstance();
+            new DatePickerDialog(this, (view, year, month, day) -> {
+                String date = String.format(java.util.Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, day);
+                etDob.setText(date);
+                checkIfModified();
+            }, c.get(Calendar.YEAR) - 20, c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)).show();
+        });
     }
 
     private void setupTextWatchers() {
-        TextWatcher watcher = new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                checkIfModified();
-            }
-
-            @Override
+        TextWatcher w = new TextWatcher() {
+            public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
+            public void onTextChanged(CharSequence s, int st, int b, int c) { checkIfModified(); }
             public void afterTextChanged(Editable s) {}
         };
-
-        etFirstName.addTextChangedListener(watcher);
-        etLastName.addTextChangedListener(watcher);
-        etEmail.addTextChangedListener(watcher);
-        etPhone.addTextChangedListener(watcher);
+        etFirstName.addTextChangedListener(w);
+        etLastName.addTextChangedListener(w);
+        etEmail.addTextChangedListener(w);
+        etPhone.addTextChangedListener(w);
+        etAddress.addTextChangedListener(w);
+        etEmergencyContact.addTextChangedListener(w);
+        etBloodGroup.addTextChangedListener(w);
     }
 
     private void checkIfModified() {
-        String currentFirst = etFirstName.getText().toString().trim();
-        String currentLast = etLastName.getText().toString().trim();
-        String currentEmail = etEmail.getText().toString().trim();
-        String currentPhone = etPhone.getText().toString().trim();
+        boolean changed =
+            !etFirstName.getText().toString().trim().equals(originalFirstName) ||
+            !etLastName.getText().toString().trim().equals(originalLastName)   ||
+            !etEmail.getText().toString().trim().equals(originalEmail)          ||
+            !etPhone.getText().toString().trim().equals(originalPhone)          ||
+            !etDob.getText().toString().trim().equals(originalDob)              ||
+            !etBloodGroup.getText().toString().trim().equals(originalBloodGroup)||
+            !etAddress.getText().toString().trim().equals(originalAddress)      ||
+            !etEmergencyContact.getText().toString().trim().equals(originalEmergency);
 
-        // Logic: Is ANY field different from the original?
-        boolean isChanged = !currentFirst.equals(originalFirstName) ||
-                !currentLast.equals(originalLastName) ||
-                !currentEmail.equals(originalEmail) ||
-                !currentPhone.equals(originalPhone);
-
-        // Logic: Are required fields filled?
-        boolean isValid = !currentFirst.isEmpty() && !currentLast.isEmpty();
-
-        // Enable button only if changed AND valid
-        boolean shouldEnable = isChanged && isValid;
-
-        btnSaveProfile.setEnabled(shouldEnable);
-        btnSaveProfile.setAlpha(shouldEnable ? 1.0f : 0.5f);
+        boolean valid = !etFirstName.getText().toString().trim().isEmpty();
+        btnSaveProfile.setEnabled(changed && valid);
+        btnSaveProfile.setAlpha(changed && valid ? 1f : 0.4f);
     }
 
     private void saveChanges() {
-        String fName = etFirstName.getText().toString().trim();
-        String lName = etLastName.getText().toString().trim();
-        String email = etEmail.getText().toString().trim();
-        String phone = etPhone.getText().toString().trim();
-
-        // Disable button immediately to prevent double-clicks
         btnSaveProfile.setEnabled(false);
-        btnSaveProfile.setAlpha(0.5f);
+        btnSaveProfile.setAlpha(0.4f);
 
         JSONObject payload = new JSONObject();
         try {
-            payload.put("first_name", fName);
-            payload.put("last_name", lName);
-            payload.put("email", email);
+            payload.put("first_name",        etFirstName.getText().toString().trim());
+            payload.put("last_name",         etLastName.getText().toString().trim());
+            payload.put("email",             etEmail.getText().toString().trim());
+            payload.put("phone_number",      etPhone.getText().toString().trim());
+            payload.put("dob",               etDob.getText().toString().trim());
+            payload.put("blood_group",       etBloodGroup.getText().toString().trim());
+            payload.put("address",           etAddress.getText().toString().trim());
+            payload.put("emergency_contact", etEmergencyContact.getText().toString().trim());
+        } catch (JSONException e) { return; }
 
-            // ✅ CORRECT KEY FOR BACKEND
-            payload.put("phone_number", phone);
-
-        } catch (JSONException e) {
-            return;
-        }
-
-        RequestQueue queue = VolleySingleton.getInstance(this).getRequestQueue();
-        JsonObjectRequest request = new JsonObjectRequest(
-                Request.Method.POST,
-                NetworkConfig.URL_PROFILE_UPDATE,
-                payload,
+        JsonObjectRequest req = new JsonObjectRequest(
+                Request.Method.POST, NetworkConfig.URL_PROFILE_UPDATE, payload,
                 response -> {
-                    // Update Local Storage on Success
-                    SharedPreferences.Editor editor = getSharedPreferences("UserSession", MODE_PRIVATE).edit();
-                    editor.putString("name", fName + " " + lName);
-                    editor.putString("email", email);
-                    editor.putString("phone", phone);
-                    editor.apply();
-
-                    // Update originals so button disables again
-                    originalFirstName = fName;
-                    originalLastName = lName;
-                    originalEmail = email;
-                    originalPhone = phone;
-                    checkIfModified();
-
-                    Toast.makeText(this, "Profile Updated Successfully", Toast.LENGTH_SHORT).show();
-                    finish(); // Go back
+                    SharedPreferences.Editor ed = getSharedPreferences("UserSession", MODE_PRIVATE).edit();
+                    ed.putString("name",              etFirstName.getText().toString().trim() + " " + etLastName.getText().toString().trim());
+                    ed.putString("email",             etEmail.getText().toString().trim());
+                    ed.putString("phone",             etPhone.getText().toString().trim());
+                    ed.putString("dob",               etDob.getText().toString().trim());
+                    ed.putString("blood_group",       etBloodGroup.getText().toString().trim());
+                    ed.putString("address",           etAddress.getText().toString().trim());
+                    ed.putString("emergency_contact", etEmergencyContact.getText().toString().trim());
+                    ed.apply();
+                    Toast.makeText(this, "Profile updated ✓", Toast.LENGTH_SHORT).show();
+                    finish();
                 },
                 error -> {
-                    // Re-enable button on error
                     checkIfModified();
-                    String errorMsg = "Update Failed";
-                    if (error.networkResponse != null) {
-                        errorMsg += " (Code " + error.networkResponse.statusCode + ")";
-                    }
-                    Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
+                    String msg = "Update failed";
+                    if (error.networkResponse != null) msg += " (" + error.networkResponse.statusCode + ")";
+                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
                 }
         ) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> headers = new HashMap<>();
-                SharedPreferences prefs = getSharedPreferences("UserSession", MODE_PRIVATE);
-                // Send Token
-                headers.put("Authorization", "Bearer " + prefs.getString("access_token", ""));
-                return headers;
+            @Override public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> h = new HashMap<>();
+                h.put("Authorization", "Bearer " + getSharedPreferences("UserSession", MODE_PRIVATE).getString("access_token", ""));
+                h.put("Content-Type", "application/json");
+                return h;
             }
         };
-
-        queue.add(request);
-    }
-
-    private void performLogout() {
-        // 1. Clear Local Session
-        SharedPreferences prefs = getSharedPreferences("UserSession", MODE_PRIVATE);
-        prefs.edit().clear().apply();
-
-        // 2. Stop the Attendance Service if running
-        Intent serviceIntent = new Intent(this, BleBroadcastService.class);
-        stopService(serviceIntent);
-
-        // 3. Navigate back to Login
-        Intent intent = new Intent(this, LoginActivity.class);
-        // Clear back stack so user can't press "Back" to return to profile
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
+        req.setRetryPolicy(new DefaultRetryPolicy(6000, 0, 1f));
+        VolleySingleton.getInstance(this).add(req);
     }
 }

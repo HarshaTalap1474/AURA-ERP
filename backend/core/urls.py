@@ -130,7 +130,8 @@ urlpatterns = [
     # ============================================
     path('auth/login/', app_login, name='app_login'),
     path('auth/change-password/', change_password, name='api_change_password'),
-    path('profile/update/', update_profile, name='api_update_profile'),
+    path('profile/', update_profile, name='api_profile_detail'),       # GET: fetch profile
+    path('profile/update/', update_profile, name='api_update_profile'), # POST: save profile
     path('attendance/history/', attendance_history, name='attendance_history'),
     
     # ✅ SECURITY SCANNER API VIEWS

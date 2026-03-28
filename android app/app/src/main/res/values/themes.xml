@@ -1,9 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.ATTENDIX" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!--  AURORA — Material3 DayNight (Light base)       -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <style name="Theme.ATTENDIX" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Brand -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorSecondary">@color/colorSecondary</item>
+        <item name="colorError">@color/colorError</item>
+
+        <!-- Surfaces -->
+        <item name="android:colorBackground">@color/colorBackground</item>
+        <item name="colorSurface">@color/colorSurface</item>
+        <item name="colorOnSurface">@color/colorOnSurface</item>
+        <item name="colorOnPrimary">@color/colorOnPrimary</item>
+
+        <!-- Window -->
+        <item name="android:windowBackground">@color/colorBackground</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="23">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@color/colorBackground</item>
+
+        <!-- Shapes -->
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.Aurora.Medium</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.Aurora.Large</item>
+
+        <!-- Text -->
+        <item name="android:textColor">@color/colorTextPrimary</item>
+        <item name="android:textColorHint">@color/colorTextHint</item>
+
+        <!-- Cards -->
+        <item name="materialCardViewStyle">@style/Widget.Aurora.Card</item>
+
+        <!-- Buttons -->
+        <item name="materialButtonStyle">@style/Widget.Aurora.Button</item>
+        <item name="materialButtonOutlinedStyle">@style/Widget.Aurora.Button.Outlined</item>
+
+        <!-- TextInputLayout -->
+        <item name="textInputStyle">@style/Widget.Aurora.TextInput</item>
+
+        <!-- Ripple -->
+        <item name="rippleColor">@color/colorPrimaryLight</item>
     </style>
 
-    <style name="Theme.ATTENDIX" parent="Base.Theme.ATTENDIX" />
+    <!-- Splash theme (no flash) -->
+    <style name="Theme.ATTENDIX.Splash" parent="Theme.ATTENDIX">
+        <item name="android:windowBackground">@color/gradient_start</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
+    <!-- ─── Shape Appearances ─── -->
+    <style name="ShapeAppearance.Aurora.Medium" parent="ShapeAppearance.MaterialComponents.MediumComponent">
+        <item name="cornerSize">@dimen/card_radius_sm</item>
+    </style>
+    <style name="ShapeAppearance.Aurora.Large" parent="ShapeAppearance.MaterialComponents.LargeComponent">
+        <item name="cornerSize">@dimen/card_radius</item>
+    </style>
+
+    <!-- ─── Card ─── -->
+    <style name="Widget.Aurora.Card" parent="Widget.MaterialComponents.CardView">
+        <item name="cardCornerRadius">@dimen/card_radius</item>
+        <item name="cardElevation">@dimen/card_elevation</item>
+        <item name="cardBackgroundColor">@color/colorCardBackground</item>
+        <item name="contentPaddingLeft">0dp</item>
+        <item name="contentPaddingTop">0dp</item>
+        <item name="contentPaddingRight">0dp</item>
+        <item name="contentPaddingBottom">0dp</item>
+    </style>
+
+    <style name="Widget.Aurora.Card.Hero" parent="Widget.Aurora.Card">
+        <item name="cardCornerRadius">@dimen/card_radius_lg</item>
+        <item name="cardElevation">8dp</item>
+    </style>
+
+    <!-- ─── Buttons ─── -->
+    <style name="Widget.Aurora.Button" parent="Widget.MaterialComponents.Button">
+        <item name="cornerRadius">@dimen/btn_radius</item>
+        <item name="android:minHeight">@dimen/btn_height</item>
+        <item name="android:textSize">@dimen/text_label</item>
+        <item name="android:letterSpacing">0.02</item>
+        <item name="backgroundTint">@color/colorPrimary</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="Widget.Aurora.Button.Outlined" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="cornerRadius">@dimen/btn_radius</item>
+        <item name="android:minHeight">@dimen/btn_height_sm</item>
+        <item name="android:textSize">@dimen/text_label</item>
+        <item name="strokeColor">@color/colorPrimary</item>
+        <item name="android:textColor">@color/colorPrimary</item>
+    </style>
+
+    <style name="Widget.Aurora.Button.Danger" parent="Widget.Aurora.Button">
+        <item name="backgroundTint">@color/colorError</item>
+    </style>
+
+    <style name="Widget.Aurora.Button.Success" parent="Widget.Aurora.Button">
+        <item name="backgroundTint">@color/colorSuccess</item>
+    </style>
+
+    <!-- ─── TextInput ─── -->
+    <style name="Widget.Aurora.TextInput" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">12dp</item>
+        <item name="boxCornerRadiusTopEnd">12dp</item>
+        <item name="boxCornerRadiusBottomStart">12dp</item>
+        <item name="boxCornerRadiusBottomEnd">12dp</item>
+        <item name="boxStrokeColor">@color/colorPrimary</item>
+        <item name="hintTextColor">@color/colorPrimary</item>
+        <item name="android:textColorHint">@color/colorTextHint</item>
+    </style>
+
+    <!-- ─── Status chip colours ─── -->
+    <style name="Widget.Aurora.Chip.Present">
+        <item name="android:background">@color/chipPresent</item>
+        <item name="android:textColor">@color/chipPresentText</item>
+    </style>
+    <style name="Widget.Aurora.Chip.Absent">
+        <item name="android:background">@color/chipAbsent</item>
+        <item name="android:textColor">@color/chipAbsentText</item>
+    </style>
+    <style name="Widget.Aurora.Chip.Pending">
+        <item name="android:background">@color/chipPending</item>
+        <item name="android:textColor">@color/chipPendingText</item>
+    </style>
 </resources>

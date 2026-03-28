@@ -114,16 +114,39 @@
     </style>
 
     <!-- ─── Status chip colours ─── -->
+    <!-- Base: MUST exist — dot-notation child styles resolve parent by stripping last segment -->
+    <style name="Widget.Aurora.Chip" parent="Widget.MaterialComponents.Chip.Choice">
+        <item name="android:paddingHorizontal">10dp</item>
+        <item name="android:paddingVertical">4dp</item>
+        <item name="android:textSize">11sp</item>
+        <item name="chipBackgroundColor">@android:color/transparent</item>
+        <item name="chipStrokeWidth">0dp</item>
+        <item name="chipMinHeight">26dp</item>
+    </style>
     <style name="Widget.Aurora.Chip.Present">
         <item name="android:background">@color/chipPresent</item>
         <item name="android:textColor">@color/chipPresentText</item>
+        <item name="chipBackgroundColor">@color/chipPresent</item>
     </style>
     <style name="Widget.Aurora.Chip.Absent">
         <item name="android:background">@color/chipAbsent</item>
         <item name="android:textColor">@color/chipAbsentText</item>
+        <item name="chipBackgroundColor">@color/chipAbsent</item>
     </style>
     <style name="Widget.Aurora.Chip.Pending">
         <item name="android:background">@color/chipPending</item>
         <item name="android:textColor">@color/chipPendingText</item>
+        <item name="chipBackgroundColor">@color/chipPending</item>
     </style>
+    <style name="Widget.Aurora.Chip.Approved">
+        <item name="android:background">@color/chipApproved</item>
+        <item name="android:textColor">@color/chipApprovedText</item>
+        <item name="chipBackgroundColor">@color/chipApproved</item>
+    </style>
+    <style name="Widget.Aurora.Chip.Rejected">
+        <item name="android:background">@color/chipRejected</item>
+        <item name="android:textColor">@color/chipRejectedText</item>
+        <item name="chipBackgroundColor">@color/chipRejected</item>
+    </style>
+
 </resources>

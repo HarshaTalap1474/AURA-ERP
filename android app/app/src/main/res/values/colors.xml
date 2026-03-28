@@ -17,6 +17,8 @@
     <color name="colorWarning">#F59E0B</color>
     <color name="colorError">#EF4444</color>
     <color name="colorInfo">#3B82F6</color>
+    <color name="offline">#94A3B8</color>
+    <color name="online">#10B981</color>
 
     <!-- Surfaces (Light) -->
     <color name="colorBackground">#F1F5F9</color>

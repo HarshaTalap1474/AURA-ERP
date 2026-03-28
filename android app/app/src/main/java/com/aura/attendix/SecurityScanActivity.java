@@ -29,14 +29,10 @@ import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
 
-import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
-import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.toolbox.Volley;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mlkit.vision.barcode.BarcodeScanner;
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
@@ -217,31 +213,38 @@ public class SecurityScanActivity extends AppCompatActivity {
 
         try {
             JSONObject body = new JSONObject();
-            body.put("qr_token", token);
+            // ✅ Must use 'student_id' field — verify_virtual_id view reads request.data.get('student_id')
+            //    URL_VERIFY_VIRTUAL_ID decrypts the TimestampSigner QR token (15-second validity window)
+            //    URL_VERIFY_GATE_PASS is only for approved-leave GatePass ORM objects — NOT for identity scanning
+            body.put("student_id", token);
 
             JsonObjectRequest request = new JsonObjectRequest(
                     Request.Method.POST,
-                    NetworkConfig.URL_VERIFY_GATE_PASS,
+                    NetworkConfig.URL_VERIFY_VIRTUAL_ID,
                     body,
                     response -> {
                         progressBar.setVisibility(View.GONE);
-                        boolean success = response.optBoolean("success", false);
-                        if (success) {
-                            showSuccess(
-                                    response.optString("student_name", "Unknown"),
-                                    response.optString("roll_no", "--"),
-                                    response.optString("reason", "--")
-                            );
+                        String status = response.optString("status", "error");
+                        if ("success".equals(status)) {
+                            JSONObject student = response.optJSONObject("student");
+                            String name   = student != null ? student.optString("name", "Unknown") : "Unknown";
+                            String rollNo = student != null ? student.optString("roll_no", "--")    : "--";
+                            showSuccess(name, rollNo, "Identity Verified");
                         } else {
                             showFailure(response.optString("message", "Verification failed"));
                         }
                     },
                     error -> {
                         progressBar.setVisibility(View.GONE);
-                        String msg = error.networkResponse != null
-                                ? "Error " + error.networkResponse.statusCode
-                                : "Network error";
-                        showFailure(msg);
+                        if (error.networkResponse != null) {
+                            int code = error.networkResponse.statusCode;
+                            // 403 = token expired or tampered (SignatureExpired / BadSignature)
+                            String msg = code == 403 ? "QR Code expired — ask student to refresh"
+                                                     : "Network error " + code;
+                            showFailure(msg);
+                        } else {
+                            showFailure("No network response — check connection");
+                        }
                     }
             ) {
                 @Override

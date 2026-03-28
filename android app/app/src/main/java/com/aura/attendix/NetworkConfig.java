@@ -32,10 +32,13 @@ public class NetworkConfig {
     // ── Student: Leave & QR ───────────────────────────────────
     public static final String URL_STUDENT_APPLY_LEAVE  = BASE_URL + "/api/student/leave/apply/";
     public static final String URL_STUDENT_LEAVE_HISTORY= BASE_URL + "/api/student/leave/history/";
+    // ⚡ Correct QR token endpoint (api_qr_token view, not the old web-view)
     public static final String URL_QR_TOKEN             = BASE_URL + "/api/student/qr-token/";
 
     // ── Security (gate pass QR scan) ─────────────────────────
+    // Always use verify-virtual-id for scanning a student's Virtual ID QR
     public static final String URL_VERIFY_VIRTUAL_ID    = BASE_URL + "/api/verify-virtual-id/";
+    // Only use verify-gate-pass when scanning an approved leave gate-pass QR
     public static final String URL_VERIFY_GATE_PASS     = BASE_URL + "/api/verify-gate-pass/";
 
     // ── HOD ───────────────────────────────────────────────────

@@ -122,9 +122,15 @@ public class ProfileActivity extends AppCompatActivity {
 
     private String formatRole(String raw) {
         if (raw == null) return "User";
-        return raw.replace("_", " ").replace("-", " ")
-                  .toLowerCase()
-                  .replaceAll("\\b[a-z]", m -> m.toUpperCase());
+        String s = raw.replace("_", " ").replace("-", " ").toLowerCase();
+        StringBuilder sb = new StringBuilder(s.length());
+        boolean capitalizeNext = true;
+        for (char c : s.toCharArray()) {
+            if (c == ' ') { sb.append(c); capitalizeNext = true; }
+            else if (capitalizeNext) { sb.append(Character.toUpperCase(c)); capitalizeNext = false; }
+            else { sb.append(c); }
+        }
+        return sb.toString();
     }
 
     private void setupBloodGroupDropdown() {

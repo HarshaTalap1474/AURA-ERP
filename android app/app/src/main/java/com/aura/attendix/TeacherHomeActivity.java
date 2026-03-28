@@ -4,32 +4,27 @@ import android.view.View;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
-import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.RequestQueue;
-import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.toolbox.Volley;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class TeacherHomeActivity extends AppCompatActivity {
 
     private TextView tvTeacherName, tvCurrentClass, tvRoom, tvTime;
-    private Button btnViewAttendance, btnLogout;
-    private ImageView ivTeacherProfile;
-
-    private RequestQueue requestQueue;
+    private ImageView ivProfile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,70 +33,73 @@ public class TeacherHomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_teacher_home);
 
         initViews();
-        View ivSet = findViewById(R.id.ivSettings);
-        if (ivSet != null) ivSet.setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
         loadTeacherProfile();
 
-        btnLogout.setOnClickListener(v -> logout());
+        // Settings gear
+        View ivSet = findViewById(R.id.ivSettings);
+        if (ivSet != null) ivSet.setOnClickListener(v ->
+                startActivity(new Intent(this, SettingsActivity.class)));
 
-        // Open today's timetable (start/end classes from there)
-        btnViewAttendance.setOnClickListener(v ->
+        // Profile icon in header
+        ivProfile.setOnClickListener(v ->
+                startActivity(new Intent(this, ProfileActivity.class)));
+
+        // Monitor live attendance (opens Timetable)
+        View btnViewAttendance = findViewById(R.id.btnViewAttendance);
+        if (btnViewAttendance != null) btnViewAttendance.setOnClickListener(v ->
                 startActivity(new Intent(this, TimetableActivity.class)));
 
-        // Leave approvals — Teacher/HOD/TG can approve pending requests
-        android.view.View btnLeaves = findViewById(R.id.cardLeaveApproval);
-        if (btnLeaves != null) {
-            btnLeaves.setOnClickListener(v ->
-                    startActivity(new Intent(this, LeaveApprovalsActivity.class)));
-        }
+        // Leave approvals card
+        View cardLeaveApproval = findViewById(R.id.cardLeaveApproval);
+        if (cardLeaveApproval != null) cardLeaveApproval.setOnClickListener(v ->
+                startActivity(new Intent(this, LeaveApprovalsActivity.class)));
 
-        ivTeacherProfile.setOnClickListener(v ->
-                startActivity(new Intent(this, ProfileActivity.class)));
+        // Timetable card
+        View cardTimetable = findViewById(R.id.cardTimetable);
+        if (cardTimetable != null) cardTimetable.setOnClickListener(v ->
+                startActivity(new Intent(this, TimetableActivity.class)));
     }
 
     private void initViews() {
-        tvTeacherName = findViewById(R.id.tvTeacherName);
+        tvTeacherName  = findViewById(R.id.tvTeacherName);
         tvCurrentClass = findViewById(R.id.tvCurrentClass);
-        tvRoom = findViewById(R.id.tvRoom);
-        tvTime = findViewById(R.id.tvTime);
-        btnViewAttendance = findViewById(R.id.btnViewAttendance);
-        btnLogout = findViewById(R.id.btnLogout);
-        requestQueue = VolleySingleton.getInstance(this).getRequestQueue();
-        ivTeacherProfile = findViewById(R.id.ivTeacherProfile);
+        tvRoom         = findViewById(R.id.tvRoom);
+        tvTime         = findViewById(R.id.tvTime);
+        ivProfile      = findViewById(R.id.ivProfile);
     }
 
     private void loadTeacherProfile() {
         SharedPreferences prefs = getSharedPreferences("UserSession", MODE_PRIVATE);
-        tvTeacherName.setText("Prof. " + prefs.getString("name", "Teacher"));
+        String name = prefs.getString("name", "Teacher");
+        if (tvTeacherName != null) tvTeacherName.setText("Prof. " + name);
+        fetchCurrentClass(prefs.getString("access_token", ""));
     }
 
-    private void fetchCurrentClass() {
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, NetworkConfig.URL_LOGIN, null,
+    private void fetchCurrentClass(String token) {
+        JsonObjectRequest request = new JsonObjectRequest(
+                Request.Method.GET, NetworkConfig.URL_TEACHER_TIMETABLE, null,
                 response -> {
                     try {
                         String subject = response.getString("subject");
-                        String room = response.getString("room");
-                        String time = response.getString("time_slot");
-                        updateClassUI(subject, room, time);
+                        String room    = response.getString("room");
+                        String time    = response.getString("time_slot");
+                        if (tvCurrentClass != null) tvCurrentClass.setText(subject);
+                        if (tvRoom != null) tvRoom.setText("Room: " + room);
+                        if (tvTime != null) tvTime.setText(time);
                     } catch (JSONException e) {
-                        tvCurrentClass.setText("No Active Class");
+                        if (tvCurrentClass != null) tvCurrentClass.setText("No Active Class");
                     }
                 },
-                error -> tvCurrentClass.setText("No Active Class")
-        );
-        requestQueue.add(request);
-    }
-
-    private void updateClassUI(String subject, String room, String time) {
-        tvCurrentClass.setText(subject);
-        tvRoom.setText(room);
-        tvTime.setText(time);
-        btnViewAttendance.setEnabled(true);
-    }
-
-    private void logout() {
-        getSharedPreferences("UserSession", MODE_PRIVATE).edit().clear().apply();
-        startActivity(new Intent(this, LoginActivity.class));
-        finish();
+                error -> { if (tvCurrentClass != null) tvCurrentClass.setText("No Active Class"); }
+        ) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> h = new HashMap<>();
+                h.put("Authorization", "Bearer " + token);
+                return h;
+            }
+        };
+        request.setRetryPolicy(new DefaultRetryPolicy(6000, 0, 1f));
+        VolleySingleton.getInstance(this).add(request);
     }
 }

@@ -7,28 +7,51 @@
     android:background="@color/colorBackground"
     android:fitsSystemWindows="true">
 
+    <!-- Gradient Header -->
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="vertical" android:background="@drawable/gradient_background"
-        android:paddingHorizontal="@dimen/screen_padding" android:paddingTop="28dp" android:paddingBottom="24dp">
+        android:paddingHorizontal="@dimen/screen_padding"
+        android:paddingTop="28dp" android:paddingBottom="24dp">
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="horizontal" android:gravity="center_vertical">
-            <FrameLayout android:layout_width="52dp" android:layout_height="52dp" android:layout_marginEnd="14dp">
+
+            <FrameLayout android:layout_width="52dp" android:layout_height="52dp"
+                android:layout_marginEnd="14dp">
                 <TextView android:layout_width="match_parent" android:layout_height="match_parent"
                     android:gravity="center" android:text="👪" android:textSize="24sp"
                     android:background="@drawable/avatar_circle_bg_white"/>
             </FrameLayout>
+
             <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
                 android:layout_weight="1" android:orientation="vertical">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="Parent Portal" android:textSize="12sp" android:textColor="@color/white_alpha_80"/>
-                <TextView android:id="@+id/tvWelcomeName" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:text="Parent"
-                    android:textSize="20sp" android:textStyle="bold" android:textColor="@color/white"/>
+                    android:text="Parent Portal" android:textSize="12sp"
+                    android:textColor="@color/white_alpha_80"/>
+                <TextView android:id="@+id/tvWelcomeName"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Parent" android:textSize="20sp" android:textStyle="bold"
+                    android:textColor="@color/white"/>
             </LinearLayout>
-            <ImageView android:id="@+id/ivSettings" android:layout_width="40dp" android:layout_height="40dp"
-                android:src="@drawable/ic_settings" android:padding="8dp" app:tint="@color/white"
+
+            <!-- Profile icon -->
+            <ImageView android:id="@+id/ivProfile"
+                android:layout_width="40dp" android:layout_height="40dp"
+                android:src="@drawable/ic_person" android:padding="8dp"
+                app:tint="@color/white"
                 android:background="@drawable/circle_background_white_alpha"
-                android:contentDescription="Settings" android:clickable="true" android:focusable="true"/>
+                android:layout_marginEnd="8dp"
+                android:contentDescription="Profile"
+                android:clickable="true" android:focusable="true"/>
+
+            <!-- Logout icon -->
+            <ImageView android:id="@+id/ivLogout"
+                android:layout_width="40dp" android:layout_height="40dp"
+                android:src="@drawable/ic_arrow_back" android:padding="8dp"
+                android:rotation="180"
+                app:tint="@color/white"
+                android:background="@drawable/circle_background_white_alpha"
+                android:contentDescription="Logout"
+                android:clickable="true" android:focusable="true"/>
         </LinearLayout>
     </LinearLayout>
 
@@ -38,36 +61,23 @@
             android:orientation="vertical" android:paddingHorizontal="@dimen/screen_padding"
             android:paddingTop="@dimen/space_xl" android:paddingBottom="@dimen/space_xxl">
 
-            <!-- Child Attendance (hero) -->
-            <com.google.android.material.card.MaterialCardView android:id="@+id/cardAttendance"
-                android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:clickable="true" android:focusable="true"
-                android:layout_marginBottom="@dimen/space_md" style="@style/Widget.Aurora.Card.Hero">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:orientation="horizontal" android:gravity="center_vertical"
-                    android:padding="@dimen/card_padding">
-                    <FrameLayout android:layout_width="56dp" android:layout_height="56dp"
-                        android:background="@drawable/icon_bg_primary" android:layout_marginEnd="16dp">
-                        <ImageView android:layout_width="28dp" android:layout_height="28dp"
-                            android:src="@drawable/ic_calendar" app:tint="@color/colorPrimary"
-                            android:layout_gravity="center" android:contentDescription="Attendance"/>
-                    </FrameLayout>
-                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
-                        android:layout_weight="1" android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Child's Attendance" android:textSize="17sp" android:textStyle="bold"
-                            android:textColor="@color/colorTextPrimary"/>
-                        <TextView android:id="@+id/tvChildName"
-                            android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Loading..." android:textSize="13sp"
-                            android:textColor="@color/colorTextSecondary" android:layout_marginTop="3dp"/>
-                    </LinearLayout>
-                    <ImageView android:layout_width="16dp" android:layout_height="16dp"
-                        android:src="@drawable/ic_chevron_right" app:tint="@color/colorTextHint" android:contentDescription=""/>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+            <!-- Primary: View Attendance button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnViewAttendance"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/btn_height"
+                android:text="📊 View Child's Attendance"
+                android:textSize="15sp" android:textStyle="bold"
+                android:layout_marginBottom="@dimen/space_lg"
+                style="@style/Widget.Aurora.Button"/>
 
-            <!-- Fee Invoices -->
+            <!-- Quick Actions label -->
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Quick Actions" android:textSize="16sp" android:textStyle="bold"
+                android:textColor="@color/colorTextPrimary"
+                android:layout_marginBottom="@dimen/space_md"/>
+
+            <!-- Fee Invoices card -->
             <com.google.android.material.card.MaterialCardView android:id="@+id/cardFeeInvoices"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:clickable="true" android:focusable="true"
@@ -79,7 +89,7 @@
                         android:background="@drawable/icon_bg_error" android:layout_marginEnd="14dp">
                         <ImageView android:layout_width="22dp" android:layout_height="22dp"
                             android:src="@drawable/ic_chart" app:tint="@color/colorError"
-                            android:layout_gravity="center" android:contentDescription="Fee Invoices"/>
+                            android:layout_gravity="center" android:contentDescription="Fee"/>
                     </FrameLayout>
                     <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
                         android:layout_weight="1" android:orientation="vertical">
@@ -88,17 +98,20 @@
                             android:textColor="@color/colorTextPrimary"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="View dues &amp; payment history"
-                            android:textSize="12sp" android:textColor="@color/colorTextSecondary" android:layout_marginTop="2dp"/>
+                            android:textSize="12sp" android:textColor="@color/colorTextSecondary"
+                            android:layout_marginTop="2dp"/>
                     </LinearLayout>
                     <ImageView android:layout_width="16dp" android:layout_height="16dp"
-                        android:src="@drawable/ic_chevron_right" app:tint="@color/colorTextHint" android:contentDescription=""/>
+                        android:src="@drawable/ic_chevron_right" app:tint="@color/colorTextHint"
+                        android:contentDescription=""/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Leave Status -->
+            <!-- Leave Status card -->
             <com.google.android.material.card.MaterialCardView android:id="@+id/cardLeaves"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:clickable="true" android:focusable="true" style="@style/Widget.Aurora.Card">
+                android:clickable="true" android:focusable="true"
+                android:layout_marginBottom="@dimen/space_md" style="@style/Widget.Aurora.Card">
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:orientation="horizontal" android:gravity="center_vertical"
                     android:padding="@dimen/card_padding">
@@ -106,7 +119,7 @@
                         android:background="@drawable/icon_bg_warning" android:layout_marginEnd="14dp">
                         <ImageView android:layout_width="22dp" android:layout_height="22dp"
                             android:src="@drawable/ic_filter" app:tint="@color/colorWarning"
-                            android:layout_gravity="center" android:contentDescription="Leave Status"/>
+                            android:layout_gravity="center" android:contentDescription="Leaves"/>
                     </FrameLayout>
                     <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
                         android:layout_weight="1" android:orientation="vertical">
@@ -115,10 +128,41 @@
                             android:textColor="@color/colorTextPrimary"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="View &amp; track child's leave history"
-                            android:textSize="12sp" android:textColor="@color/colorTextSecondary" android:layout_marginTop="2dp"/>
+                            android:textSize="12sp" android:textColor="@color/colorTextSecondary"
+                            android:layout_marginTop="2dp"/>
                     </LinearLayout>
                     <ImageView android:layout_width="16dp" android:layout_height="16dp"
-                        android:src="@drawable/ic_chevron_right" app:tint="@color/colorTextHint" android:contentDescription=""/>
+                        android:src="@drawable/ic_chevron_right" app:tint="@color/colorTextHint"
+                        android:contentDescription=""/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Profile card -->
+            <com.google.android.material.card.MaterialCardView android:id="@+id/cardProfile"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:clickable="true" android:focusable="true" style="@style/Widget.Aurora.Card">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:gravity="center_vertical"
+                    android:padding="@dimen/card_padding">
+                    <FrameLayout android:layout_width="48dp" android:layout_height="48dp"
+                        android:background="@drawable/icon_bg_primary" android:layout_marginEnd="14dp">
+                        <ImageView android:layout_width="22dp" android:layout_height="22dp"
+                            android:src="@drawable/ic_person" app:tint="@color/colorPrimary"
+                            android:layout_gravity="center" android:contentDescription="Profile"/>
+                    </FrameLayout>
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="My Profile" android:textSize="15sp" android:textStyle="bold"
+                            android:textColor="@color/colorTextPrimary"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="View &amp; update account details"
+                            android:textSize="12sp" android:textColor="@color/colorTextSecondary"
+                            android:layout_marginTop="2dp"/>
+                    </LinearLayout>
+                    <ImageView android:layout_width="16dp" android:layout_height="16dp"
+                        android:src="@drawable/ic_chevron_right" app:tint="@color/colorTextHint"
+                        android:contentDescription=""/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

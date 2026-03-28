@@ -7,28 +7,51 @@
     android:background="@color/colorBackground"
     android:fitsSystemWindows="true">
 
+    <!-- Gradient Header -->
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="vertical" android:background="@drawable/gradient_background"
-        android:paddingHorizontal="@dimen/screen_padding" android:paddingTop="28dp" android:paddingBottom="24dp">
+        android:paddingHorizontal="@dimen/screen_padding"
+        android:paddingTop="28dp" android:paddingBottom="24dp">
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="horizontal" android:gravity="center_vertical">
-            <FrameLayout android:layout_width="52dp" android:layout_height="52dp" android:layout_marginEnd="14dp">
+
+            <FrameLayout android:layout_width="52dp" android:layout_height="52dp"
+                android:layout_marginEnd="14dp">
                 <TextView android:layout_width="match_parent" android:layout_height="match_parent"
                     android:gravity="center" android:text="🎓" android:textSize="24sp"
                     android:background="@drawable/avatar_circle_bg_white"/>
             </FrameLayout>
+
             <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
                 android:layout_weight="1" android:orientation="vertical">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="Head of Department" android:textSize="12sp" android:textColor="@color/white_alpha_80"/>
-                <TextView android:id="@+id/tvWelcomeName" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:text="HOD"
-                    android:textSize="20sp" android:textStyle="bold" android:textColor="@color/white"/>
+                    android:text="Head of Department" android:textSize="12sp"
+                    android:textColor="@color/white_alpha_80"/>
+                <TextView android:id="@+id/tvWelcomeName"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="HOD" android:textSize="20sp" android:textStyle="bold"
+                    android:textColor="@color/white"/>
             </LinearLayout>
-            <ImageView android:id="@+id/ivSettings" android:layout_width="40dp" android:layout_height="40dp"
-                android:src="@drawable/ic_settings" android:padding="8dp" app:tint="@color/white"
+
+            <!-- Profile icon -->
+            <ImageView android:id="@+id/ivProfile"
+                android:layout_width="40dp" android:layout_height="40dp"
+                android:src="@drawable/ic_person" android:padding="8dp"
+                app:tint="@color/white"
                 android:background="@drawable/circle_background_white_alpha"
-                android:contentDescription="Settings" android:clickable="true" android:focusable="true"/>
+                android:layout_marginEnd="8dp"
+                android:contentDescription="Profile"
+                android:clickable="true" android:focusable="true"/>
+
+            <!-- Logout icon -->
+            <ImageView android:id="@+id/ivLogout"
+                android:layout_width="40dp" android:layout_height="40dp"
+                android:src="@drawable/ic_arrow_back" android:padding="8dp"
+                android:rotation="180"
+                app:tint="@color/white"
+                android:background="@drawable/circle_background_white_alpha"
+                android:contentDescription="Logout"
+                android:clickable="true" android:focusable="true"/>
         </LinearLayout>
     </LinearLayout>
 
@@ -41,11 +64,13 @@
             <!-- Dept Stats row -->
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:orientation="horizontal" android:layout_marginBottom="@dimen/space_lg">
+
                 <com.google.android.material.card.MaterialCardView android:layout_width="0dp"
                     android:layout_height="wrap_content" android:layout_weight="1"
                     android:layout_marginEnd="@dimen/space_sm" style="@style/Widget.Aurora.Card">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:orientation="vertical" android:padding="@dimen/card_padding" android:gravity="center">
+                        android:orientation="vertical" android:padding="@dimen/card_padding"
+                        android:gravity="center">
                         <TextView android:id="@+id/tvTotalStudents"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="—" android:textSize="28sp" android:textStyle="bold"
@@ -55,11 +80,13 @@
                             android:textColor="@color/colorTextSecondary" android:layout_marginTop="4dp"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
+
                 <com.google.android.material.card.MaterialCardView android:layout_width="0dp"
                     android:layout_height="wrap_content" android:layout_weight="1"
                     android:layout_marginStart="@dimen/space_sm" style="@style/Widget.Aurora.Card">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:orientation="vertical" android:padding="@dimen/card_padding" android:gravity="center">
+                        android:orientation="vertical" android:padding="@dimen/card_padding"
+                        android:gravity="center">
                         <TextView android:id="@+id/tvAvgAttendance"
                             android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="—%" android:textSize="28sp" android:textStyle="bold"
@@ -70,6 +97,42 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
+
+            <!-- Quick Actions label -->
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Quick Actions" android:textSize="16sp" android:textStyle="bold"
+                android:textColor="@color/colorTextPrimary"
+                android:layout_marginBottom="@dimen/space_md"/>
+
+            <!-- Manage Students -->
+            <com.google.android.material.card.MaterialCardView android:id="@+id/cardManageStudents"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:clickable="true" android:focusable="true"
+                android:layout_marginBottom="@dimen/space_md" style="@style/Widget.Aurora.Card">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:gravity="center_vertical"
+                    android:padding="@dimen/card_padding">
+                    <FrameLayout android:layout_width="48dp" android:layout_height="48dp"
+                        android:background="@drawable/icon_bg_primary" android:layout_marginEnd="14dp">
+                        <ImageView android:layout_width="22dp" android:layout_height="22dp"
+                            android:src="@drawable/ic_person" app:tint="@color/colorPrimary"
+                            android:layout_gravity="center" android:contentDescription="Students"/>
+                    </FrameLayout>
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="Manage Students" android:textSize="15sp" android:textStyle="bold"
+                            android:textColor="@color/colorTextPrimary"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="View department student records"
+                            android:textSize="12sp" android:textColor="@color/colorTextSecondary"
+                            android:layout_marginTop="2dp"/>
+                    </LinearLayout>
+                    <ImageView android:layout_width="16dp" android:layout_height="16dp"
+                        android:src="@drawable/ic_chevron_right" app:tint="@color/colorTextHint"
+                        android:contentDescription=""/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- Leave Approvals -->
             <com.google.android.material.card.MaterialCardView android:id="@+id/cardLeaveApprovals"
@@ -92,24 +155,27 @@
                             android:textColor="@color/colorTextPrimary"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="Pending department leave requests"
-                            android:textSize="12sp" android:textColor="@color/colorTextSecondary" android:layout_marginTop="2dp"/>
+                            android:textSize="12sp" android:textColor="@color/colorTextSecondary"
+                            android:layout_marginTop="2dp"/>
                     </LinearLayout>
                     <ImageView android:layout_width="16dp" android:layout_height="16dp"
-                        android:src="@drawable/ic_chevron_right" app:tint="@color/colorTextHint" android:contentDescription=""/>
+                        android:src="@drawable/ic_chevron_right" app:tint="@color/colorTextHint"
+                        android:contentDescription=""/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Timetable -->
-            <com.google.android.material.card.MaterialCardView android:id="@+id/cardDeptTimetable"
+            <!-- Department Timetable -->
+            <com.google.android.material.card.MaterialCardView android:id="@+id/cardTimetable"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:clickable="true" android:focusable="true" style="@style/Widget.Aurora.Card">
+                android:clickable="true" android:focusable="true"
+                android:layout_marginBottom="@dimen/space_md" style="@style/Widget.Aurora.Card">
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:orientation="horizontal" android:gravity="center_vertical"
                     android:padding="@dimen/card_padding">
                     <FrameLayout android:layout_width="48dp" android:layout_height="48dp"
-                        android:background="@drawable/icon_bg_primary" android:layout_marginEnd="14dp">
+                        android:background="@drawable/icon_bg_secondary" android:layout_marginEnd="14dp">
                         <ImageView android:layout_width="22dp" android:layout_height="22dp"
-                            android:src="@drawable/ic_timetable" app:tint="@color/colorPrimary"
+                            android:src="@drawable/ic_timetable" app:tint="@color/colorSecondary"
                             android:layout_gravity="center" android:contentDescription="Timetable"/>
                     </FrameLayout>
                     <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
@@ -119,12 +185,44 @@
                             android:textColor="@color/colorTextPrimary"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                             android:text="View full department schedule"
-                            android:textSize="12sp" android:textColor="@color/colorTextSecondary" android:layout_marginTop="2dp"/>
+                            android:textSize="12sp" android:textColor="@color/colorTextSecondary"
+                            android:layout_marginTop="2dp"/>
                     </LinearLayout>
                     <ImageView android:layout_width="16dp" android:layout_height="16dp"
-                        android:src="@drawable/ic_chevron_right" app:tint="@color/colorTextHint" android:contentDescription=""/>
+                        android:src="@drawable/ic_chevron_right" app:tint="@color/colorTextHint"
+                        android:contentDescription=""/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
+            <!-- Profile -->
+            <com.google.android.material.card.MaterialCardView android:id="@+id/cardProfile"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:clickable="true" android:focusable="true" style="@style/Widget.Aurora.Card">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:gravity="center_vertical"
+                    android:padding="@dimen/card_padding">
+                    <FrameLayout android:layout_width="48dp" android:layout_height="48dp"
+                        android:background="@drawable/icon_bg_info" android:layout_marginEnd="14dp">
+                        <ImageView android:layout_width="22dp" android:layout_height="22dp"
+                            android:src="@drawable/ic_person" app:tint="@color/colorInfo"
+                            android:layout_gravity="center" android:contentDescription="Profile"/>
+                    </FrameLayout>
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="My Profile" android:textSize="15sp" android:textStyle="bold"
+                            android:textColor="@color/colorTextPrimary"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                            android:text="View &amp; update account details"
+                            android:textSize="12sp" android:textColor="@color/colorTextSecondary"
+                            android:layout_marginTop="2dp"/>
+                    </LinearLayout>
+                    <ImageView android:layout_width="16dp" android:layout_height="16dp"
+                        android:src="@drawable/ic_chevron_right" app:tint="@color/colorTextHint"
+                        android:contentDescription=""/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

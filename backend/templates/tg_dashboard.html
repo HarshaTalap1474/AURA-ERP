@@ -7,8 +7,10 @@
         <div>
             <h2 class="fw-bold mb-0">Pastoral Care Cohort</h2>
             <p class="text-muted"><i class="fas fa-users me-2 text-primary"></i>Teacher Guardian Overview</p>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'leave_approvals' %}" class="btn btn-warning rounded-pill shadow-sm"><i class="fas fa-check-double me-2"></i>Leave Approvals</a>
+            <a href="{% url 'teacher_dashboard' %}" class="btn btn-outline-primary rounded-pill shadow-sm"><i class="fas fa-chalkboard-teacher me-2"></i>Teaching Operations</a>
         </div>
-        <a href="{% url 'teacher_dashboard' %}" class="btn btn-outline-primary rounded-pill shadow-sm"><i class="fas fa-chalkboard-teacher me-2"></i>Switch to Teaching Operations</a>
     </div>
 </div>
 
@@ -74,7 +76,18 @@
                     <td class="text-start">{{ student.user.get_full_name|default:student.user.username }}</td>
                     <td><span class="badge bg-primary rounded-pill px-3">Syncing...</span></td>
                     <td><span class="text-success"><i class="fas fa-check-circle"></i> Clear</span></td>
-                    <td><button class="btn btn-sm btn-outline-primary rounded-pill">View 360° Profile</button></td>
+                    <td>
+                        <div class="d-flex align-items-center justify-content-center">
+                            {% if student.user.device_fingerprint %}
+                                <form method="post" action="{% url 'reset_student_device' student.user.id %}" class="m-0" onsubmit="return confirm('Are you sure you want to forget the device hardware lock for {{ student.user.get_full_name|default:student.user.username }}?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger shadow-sm rounded-pill"><i class="fas fa-mobile-alt me-1"></i>Reset Device</button>
+                                </form>
+                            {% else %}
+                                <span class="badge bg-secondary bg-opacity-25 text-white shadow-sm rounded-pill px-3"><i class="fas fa-unlock me-1"></i>Unbound</span>
+                            {% endif %}
+                        </div>
+                    </td>
                 </tr>
                 {% empty %}
                 <tr><td colspan="5" class="text-muted">No students assigned to your pastoral cohort.</td></tr>

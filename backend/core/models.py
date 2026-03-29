@@ -355,3 +355,22 @@ class NotificationInbox(models.Model):
     
     def __str__(self):
         return f"{self.user.username} - {self.title[:30]}"
+
+# ==========================================
+# 11. OTA APP DISTRIBUTION
+# ==========================================
+class AppRelease(models.Model):
+    version_name = models.CharField(max_length=50)
+    version_code = models.IntegerField()
+    release_notes = models.TextField()
+    apk_file = models.FileField(upload_to='releases/')
+    is_active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if self.is_active:
+            AppRelease.objects.filter(is_active=True).update(is_active=False)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"v{self.version_name} ({self.version_code}) - {'ACTIVE' if self.is_active else 'Archived'}"

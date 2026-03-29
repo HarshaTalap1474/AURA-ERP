@@ -9,7 +9,7 @@
 <div class="row justify-content-center mb-4">
     <div class="col-lg-6">
         <h3 class="fw-bold text-dark mb-1">Device Integrity</h3>
-        <p class="text-muted mb-4">Manage your BLE attendance beacon and security status.</p>
+        <p class="text-muted mb-4">Manage your mobile hardware lock and security status.</p>
 
         <div class="glass-card mb-4 overflow-hidden">
             <div class="p-4 text-center">
@@ -18,24 +18,24 @@
                         <i class="fas fa-shield-check fa-3x"></i>
                     </div>
                     <h4 class="fw-bold text-dark">Secure & Bound</h4>
-                    <p class="text-muted small">Your attendance device is active and communicating with campus IoT nodes.</p>
+                    <p class="text-muted small">Your attendance app is cryptographically bound to this Android device.</p>
                 {% else %}
                     <div class="bg-danger bg-opacity-10 text-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
                         <i class="fas fa-exclamation-triangle fa-3x"></i>
                     </div>
                     <h4 class="fw-bold text-dark">Device Unbound</h4>
-                    <p class="text-muted small">Your attendance cannot be marked. Please visit the IT desk to register your BLE tag.</p>
+                    <p class="text-muted small">Your attendance cannot be marked. Please log into the Android app to register your hardware ID.</p>
                 {% endif %}
             </div>
             
             <ul class="list-group list-group-flush border-top" style="background: transparent;">
                 <li class="list-group-item p-3 d-flex justify-content-between align-items-center bg-transparent">
-                    <span class="text-muted small fw-bold">BLE MAC ADDRESS</span>
-                    <span class="fw-bold font-monospace" style="color: var(--text-main);">{{ ble_mac_address|default:"XX:XX:XX:XX:XX:XX" }}</span>
+                    <span class="text-muted small fw-bold">HARDWARE ID FINGERPRINT</span>
+                    <span class="fw-bold font-monospace" style="color: var(--text-main);">{{ device_fingerprint|default:"Not Registered" }}</span>
                 </li>
                 <li class="list-group-item p-3 d-flex justify-content-between align-items-center bg-transparent">
                     <span class="text-muted small fw-bold">LAST SYNCED</span>
-                    <span class="fw-bold" style="color: var(--text-main);">{{ last_sync_time|default:"Today, 10:45 AM" }}</span>
+                    <span class="fw-bold" style="color: var(--text-main);">{{ last_sync_time|default:"Never Synced" }}</span>
                 </li>
             </ul>
         </div>
@@ -43,10 +43,10 @@
         <div class="glass-card border-start border-4 border-warning">
             <div class="p-4">
                 <h6 class="fw-bold text-dark"><i class="fas fa-question-circle text-warning me-2"></i> Lost your device?</h6>
-                <p class="small text-muted mb-3">If you lost your smartphone or BLE tag, report it immediately to freeze your attendance proxy security.</p>
+                <p class="small text-muted mb-3">If you lost your smartphone or BLE tag, report it immediately to securely freeze your attendance proxy and notify your Teacher Guardian.</p>
                 <form method="post" action="{% url 'report_lost_device' %}">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-4 fw-bold">Report Lost Device</button>
+                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-4 fw-bold">Contact TG to Reset Device</button>
                 </form>
             </div>
         </div>

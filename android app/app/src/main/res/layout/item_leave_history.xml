@@ -22,5 +22,17 @@
             android:maxLines="2" android:ellipsize="end"/>
         <TextView android:id="@+id/tvAppliedOn" android:layout_width="wrap_content" android:layout_height="wrap_content"
             android:text="Applied: 28 Mar" android:textSize="11sp" android:textColor="#9CA3AF" android:layout_marginTop="4dp"/>
+            
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGatePass"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:text="Show Gate Pass"
+            android:textSize="12sp"
+            android:layout_marginTop="8dp"
+            android:visibility="gone"
+            app:icon="@drawable/ic_check_circle"
+            app:iconSize="16dp"
+            app:cornerRadius="6dp"/>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

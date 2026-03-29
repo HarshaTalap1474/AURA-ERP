@@ -48,7 +48,7 @@ from .views import (
     # New RBAC Views
     super_admin_dashboard, academic_coordinator_dashboard, hod_dashboard,
     tg_dashboard, security_dashboard, librarian_dashboard, finance_dashboard,
-    parent_dashboard,
+    parent_dashboard, reset_student_device,
 
     # Core Engine Expansions
     generate_transcript,
@@ -64,6 +64,8 @@ from .views import (
     api_process_leave,
     api_student_apply_leave,
     api_student_leave_history,
+    api_app_latest,
+    download_latest_app,
     api_qr_token,
     api_hod_stats,
     api_parent_children,
@@ -162,6 +164,7 @@ urlpatterns = [
     path('dashboard/student/device/report-lost/', report_lost_device, name='report_lost_device'),
     path('dashboard/student/contact-mentor/', contact_mentor_view, name='contact_mentor'),
     path('dashboard/student/contact-mentor/send/', send_mentor_message, name='send_mentor_message'),
+    path('download-app/', download_latest_app, name='download_latest_app'),
     
     # Generates the cryptographically signed token for the Virtual ID
     path('dashboard/student/api/qr-token/', get_dynamic_qr_token, name='get_qr_token'),
@@ -178,6 +181,7 @@ urlpatterns = [
     path('dashboard/academic-coordinator/', academic_coordinator_dashboard, name='academic_coordinator_dashboard'),
     path('dashboard/hod/', hod_dashboard, name='hod_dashboard'),
     path('dashboard/tg/', tg_dashboard, name='tg_dashboard'),
+    path('dashboard/tg/reset-device/<int:student_id>/', reset_student_device, name='reset_student_device'),
     path('dashboard/security/', security_dashboard, name='security_dashboard'),
     path('dashboard/librarian/', librarian_dashboard, name='librarian_dashboard'),
     path('dashboard/parent/', parent_dashboard, name='parent_dashboard'),
@@ -211,6 +215,11 @@ urlpatterns = [
     # ── Student: Leave & QR ────────────────────
     path('student/leave/apply/', api_student_apply_leave, name='api_student_apply_leave'),
     path('student/leave/history/', api_student_leave_history, name='api_student_leave_history'),
+
+    # ============================================
+    # 📱 14. OTA DISTRIBUTION API
+    # ============================================
+    path('app/latest/', api_app_latest, name='api_app_latest'),
     path('student/qr-token/', api_qr_token, name='api_qr_token'),
 
     # ── HOD ────────────────────────────────────

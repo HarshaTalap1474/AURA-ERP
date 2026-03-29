@@ -755,11 +755,19 @@ def student_leave_view(request):
 
 @login_required
 def teacher_leave_view(request):
-    if request.user.role != User.Role.TEACHER: return redirect('dashboard')
-    pending_requests = LeaveRequest.objects.filter(status='PENDING').order_by('-applied_on')
+    if request.user.role not in [User.Role.TEACHER, User.Role.TEACHER_GUARDIAN]: return redirect('dashboard')
+    
+    if request.user.role == User.Role.TEACHER_GUARDIAN and hasattr(request.user, 'tg_cohort'):
+        # TG sees only their cohort
+        pending_requests = LeaveRequest.objects.filter(status='PENDING', student__student_profile__in=request.user.tg_cohort.all()).order_by('-applied_on')
+        processed_requests = LeaveRequest.objects.filter(Q(status='APPROVED') | Q(status='REJECTED'), student__student_profile__in=request.user.tg_cohort.all()).order_by('-applied_on')[:50]
+    else:
+        pending_requests = LeaveRequest.objects.filter(status='PENDING').order_by('-applied_on')
+        processed_requests = LeaveRequest.objects.filter(Q(status='APPROVED') | Q(status='REJECTED')).order_by('-applied_on')[:50]
+
     return render(request, 'teacher_leave_approval.html', {
         'pending_requests': pending_requests, 'pending_count': pending_requests.count(),
-        'processed_requests': LeaveRequest.objects.filter(Q(status='APPROVED') | Q(status='REJECTED')).order_by('-applied_on')[:50]
+        'processed_requests': processed_requests
     })
 
 @login_required
@@ -811,7 +819,21 @@ def virtual_id_view(request):
 
 @login_required
 def device_integrity_view(request):
-    return render(request, 'device_integrity.html') if request.user.role == User.Role.STUDENT else redirect('dashboard')
+    if request.user.role != User.Role.STUDENT:
+        return redirect('dashboard')
+    
+    device_status = 'BOUND' if request.user.device_fingerprint else 'UNBOUND'
+    
+    from .models import Attendance
+    last_att = Attendance.objects.filter(student=request.user).order_by('-timestamp').first()
+    last_sync_time = last_att.timestamp.strftime('%d %b %Y, %I:%M %p') if last_att else "Never Synced"
+    
+    context = {
+        'device_status': device_status,
+        'device_fingerprint': request.user.device_fingerprint,
+        'last_sync_time': last_sync_time,
+    }
+    return render(request, 'device_integrity.html', context)
 
 @login_required
 def contact_mentor_view(request):
@@ -820,9 +842,16 @@ def contact_mentor_view(request):
 @login_required
 def report_lost_device(request):
     if request.user.role == User.Role.STUDENT and request.method == 'POST':
-        request.user.device_fingerprint = None
-        request.user.save()
-        messages.success(request, "Device reported lost. Your hardware lock has been reset. Please log in from your new device to secure it.")
+        messages.warning(request, "Device reported lost. For security reasons, resetting the hardware lock requires your Teacher Guardian's approval.")
+        
+        # Proactively send an inbox notification to their TG!
+        if hasattr(request.user, 'student_profile') and request.user.student_profile.teacher_guardian:
+            from .models import NotificationInbox
+            NotificationInbox.objects.create(
+                user=request.user.student_profile.teacher_guardian,
+                title="Hardware Reset Request",
+                message=f"{request.user.get_full_name()} ({request.user.username}) has reported their device lost and requested a Hardware ID lock reset.",
+            )
     return redirect('device_integrity')
 
 # =========================================
@@ -900,6 +929,23 @@ def tg_dashboard(request):
         'at_risk_count': at_risk,
     }
     return render(request, 'tg_dashboard.html', context)
+
+@login_required
+def reset_student_device(request, student_id):
+    if request.user.role != User.Role.TEACHER_GUARDIAN:
+        return redirect('dashboard')
+        
+    student = get_object_or_404(User, id=student_id, role=User.Role.STUDENT)
+    
+    # Verify student is in TG's cohort
+    if hasattr(request.user, 'tg_cohort') and student.student_profile in request.user.tg_cohort.all():
+        student.device_fingerprint = None
+        student.save()
+        messages.success(request, f"Hardware lock reset successfully for {student.get_full_name() or student.username}. They can now login from a new device.")
+    else:
+        messages.error(request, "Unauthorized. This student is not in your pastoral cohort.")
+        
+    return redirect('tg_dashboard')
 
 @login_required
 def security_dashboard(request):
@@ -1454,15 +1500,20 @@ def api_student_leave_history(request):
         return Response({'status': 'error', 'message': 'Students only'}, status=403)
 
     leaves = LeaveRequest.objects.filter(student=request.user).order_by('-applied_on')
-    data = [{
-        'id': lr.id,
-        'leave_type': lr.get_leave_type_display(),
-        'start_date': str(lr.start_date),
-        'end_date': str(lr.end_date),
-        'reason': lr.reason,
-        'status': lr.status,
-        'applied_on': lr.applied_on.strftime('%d %b %Y'),
-    } for lr in leaves]
+    data = []
+    for lr in leaves:
+        item = {
+            'id': lr.id,
+            'leave_type': lr.get_leave_type_display(),
+            'start_date': str(lr.start_date),
+            'end_date': str(lr.end_date),
+            'reason': lr.reason,
+            'status': lr.status,
+            'applied_on': lr.applied_on.strftime('%d %b %Y'),
+        }
+        if lr.status == 'APPROVED' and hasattr(lr, 'gate_pass') and lr.gate_pass.is_active:
+            item['gate_pass_token'] = str(lr.gate_pass.qr_token)
+        data.append(item)
 
     return Response({'status': 'success', 'leaves': data})
 
@@ -1613,4 +1664,30 @@ def api_fee_invoices(request):
         'student_name': inv.student.user.get_full_name() if request.user.role != User.Role.STUDENT else None,
     } for inv in invoices]
 
-    return Response({'status': 'success', 'invoices': data})
+    return Response({'status': 'success', 'invoices': data})
+
+# =========================================
+# 20. OTA DISTRIBUTION
+# =========================================
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def api_app_latest(request):
+    from .models import AppRelease
+    release = AppRelease.objects.filter(is_active=True).first()
+    if not release:
+        return Response({'success': False, 'message': 'No updates available'}, status=404)
+        
+    return Response({
+        'success': True,
+        'version_name': release.version_name,
+        'version_code': release.version_code,
+        'release_notes': release.release_notes,
+        'apk_url': request.build_absolute_uri(release.apk_file.url)
+    })
+
+def download_latest_app(request):
+    from .models import AppRelease
+    release = AppRelease.objects.filter(is_active=True).first()
+    if release and release.apk_file:
+        return redirect(release.apk_file.url)
+    return render(request, 'coming_soon.html', {'feature_name': 'Mobile App Unavailable'})

@@ -153,7 +153,7 @@
                     <!-- Blood Group -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:hint="Blood Group" style="@style/Widget.Aurora.TextInput"
+                        android:hint="Blood Group" style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                         android:layout_marginBottom="@dimen/space_lg">
                         <AutoCompleteTextView
                             android:id="@+id/etBloodGroup" android:layout_width="match_parent"

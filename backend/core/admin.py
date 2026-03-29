@@ -4,7 +4,7 @@ from django.utils.html import format_html
 from .models import (
     User, Department, Batch, Semester, Classroom, Course,
     StudentProfile, StaffProfile, ParentProfile, TimeTable, Lecture, Attendance,
-    LeaveRequest
+    LeaveRequest, AppRelease
 )
 
 @admin.action(description='🔓 RESET DEVICE LOCK')
@@ -43,3 +43,10 @@ admin.site.register(ParentProfile)
 admin.site.register(TimeTable)
 admin.site.register(Lecture)
 admin.site.register(Attendance)
+admin.site.register(LeaveRequest)
+
+@admin.register(AppRelease)
+class AppReleaseAdmin(admin.ModelAdmin):
+    list_display = ('version_name', 'version_code', 'is_active', 'created_at')
+    list_filter = ('is_active',)
+    search_fields = ('version_name', 'release_notes')

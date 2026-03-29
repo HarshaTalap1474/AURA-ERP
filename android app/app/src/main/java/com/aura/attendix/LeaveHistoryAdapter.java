@@ -42,6 +42,19 @@ public class LeaveHistoryAdapter extends RecyclerView.Adapter<LeaveHistoryAdapte
             case "REJECTED": holder.tvStatus.setBackgroundColor(0xFFEF4444); break;
             default:         holder.tvStatus.setBackgroundColor(0xFFF59E0B); break;
         }
+
+        String token = item.optString("gate_pass_token", null);
+        if ("APPROVED".equals(status) && token != null && !token.isEmpty()) {
+            holder.btnGatePass.setVisibility(View.VISIBLE);
+            holder.btnGatePass.setOnClickListener(v -> {
+                android.content.Intent intent = new android.content.Intent(v.getContext(), GatePassActivity.class);
+                intent.putExtra("GATE_PASS_TOKEN", token);
+                intent.putExtra("LEAVE_REASON", item.optString("reason", ""));
+                v.getContext().startActivity(intent);
+            });
+        } else {
+            holder.btnGatePass.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -49,6 +62,7 @@ public class LeaveHistoryAdapter extends RecyclerView.Adapter<LeaveHistoryAdapte
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvType, tvDates, tvReason, tvApplied, tvStatus;
+        com.google.android.material.button.MaterialButton btnGatePass;
         ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvType    = itemView.findViewById(R.id.tvLeaveType);
@@ -56,6 +70,7 @@ public class LeaveHistoryAdapter extends RecyclerView.Adapter<LeaveHistoryAdapte
             tvReason  = itemView.findViewById(R.id.tvReason);
             tvApplied = itemView.findViewById(R.id.tvAppliedOn);
             tvStatus  = itemView.findViewById(R.id.tvStatus);
+            btnGatePass = itemView.findViewById(R.id.btnGatePass);
         }
     }
 }

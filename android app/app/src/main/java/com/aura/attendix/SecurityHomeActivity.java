@@ -31,10 +31,13 @@ public class SecurityHomeActivity extends AppCompatActivity {
                 startActivity(new Intent(this, ProfileActivity.class)));
         ivLogout.setOnClickListener(v -> logout());
 
-        // Primary action: QR scanner for gate pass verification
-        // Stage 1: QR scan; Stage 2: BLE fallback when QR fails
+        // Primary action: QR scanner for Virtual ID verification
         findViewById(R.id.btnScanQr).setOnClickListener(v ->
                 startActivity(new Intent(this, SecurityScanActivity.class)));
+
+        // Secondary action: QR scanner for Gate Pass verification
+        findViewById(R.id.btnScanGatePass).setOnClickListener(v ->
+                startActivity(new Intent(this, GatePassScannerActivity.class)));
 
         findViewById(R.id.cardProfile).setOnClickListener(v ->
                 startActivity(new Intent(this, ProfileActivity.class)));

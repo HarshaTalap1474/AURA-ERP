@@ -90,17 +90,44 @@
                         android:textStyle="bold" android:textColor="@color/colorTextPrimary"
                         android:gravity="center" android:layout_marginBottom="8dp"/>
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Scan student Virtual ID QR codes at gate entry. If QR fails, the app detects nearby BLE-enabled student devices."
-                        android:textSize="13sp" android:textColor="@color/colorTextSecondary"
-                        android:gravity="center" android:lineSpacingMultiplier="1.4"
-                        android:layout_marginBottom="24dp"/>
-
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnScanQr"
                         android:layout_width="match_parent"
                         android:layout_height="@dimen/btn_height"
-                        android:text="📷 Open Scanner"
+                        android:text="📷 Scan Virtual ID"
+                        android:textSize="15sp" android:textStyle="bold"
+                        style="@style/Widget.Aurora.Button"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ── Hero: Gate Pass Scanner ── -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_lg"
+                style="@style/Widget.Aurora.Card">
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:padding="28dp" android:gravity="center">
+
+                    <FrameLayout android:layout_width="80dp" android:layout_height="80dp"
+                        android:background="@drawable/icon_bg_secondary"
+                        android:layout_marginBottom="16dp">
+                        <ImageView android:layout_width="40dp" android:layout_height="40dp"
+                            android:src="@drawable/ic_check_circle" app:tint="@color/colorSecondary"
+                            android:layout_gravity="center" android:contentDescription="Gate Pass"/>
+                    </FrameLayout>
+
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Leave Gate Pass Verification" android:textSize="18sp"
+                        android:textStyle="bold" android:textColor="@color/colorTextPrimary"
+                        android:gravity="center" android:layout_marginBottom="8dp"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnScanGatePass"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/btn_height"
+                        android:text="🔒 Verify Gate Pass"
                         android:textSize="15sp" android:textStyle="bold"
                         style="@style/Widget.Aurora.Button"/>
                 </LinearLayout>

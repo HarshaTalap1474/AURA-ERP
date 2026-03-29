@@ -153,6 +153,14 @@
         <activity android:name=".SettingsActivity"
             android:exported="false" />
 
+        <!-- Student: Gate Pass generation -->
+        <activity android:name=".GatePassActivity"
+            android:exported="false" />
+
+        <!-- Security: Gate Pass scanner -->
+        <activity android:name=".GatePassScannerActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>

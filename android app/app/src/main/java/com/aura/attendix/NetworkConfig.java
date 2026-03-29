@@ -41,6 +41,9 @@ public class NetworkConfig {
     // Only use verify-gate-pass when scanning an approved leave gate-pass QR
     public static final String URL_VERIFY_GATE_PASS     = BASE_URL + "/api/verify-gate-pass/";
 
+    // ── OTA Updates ───────────────────────────────────────────
+    public static final String URL_API_LATEST_APP       = BASE_URL + "/api/app/latest/";
+
     // ── HOD ───────────────────────────────────────────────────
     public static final String URL_HOD_STATS            = BASE_URL + "/api/hod/stats/";
 

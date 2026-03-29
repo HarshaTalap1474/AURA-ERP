@@ -10,7 +10,7 @@ android {
         applicationId = "com.aura.attendix"
         minSdk = 24
         targetSdk = 35
-        versionCode = 2
+        versionCode = 3
         versionName = "1.1"
 
         buildConfigField("String", "BASE_URL", "\"https://demo.harshalabs.online\"")

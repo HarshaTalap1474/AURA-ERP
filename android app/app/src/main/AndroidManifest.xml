@@ -6,6 +6,7 @@
     <!-- Network permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
 
     <!-- Bluetooth permissions (legacy + Android 12+) -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
@@ -160,6 +161,17 @@
         <!-- Security: Gate Pass scanner -->
         <activity android:name=".GatePassScannerActivity"
             android:exported="false" />
+
+        <!-- Provider for OTA Updates -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
     </application>
 

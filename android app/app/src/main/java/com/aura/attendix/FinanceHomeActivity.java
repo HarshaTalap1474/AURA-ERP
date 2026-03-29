@@ -13,7 +13,7 @@ public class FinanceHomeActivity extends AppCompatActivity {
 
     private TextView tvWelcomeName;
     private ImageView ivProfile, ivLogout;
- 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         ThemeManager.apply(this);

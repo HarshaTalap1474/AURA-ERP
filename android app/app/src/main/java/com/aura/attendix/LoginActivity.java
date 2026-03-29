@@ -9,6 +9,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+import android.app.DownloadManager;
+import android.net.Uri;
+import android.os.Environment;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.IntentFilter;
+import androidx.core.content.FileProvider;
+import java.io.File;
+import androidx.appcompat.app.AlertDialog;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -43,6 +52,9 @@ public class LoginActivity extends AppCompatActivity {
 
         initViews();
         requestQueue = VolleySingleton.getInstance(this).getRequestQueue();
+        
+        // [2b] OTA Update Sync: Query Django for active releases
+        checkForUpdates();
 
         btnLogin.setOnClickListener(v -> attemptLogin());
     }
@@ -259,5 +271,92 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin.setEnabled(!isLoading);
         etUsername.setEnabled(!isLoading);
         etPassword.setEnabled(!isLoading);
+    }
+
+    private void checkForUpdates() {
+        JsonObjectRequest request = new JsonObjectRequest(
+            Request.Method.GET,
+            NetworkConfig.URL_API_LATEST_APP,
+            null,
+            response -> {
+                try {
+                    boolean success = response.optBoolean("success", false);
+                    if (success) {
+                        int apiVersion = response.getInt("version_code");
+                        int currentVersion = BuildConfig.VERSION_CODE;
+                        
+                        if (apiVersion > currentVersion) {
+                            String releaseNotes = response.getString("release_notes");
+                            String apkUrl = response.getString("apk_url");
+                            showUpdateDialog(releaseNotes, apkUrl);
+                        }
+                    }
+                } catch (JSONException e) {
+                    // Ignore background parsing errors
+                }
+            },
+            error -> {
+                // Ignore network errors on background update probe
+            }
+        );
+        request.setRetryPolicy(new DefaultRetryPolicy(5000, 0, 1.0f));
+        requestQueue.add(request);
+    }
+
+    private void showUpdateDialog(String releaseNotes, String apkUrl) {
+        new AlertDialog.Builder(this)
+            .setTitle("New Update Available")
+            .setMessage(releaseNotes)
+            .setCancelable(false)
+            .setPositiveButton("Update Now", (dialog, which) -> {
+                downloadAndInstallApk(apkUrl);
+            })
+            .setNegativeButton("Later", null)
+            .show();
+    }
+
+    private void downloadAndInstallApk(String url) {
+        Toast.makeText(this, "Downloading AURA-ERP update in background...", Toast.LENGTH_LONG).show();
+        
+        DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+        Uri uri = Uri.parse(url);
+        DownloadManager.Request request = new DownloadManager.Request(uri);
+        
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        request.setTitle("AURA-ERP System Update");
+        request.setDescription("Downloading latest APK...");
+        
+        // Save to public Downloads directory
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "AURA_ERP_Latest.apk");
+        
+        long downloadId = manager.enqueue(request);
+
+        BroadcastReceiver onComplete = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context ctxt, Intent intent) {
+                long receivedId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
+                if (receivedId == downloadId) {
+                    try {
+                        File apkFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "AURA_ERP_Latest.apk");
+                        Uri fileUri = FileProvider.getUriForFile(
+                            LoginActivity.this,
+                            BuildConfig.APPLICATION_ID + ".fileprovider",
+                            apkFile
+                        );
+                        
+                        Intent installIntent = new Intent(Intent.ACTION_VIEW);
+                        installIntent.setDataAndType(fileUri, "application/vnd.android.package-archive");
+                        installIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        startActivity(installIntent);
+                    } catch (Exception e) {
+                        Toast.makeText(LoginActivity.this, "Installation Failed. Please find the APK in your Downloads folder.", Toast.LENGTH_LONG).show();
+                    }
+                    try {
+                        unregisterReceiver(this);
+                    } catch (Exception ignored) {}
+                }
+            }
+        };
+        registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
     }
 }

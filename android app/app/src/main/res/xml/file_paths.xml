@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Expose external public Download directory for the downloaded APK -->
+    <external-public-path name="downloads" path="Download/" />
+    <!-- Android 11+ fallback/broad external paths -->
+    <external-path name="external_files" path="."/>
+</paths>
